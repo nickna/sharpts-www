@@ -211,11 +211,11 @@ window.initTypingEffect = (elementId) => {
 window.cmInstances = {};
 
 window.createCodeMirror = async (elementId, initialCode) => {
-    const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
-    const { javascript } = await import('https://esm.sh/@codemirror/lang-javascript@6.2.3');
-    const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6.1.2');
-    const { EditorState } = await import('https://esm.sh/@codemirror/state@6.5.2');
-    const { keymap } = await import('https://esm.sh/@codemirror/view@6.36.5');
+    const { basicSetup } = await import('https://esm.sh/codemirror');
+    const { EditorView, keymap } = await import('https://esm.sh/@codemirror/view');
+    const { EditorState } = await import('https://esm.sh/@codemirror/state');
+    const { javascript } = await import('https://esm.sh/@codemirror/lang-javascript');
+    const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark');
 
     const container = document.getElementById(elementId);
     if (!container) return false;

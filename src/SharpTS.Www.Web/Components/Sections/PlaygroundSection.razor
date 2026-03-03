@@ -116,7 +116,14 @@
                 // API not available yet, use empty presets
             }
 
-            _editorReady = await JS.InvokeAsync<bool>("createCodeMirror", "playground-editor", _defaultCode);
+            try
+            {
+                _editorReady = await JS.InvokeAsync<bool>("createCodeMirror", "playground-editor", _defaultCode);
+            }
+            catch
+            {
+                // CodeMirror ESM imports may fail; playground will be non-functional but page stays interactive
+            }
         }
     }
 
