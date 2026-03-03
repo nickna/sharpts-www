@@ -1,0 +1,85 @@
+@inject IJSRuntime JS
+
+<section class="hero" id="hero">
+    <!-- Animated gradient orbs -->
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+
+    <!-- Floating particles canvas -->
+    <canvas id="hero-particles" class="hero__particles"></canvas>
+
+    <!-- Grid overlay -->
+    <div class="hero__grid"></div>
+
+    <div class="container hero__inner">
+        <div class="hero__badge hero-enter hero-enter--1">
+            <span class="hero__badge-dot"></span>
+            Open Source &mdash; MIT License
+        </div>
+
+        <h1 class="hero__title hero-enter hero-enter--2">
+            <span class="gradient-text">SharpTS</span>
+        </h1>
+        <p class="hero__tagline hero-enter hero-enter--3">A TypeScript interpreter and AOT compiler for .NET</p>
+
+        <div class="hero__ctas hero-enter hero-enter--4">
+            <div class="hero__install">
+                <span class="hero__install-prompt">$</span>
+                <code class="hero__install-cmd">dotnet tool install -g SharpTS</code>
+                <CopyButton Text="dotnet tool install -g SharpTS" />
+            </div>
+            <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary btn--glow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                Star on GitHub
+            </a>
+        </div>
+
+        <div class="hero__code hero-enter hero-enter--5">
+            <div class="code-block hero__code-block">
+                <div class="code-block__header">
+                    <div class="hero__code-dots">
+                        <span class="hero__code-dot hero__code-dot--red"></span>
+                        <span class="hero__code-dot hero__code-dot--yellow"></span>
+                        <span class="hero__code-dot hero__code-dot--green"></span>
+                    </div>
+                    <span>example.ts</span>
+                    <CopyButton Text="@_heroCode" />
+                </div>
+                <div class="code-block__content">
+                    <pre><code id="hero-typed-code" class="language-typescript">@_heroCode</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private const string _heroCode = @"// Run TypeScript directly on .NET
+interface Greeter {
+    greet(name: string): string;
+}
+
+class WelcomeBot implements Greeter {
+    constructor(private prefix: string) {}
+
+    greet(name: string): string {
+        return `${this.prefix}, ${name}! Welcome to SharpTS.`;
+    }
+}
+
+const bot = new WelcomeBot(""Hello"");
+console.log(bot.greet(""Developer""));
+// → Hello, Developer! Welcome to SharpTS.";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initHeroParticles", "hero-particles");
+            await JS.InvokeVoidAsync("initTypingEffect", "hero-typed-code");
+        }
+    }
+}

@@ -1,0 +1,73 @@
+<section class="section">
+    <div class="container">
+        <h2 class="section-title reveal">How It Works</h2>
+        <p class="section-subtitle reveal">A multi-stage pipeline from source to execution</p>
+
+        <div class="architecture reveal">
+            <div class="pipeline">
+                <div class="pipeline__step">
+                    <div class="pipeline__box pipeline__box--input">
+                        <span class="pipeline__icon">📄</span>
+                        <span class="pipeline__label">Source</span>
+                    </div>
+                    <div class="pipeline__arrow"></div>
+                </div>
+
+                <div class="pipeline__step">
+                    <div class="pipeline__box">
+                        <span class="pipeline__icon">🔤</span>
+                        <span class="pipeline__label">Lexer</span>
+                        <span class="pipeline__detail">Tokenization</span>
+                    </div>
+                    <div class="pipeline__arrow"></div>
+                </div>
+
+                <div class="pipeline__step">
+                    <div class="pipeline__box">
+                        <span class="pipeline__icon">🌳</span>
+                        <span class="pipeline__label">Parser</span>
+                        <span class="pipeline__detail">AST Generation</span>
+                    </div>
+                    <div class="pipeline__arrow"></div>
+                </div>
+
+                <div class="pipeline__step">
+                    <div class="pipeline__box pipeline__box--accent">
+                        <span class="pipeline__icon">🔍</span>
+                        <span class="pipeline__label">TypeChecker</span>
+                        <span class="pipeline__detail">Static Analysis</span>
+                    </div>
+                    <div class="pipeline__arrow pipeline__arrow--fork"></div>
+                </div>
+            </div>
+
+            <div class="pipeline__branches">
+                <div class="pipeline__branch">
+                    <div class="pipeline__branch-arrow pipeline__branch-arrow--top"></div>
+                    <div class="pipeline__box pipeline__box--interpret">
+                        <span class="pipeline__icon">▶️</span>
+                        <span class="pipeline__label">Interpreter</span>
+                        <span class="pipeline__detail">Tree-walking</span>
+                    </div>
+                    <div class="pipeline__arrow"></div>
+                    <div class="pipeline__box pipeline__box--output">
+                        <span class="pipeline__label">Output</span>
+                    </div>
+                </div>
+
+                <div class="pipeline__branch">
+                    <div class="pipeline__branch-arrow pipeline__branch-arrow--bottom"></div>
+                    <div class="pipeline__box pipeline__box--compile">
+                        <span class="pipeline__icon">⚙️</span>
+                        <span class="pipeline__label">IL Compiler</span>
+                        <span class="pipeline__detail">AOT Compilation</span>
+                    </div>
+                    <div class="pipeline__arrow"></div>
+                    <div class="pipeline__box pipeline__box--output">
+                        <span class="pipeline__label">.NET Assembly</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

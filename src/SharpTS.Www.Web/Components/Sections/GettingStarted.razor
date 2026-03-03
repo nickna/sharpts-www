@@ -1,0 +1,55 @@
+<section class="section">
+    <div class="container">
+        <h2 class="section-title reveal">Get Started</h2>
+        <p class="section-subtitle reveal">Up and running in three steps</p>
+
+        <div class="getting-started reveal">
+            <div class="gs-step">
+                <div class="gs-step__number">1</div>
+                <div class="gs-step__content">
+                    <h3 class="gs-step__title">Install</h3>
+                    <p class="gs-step__desc">Install SharpTS as a .NET global tool</p>
+                    <CodeBlock Title="Terminal" Language="bash" Code="dotnet tool install -g SharpTS" />
+                </div>
+            </div>
+
+            <div class="gs-step">
+                <div class="gs-step__number">2</div>
+                <div class="gs-step__content">
+                    <h3 class="gs-step__title">Write</h3>
+                    <p class="gs-step__desc">Create a TypeScript file</p>
+                    <CodeBlock Title="hello.ts" Language="typescript" Code="@_writeCode" />
+                </div>
+            </div>
+
+            <div class="gs-step">
+                <div class="gs-step__number">3</div>
+                <div class="gs-step__content">
+                    <h3 class="gs-step__title">Run</h3>
+                    <p class="gs-step__desc">Interpret directly or compile to a .NET assembly</p>
+                    <CodeBlock Title="Terminal" Language="bash" Code="@_runCode" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private const string _writeCode = """
+        interface Config {
+            name: string;
+            debug: boolean;
+        }
+
+        const config: Config = { name: "MyApp", debug: true };
+        console.log(`Starting ${config.name}...`);
+        """;
+
+    private const string _runCode = """
+        # Interpret (instant startup)
+        sharpts hello.ts
+
+        # Compile to .NET assembly
+        sharpts --compile hello.ts -o hello
+        """;
+}

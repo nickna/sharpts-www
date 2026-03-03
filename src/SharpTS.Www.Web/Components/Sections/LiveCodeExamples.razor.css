@@ -1,0 +1,52 @@
+.examples {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    max-width: 960px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-default);
+}
+
+.examples:hover {
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(49, 120, 198, 0.06);
+    border-color: rgba(48, 54, 61, 0.8);
+}
+
+.examples__body {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    min-height: 360px;
+}
+
+.examples__code {
+    border-right: 1px solid var(--border-default);
+    overflow: auto;
+}
+
+.examples__output {
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.examples__output-text {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--accent-green);
+    white-space: pre-wrap;
+    line-height: 1.7;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .examples__body {
+        grid-template-columns: 1fr;
+    }
+
+    .examples__code {
+        border-right: none;
+        border-bottom: 1px solid var(--border-default);
+    }
+}

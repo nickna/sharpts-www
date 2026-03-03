@@ -1,0 +1,174 @@
+@inject PlaygroundApiClient Api
+@inject IJSRuntime JS
+
+<section class="section" id="playground">
+    <div class="container">
+        <h2 class="section-title reveal">Interactive Playground</h2>
+        <p class="section-subtitle reveal">Write TypeScript and run it on .NET — right in your browser</p>
+
+        <div class="playground reveal">
+            <div class="playground__toolbar">
+                <div class="playground__toolbar-left">
+                    <select class="playground__preset" @onchange="OnPresetChanged">
+                        <option value="">Select a preset...</option>
+                        @foreach (var preset in _presets)
+                        {
+                            <option value="@preset.Name">@preset.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="playground__toolbar-right">
+                    <button class="btn btn-sm btn-secondary" @onclick="ClearOutput">Clear</button>
+                    <button id="playground-run-btn"
+                            class="btn btn-sm btn-primary"
+                            @onclick="RunCode"
+                            disabled="@_running">
+                        @if (_running)
+                        {
+                            <span class="playground__spinner"></span>
+                            <span>Running...</span>
+                        }
+                        else
+                        {
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span>Run</span>
+                            <kbd class="playground__kbd">Ctrl+Enter</kbd>
+                        }
+                    </button>
+                </div>
+            </div>
+
+            <div class="playground__body">
+                <div class="playground__editor">
+                    <div id="playground-editor" class="playground__cm-container"></div>
+                </div>
+                <div class="playground__output">
+                    <div class="playground__output-header">
+                        <span>Output</span>
+                        @if (_executionTime.HasValue)
+                        {
+                            <span class="playground__timing">@(_executionTime)ms</span>
+                        }
+                    </div>
+                    <div class="playground__output-body">
+                        @if (!string.IsNullOrEmpty(_output))
+                        {
+                            <pre class="playground__stdout">@_output</pre>
+                        }
+                        @if (_errors.Count > 0)
+                        {
+                            <div class="playground__errors">
+                                @foreach (var error in _errors)
+                                {
+                                    <div class="playground__error">@error.Message</div>
+                                }
+                            </div>
+                        }
+                        @if (string.IsNullOrEmpty(_output) && _errors.Count == 0 && !_running)
+                        {
+                            <span class="playground__placeholder">Click Run or press Ctrl+Enter to execute</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<PresetExample> _presets = [];
+    private bool _running;
+    private string _output = "";
+    private List<ErrorInfo> _errors = [];
+    private long? _executionTime;
+    private bool _editorReady;
+
+    private const string _defaultCode = """
+        // Welcome to the SharpTS Playground!
+        // Write TypeScript and click Run (or Ctrl+Enter)
+
+        interface Person {
+            name: string;
+            age: number;
+        }
+
+        function greet(person: Person): string {
+            return `Hello, ${person.name}! You are ${person.age} years old.`;
+        }
+
+        const developer: Person = { name: "World", age: 1 };
+        console.log(greet(developer));
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _presets = await Api.GetPresetsAsync();
+                StateHasChanged();
+            }
+            catch
+            {
+                // API not available yet, use empty presets
+            }
+
+            _editorReady = await JS.InvokeAsync<bool>("createCodeMirror", "playground-editor", _defaultCode);
+        }
+    }
+
+    private async Task RunCode()
+    {
+        if (_running || !_editorReady) return;
+
+        _running = true;
+        _output = "";
+        _errors = [];
+        _executionTime = null;
+        StateHasChanged();
+
+        try
+        {
+            var source = await JS.InvokeAsync<string>("getCodeMirrorValue", "playground-editor");
+            var response = await Api.RunAsync(source);
+
+            if (response is not null)
+            {
+                _output = response.Output;
+                _errors = response.Errors;
+                _executionTime = response.ExecutionTimeMs;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errors = [new ErrorInfo(ex.Message, null, null)];
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private void ClearOutput()
+    {
+        _output = "";
+        _errors = [];
+        _executionTime = null;
+    }
+
+    private async Task OnPresetChanged(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        if (string.IsNullOrEmpty(name)) return;
+
+        var preset = _presets.FirstOrDefault(p => p.Name == name);
+        if (preset is not null && _editorReady)
+        {
+            await JS.InvokeVoidAsync("setCodeMirrorValue", "playground-editor", preset.Source);
+            ClearOutput();
+        }
+    }
+}

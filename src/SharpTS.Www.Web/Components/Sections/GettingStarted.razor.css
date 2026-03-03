@@ -1,0 +1,73 @@
+.getting-started {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.gs-step {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.gs-step__number {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: white;
+    font-weight: 700;
+    font-size: 1.125rem;
+    box-shadow: 0 4px 16px rgba(49, 120, 198, 0.25);
+    position: relative;
+}
+
+/* Connecting line between steps */
+.gs-step:not(:last-child) .gs-step__number::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: calc(3rem + 44px);
+    background: linear-gradient(180deg, var(--accent-ts), transparent);
+    opacity: 0.2;
+}
+
+.gs-step__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.gs-step__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.gs-step__desc {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .gs-step {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .gs-step:not(:last-child) .gs-step__number::after {
+        display: none;
+    }
+}

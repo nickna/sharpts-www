@@ -1,0 +1,119 @@
+<section class="section" style="background: var(--bg-secondary);">
+    <div class="container">
+        <h2 class="section-title reveal">Implementation Status</h2>
+        <p class="section-subtitle reveal">Comprehensive TypeScript language support</p>
+
+        <div class="comparison reveal">
+            @foreach (var group in _featureGroups)
+            {
+                <div class="comparison__group">
+                    <h3 class="comparison__group-title">@group.Name</h3>
+                    <table class="comparison__table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var feature in group.Features)
+                            {
+                                <tr>
+                                    <td class="comparison__feature">@feature.Name</td>
+                                    <td>
+                                        @switch (feature.Status)
+                                        {
+                                            case Status.Done:
+                                                <span class="badge badge-green">Implemented</span>
+                                                break;
+                                            case Status.Partial:
+                                                <span class="badge badge-yellow">Partial</span>
+                                                break;
+                                            case Status.Missing:
+                                                <span class="badge badge-red">Missing</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="comparison__notes">@feature.Notes</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private enum Status { Done, Partial, Missing }
+    private record Feature(string Name, Status Status, string Notes = "");
+    private record FeatureGroup(string Name, List<Feature> Features);
+
+    private readonly List<FeatureGroup> _featureGroups =
+    [
+        new("Type System", [
+            new("Primitive types", Status.Done),
+            new("Generics", Status.Done, "Full support with constraints"),
+            new("Union & Intersection types", Status.Done),
+            new("Literal types", Status.Done),
+            new("Tuple types", Status.Done, "Optional, rest, and named elements"),
+            new("Conditional types", Status.Done, "infer keyword, distribution"),
+            new("Mapped types", Status.Done, "keyof, indexed access"),
+            new("Template literal types", Status.Done),
+            new("Utility types", Status.Done, "Partial, Required, Pick, Omit, etc.")
+        ]),
+        new("Classes & OOP", [
+            new("Classes & inheritance", Status.Done),
+            new("Access modifiers", Status.Done),
+            new("Abstract classes", Status.Done),
+            new("Getters/Setters", Status.Done),
+            new("Private fields (#field)", Status.Done),
+            new("Static blocks", Status.Done),
+            new("Decorators", Status.Done, "Legacy & TC39 Stage 3"),
+            new("Method overloading", Status.Done)
+        ]),
+        new("Functions & Async", [
+            new("Arrow functions", Status.Done),
+            new("Rest/spread", Status.Done),
+            new("Closures", Status.Done),
+            new("async/await", Status.Done),
+            new("Promise.all/race/any", Status.Done),
+            new("Generators (function*)", Status.Done),
+            new("Async generators", Status.Done),
+            new("for await...of", Status.Done)
+        ]),
+        new("Modules", [
+            new("import/export", Status.Done),
+            new("Default exports", Status.Done),
+            new("Namespace imports", Status.Done),
+            new("Dynamic imports", Status.Done),
+            new("TypeScript namespaces", Status.Done),
+            new("import type", Status.Done),
+            new("Module augmentation", Status.Done)
+        ]),
+        new("Built-in APIs", [
+            new("console.log", Status.Done, "Printf-style format specifiers"),
+            new("Math object", Status.Done),
+            new("String methods", Status.Done, "40+ methods"),
+            new("Array methods", Status.Done, "50+ methods"),
+            new("Map/Set", Status.Done, "ES2025 Set operations"),
+            new("RegExp", Status.Done),
+            new("Date", Status.Done),
+            new("JSON", Status.Done),
+            new("Promise", Status.Done),
+            new("Symbol", Status.Done),
+            new("Proxy", Status.Missing),
+            new("WeakRef", Status.Missing)
+        ]),
+        new("Advanced", [
+            new("using/await using", Status.Done, "TS 5.2+ resource management"),
+            new("satisfies operator", Status.Done),
+            new("Const type parameters", Status.Done),
+            new("bigint type", Status.Done),
+            new("TypedArrays", Status.Done),
+            new("SharedArrayBuffer/Atomics", Status.Done)
+        ])
+    ];
+}

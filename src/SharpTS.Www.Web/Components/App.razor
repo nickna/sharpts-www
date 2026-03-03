@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SharpTS — A TypeScript interpreter and AOT compiler for .NET. Run TypeScript natively on the .NET runtime." />
+    <meta name="theme-color" content="#0d1117" />
+
+    <!-- OpenGraph -->
+    <meta property="og:title" content="SharpTS — TypeScript for .NET" />
+    <meta property="og:description" content="A TypeScript interpreter and AOT compiler for .NET. Run TypeScript natively on the .NET runtime." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sharpts.dev" />
+    <meta property="og:image" content="/favicon.svg" />
+
+    <title>SharpTS — TypeScript for .NET</title>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Prism.js for static syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+    <!-- App styles -->
+    <link href="css/theme.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="SharpTS.Www.Web.styles.css" rel="stylesheet" />
+
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+<body>
+    <Routes @rendermode="InteractiveServer" />
+
+    <!-- Prism.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <!-- App scripts -->
+    <script src="js/site-interop.js"></script>
+
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>

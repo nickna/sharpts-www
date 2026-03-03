@@ -1,0 +1,174 @@
+@inject IJSRuntime JS
+
+<section class="section" style="background: var(--bg-secondary);">
+    <div class="container">
+        <h2 class="section-title reveal">See It In Action</h2>
+        <p class="section-subtitle reveal">Real TypeScript running on the .NET runtime</p>
+
+        <div class="examples reveal" @ref="_element">
+            <div class="tabs">
+                @foreach (var example in _examples)
+                {
+                    <button class="tab @(example == _active ? "active" : "")"
+                            @onclick="() => SetActive(example)">
+                        @example.Title
+                    </button>
+                }
+            </div>
+            <div class="examples__body">
+                <div class="examples__code">
+                    <div class="code-block__content">
+                        <pre><code class="language-typescript">@_active.Code</code></pre>
+                    </div>
+                </div>
+                <div class="examples__output">
+                    <div class="code-block__header">
+                        <span>Output</span>
+                    </div>
+                    <div class="code-block__content">
+                        <pre class="examples__output-text">@_active.Output</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private ElementReference _element;
+    private Example _active = null!;
+
+    private record Example(string Title, string Code, string Output);
+
+    private readonly List<Example> _examples =
+    [
+        new("Hello World",
+            """
+            const greeting: string = "Hello from SharpTS!";
+            const version: number = 1.0;
+            console.log(`${greeting} v${version}`);
+
+            const languages = ["TypeScript", "C#", ".NET"];
+            languages.forEach(lang => console.log(`  ✓ ${lang}`));
+            """,
+            """
+            Hello from SharpTS! v1
+              ✓ TypeScript
+              ✓ C#
+              ✓ .NET
+            """),
+
+        new("Classes & Generics",
+            """
+            interface Comparable<T> {
+                compareTo(other: T): number;
+            }
+
+            class Temperature implements Comparable<Temperature> {
+                constructor(private celsius: number) {}
+
+                get fahrenheit(): number {
+                    return this.celsius * 9 / 5 + 32;
+                }
+
+                compareTo(other: Temperature): number {
+                    return this.celsius - other.celsius;
+                }
+
+                toString(): string {
+                    return `${this.celsius}°C (${this.fahrenheit}°F)`;
+                }
+            }
+
+            const temps = [new Temperature(100), new Temperature(0), new Temperature(37)];
+            temps.sort((a, b) => a.compareTo(b));
+            temps.forEach(t => console.log(t.toString()));
+            """,
+            """
+            0°C (32°F)
+            37°C (98.6°F)
+            100°C (212°F)
+            """),
+
+        new("Async/Await",
+            """
+            async function delay(ms: number): Promise<string> {
+                return `Done after ${ms}ms`;
+            }
+
+            async function main() {
+                const result = await delay(100);
+                console.log(result);
+
+                const all = await Promise.all([
+                    delay(50), delay(100), delay(150)
+                ]);
+                all.forEach(r => console.log(r));
+            }
+
+            main();
+            """,
+            """
+            Done after 100ms
+            Done after 50ms
+            Done after 100ms
+            Done after 150ms
+            """),
+
+        new("Functional",
+            """
+            const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+            const result = data
+                .filter(n => n % 2 === 0)
+                .map(n => n ** 2)
+                .reduce((sum, n) => sum + n, 0);
+
+            console.log(`Sum of squares of evens: ${result}`);
+
+            // Destructuring
+            const [first, second, ...rest] = data;
+            console.log(`First: ${first}, Second: ${second}`);
+            console.log(`Rest: [${rest.join(", ")}]`);
+            """,
+            """
+            Sum of squares of evens: 220
+            First: 1, Second: 2
+            Rest: [3, 4, 5, 6, 7, 8, 9, 10]
+            """),
+
+        new(".NET Interop",
+            """
+            // Math operations (backed by System.Math)
+            console.log(`PI = ${Math.PI}`);
+            console.log(`E  = ${Math.E}`);
+            console.log(`sqrt(144) = ${Math.sqrt(144)}`);
+
+            // Date (backed by System.DateTime)
+            const now = new Date();
+            console.log(`ISO: ${now.toISOString()}`);
+
+            // JSON round-trip
+            const obj = { name: "SharpTS", nums: [1, 2, 3] };
+            const json = JSON.stringify(obj);
+            console.log(`JSON: ${json}`);
+            """,
+            """
+            PI = 3.141592653589793
+            E  = 2.718281828459045
+            sqrt(144) = 12
+            ISO: 2026-03-02T12:00:00.000Z
+            JSON: {"name":"SharpTS","nums":[1,2,3]}
+            """)
+    ];
+
+    protected override void OnInitialized() => _active = _examples[0];
+
+    private async Task SetActive(Example example)
+    {
+        _active = example;
+        StateHasChanged();
+        await Task.Delay(10);
+        await JS.InvokeVoidAsync("highlightCode", _element);
+    }
+}
