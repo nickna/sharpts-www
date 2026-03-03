@@ -9,6 +9,10 @@ public static class PlaygroundEndpoints
         group.MapPost("/run", async (RunRequest request, TypeScriptExecutionService service, CancellationToken ct) =>
         {
             var response = await service.ExecuteAsync(request.Source, request.TimeoutMs, ct);
+
+            if (response is null)
+                return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+
             return Results.Ok(response);
         })
         .RequireRateLimiting("playground");

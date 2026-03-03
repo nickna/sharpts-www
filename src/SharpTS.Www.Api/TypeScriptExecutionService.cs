@@ -1,18 +1,28 @@
 using System.Diagnostics;
-using System.Text;
-using SharpTS.Execution;
-using SharpTS.Parsing;
-using SharpTS.TypeSystem;
+using System.Text.Json;
 
 public sealed class TypeScriptExecutionService
 {
     private const int MaxSourceLength = 10 * 1024; // 10KB
-    private const int MaxOutputLength = 100 * 1024; // 100KB
     private const int MaxTimeoutMs = 10_000; // 10 seconds
+    private const long MaxMemoryBytes = 150 * 1024 * 1024; // 150MB
+    private const int MemoryPollIntervalMs = 500;
 
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly SemaphoreSlim _semaphore = new(3, 3);
+    private readonly string _workerPath;
+    private readonly ILogger<TypeScriptExecutionService> _logger;
 
-    public async Task<RunResponse> ExecuteAsync(string source, int timeoutMs, CancellationToken cancellationToken = default)
+    public TypeScriptExecutionService(IConfiguration configuration, ILogger<TypeScriptExecutionService> logger)
+    {
+        _workerPath = configuration["Worker:ExecutablePath"]
+            ?? throw new InvalidOperationException("Worker:ExecutablePath configuration is required.");
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Returns null when all worker slots are busy (caller should return 503).
+    /// </summary>
+    public async Task<RunResponse?> ExecuteAsync(string source, int timeoutMs, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(source))
             return new RunResponse(false, "", [new ErrorInfo("Source code cannot be empty.", null, null)], 0);
@@ -22,10 +32,12 @@ public sealed class TypeScriptExecutionService
 
         timeoutMs = Math.Clamp(timeoutMs, 100, MaxTimeoutMs);
 
-        await _semaphore.WaitAsync(cancellationToken);
+        if (!await _semaphore.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken))
+            return null; // All slots busy — signal 503
+
         try
         {
-            return await Task.Run(() => ExecuteCore(source, timeoutMs), cancellationToken);
+            return await RunWorkerAsync(source, timeoutMs, cancellationToken);
         }
         finally
         {
@@ -33,133 +45,187 @@ public sealed class TypeScriptExecutionService
         }
     }
 
-    private RunResponse ExecuteCore(string source, int timeoutMs)
+    private async Task<RunResponse> RunWorkerAsync(string source, int timeoutMs, CancellationToken cancellationToken)
     {
-        var errors = new List<ErrorInfo>();
-        var outputBuilder = new StringBuilder();
         var sw = Stopwatch.StartNew();
 
-        // Capture console output
-        var originalOut = Console.Out;
-        var originalError = Console.Error;
-        using var outputWriter = new CappedStringWriter(outputBuilder, MaxOutputLength);
-        Console.SetOut(outputWriter);
-        Console.SetError(outputWriter);
+        var psi = new ProcessStartInfo
+        {
+            FileName = _workerPath,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
 
+        // Sanitize environment — prevent process.env from leaking secrets
+        psi.Environment.Clear();
+        psi.Environment["DOTNET_ENVIRONMENT"] = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+
+        Process process;
         try
         {
-            // Lexing
-            var lexer = new Lexer(source);
-            var tokens = lexer.ScanTokens();
-
-            // Parsing
-            var parser = new Parser(tokens, DecoratorMode.None);
-            var parseResult = parser.Parse();
-
-            if (!parseResult.IsSuccess)
-            {
-                foreach (var diagnostic in parseResult.Diagnostics)
-                    errors.Add(new ErrorInfo(diagnostic.ToString(), null, null));
-                if (parseResult.HitErrorLimit)
-                    errors.Add(new ErrorInfo("Too many errors, stopping.", null, null));
-
-                sw.Stop();
-                return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
-            }
-
-            // Type checking
-            var checker = new TypeChecker();
-            checker.SetDecoratorMode(DecoratorMode.None);
-            var typeResult = checker.CheckWithRecovery(parseResult.Statements);
-
-            if (!typeResult.IsSuccess)
-            {
-                foreach (var diagnostic in typeResult.Diagnostics)
-                    errors.Add(new ErrorInfo(diagnostic.ToString(), null, null));
-                if (typeResult.HitErrorLimit)
-                    errors.Add(new ErrorInfo("Too many errors, stopping.", null, null));
-
-                sw.Stop();
-                return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
-            }
-
-            // Execution with timeout
-            using var cts = new CancellationTokenSource(timeoutMs);
-            using var interpreter = new Interpreter();
-            interpreter.SetDecoratorMode(DecoratorMode.None);
-
-            var resolver = new VariableResolver(interpreter);
-            resolver.Resolve(parseResult.Statements);
-
-            var executionTask = Task.Run(() =>
-            {
-                interpreter.Interpret(parseResult.Statements, typeResult.TypeMap);
-            }, cts.Token);
-
-            if (!executionTask.Wait(timeoutMs))
-            {
-                sw.Stop();
-                errors.Add(new ErrorInfo($"Execution timed out after {timeoutMs}ms.", null, null));
-                return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
-            }
-
-            if (executionTask.IsFaulted)
-            {
-                var ex = executionTask.Exception?.InnerException;
-                errors.Add(new ErrorInfo(ex?.Message ?? "Unknown execution error.", null, null));
-                sw.Stop();
-                return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
-            }
-
-            sw.Stop();
-            return new RunResponse(errors.Count == 0, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
-        }
-        catch (OperationCanceledException)
-        {
-            sw.Stop();
-            errors.Add(new ErrorInfo($"Execution timed out after {timeoutMs}ms.", null, null));
-            return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
+            process = Process.Start(psi)!;
         }
         catch (Exception ex)
         {
-            sw.Stop();
-            errors.Add(new ErrorInfo(ex.Message, null, null));
-            return new RunResponse(false, outputBuilder.ToString(), errors, sw.ElapsedMilliseconds);
+            _logger.LogError(ex, "Failed to start worker process at {Path}", _workerPath);
+            return new RunResponse(false, "", [new ErrorInfo("Internal server error: failed to start worker.", null, null)], 0);
         }
-        finally
+
+        using (process)
         {
-            Console.SetOut(originalOut);
-            Console.SetError(originalError);
+            // Write request to stdin, then close it
+            var request = JsonSerializer.Serialize(new { Source = source, TimeoutMs = timeoutMs });
+            await process.StandardInput.WriteLineAsync(request);
+            process.StandardInput.Close();
+
+            // Start reading stdout/stderr concurrently
+            var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
+            // Monitor memory + enforce timeout
+            var killTimeoutMs = timeoutMs + 1000; // 1s buffer beyond the requested timeout
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(killTimeoutMs);
+
+            bool killedForTimeout = false;
+            bool killedForMemory = false;
+
+            try
+            {
+                // Poll memory while waiting for exit
+                while (!process.HasExited)
+                {
+                    try
+                    {
+                        process.Refresh();
+                        if (process.WorkingSet64 > MaxMemoryBytes)
+                        {
+                            killedForMemory = true;
+                            KillProcess(process);
+                            break;
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // Process already exited
+                        break;
+                    }
+
+                    try
+                    {
+                        await Task.Delay(MemoryPollIntervalMs, timeoutCts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            throw;
+
+                        // Timeout fired
+                        if (!process.HasExited)
+                        {
+                            killedForTimeout = true;
+                            KillProcess(process);
+                        }
+                        break;
+                    }
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                KillProcess(process);
+                throw;
+            }
+
+            // Ensure process has exited
+            try
+            {
+                await process.WaitForExitAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                KillProcess(process);
+                throw;
+            }
+
+            sw.Stop();
+
+            if (killedForMemory)
+            {
+                return new RunResponse(false, "",
+                    [new ErrorInfo("Execution terminated: memory limit exceeded (150MB).", null, null)],
+                    sw.ElapsedMilliseconds);
+            }
+
+            if (killedForTimeout)
+            {
+                return new RunResponse(false, "",
+                    [new ErrorInfo($"Execution timed out after {timeoutMs}ms.", null, null)],
+                    sw.ElapsedMilliseconds);
+            }
+
+            // Read stdout for the JSON response
+            string stdout;
+            try
+            {
+                stdout = await stdoutTask;
+            }
+            catch
+            {
+                stdout = "";
+            }
+
+            if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(stdout))
+            {
+                // Worker crashed (e.g. StackOverflowException, process.exit())
+                string stderr;
+                try { stderr = await stderrTask; } catch { stderr = ""; }
+
+                var message = process.ExitCode switch
+                {
+                    -1073741571 => "Execution terminated: stack overflow.", // 0xC00000FD
+                    _ when !string.IsNullOrWhiteSpace(stderr) => $"Execution error: {stderr.Trim()[..Math.Min(stderr.Trim().Length, 500)]}",
+                    _ => $"Execution terminated unexpectedly (exit code {process.ExitCode}).",
+                };
+
+                return new RunResponse(false, "", [new ErrorInfo(message, null, null)], sw.ElapsedMilliseconds);
+            }
+
+            // Parse worker response
+            try
+            {
+                var workerResponse = JsonSerializer.Deserialize<WorkerResponse>(stdout.Trim());
+                if (workerResponse is null)
+                    return new RunResponse(false, "", [new ErrorInfo("Invalid worker response.", null, null)], sw.ElapsedMilliseconds);
+
+                var errors = workerResponse.Errors
+                    .Select(e => new ErrorInfo(e.Message, null, null))
+                    .ToList();
+
+                return new RunResponse(workerResponse.Success, workerResponse.Output, errors, workerResponse.ExecutionTimeMs);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse worker response: {Stdout}", stdout[..Math.Min(stdout.Length, 200)]);
+                return new RunResponse(false, "", [new ErrorInfo("Internal error: invalid worker response.", null, null)], sw.ElapsedMilliseconds);
+            }
         }
     }
-}
 
-/// <summary>
-/// A StringWriter that caps output at a maximum length to prevent memory exhaustion.
-/// </summary>
-internal sealed class CappedStringWriter : StringWriter
-{
-    private readonly int _maxLength;
-    private readonly StringBuilder _sb;
-    private bool _capped;
-
-    public CappedStringWriter(StringBuilder sb, int maxLength) : base(sb)
+    private void KillProcess(Process process)
     {
-        _sb = sb;
-        _maxLength = maxLength;
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to kill worker process {Pid}", process.Id);
+        }
     }
 
-    public override void Write(char value)
-    {
-        if (_capped) return;
-        if (_sb.Length >= _maxLength) { _capped = true; _sb.AppendLine("\n[Output truncated]"); return; }
-        base.Write(value);
-    }
-
-    public override void Write(string? value)
-    {
-        if (_capped || value is null) return;
-        if (_sb.Length + value.Length > _maxLength) { _capped = true; _sb.AppendLine("\n[Output truncated]"); return; }
-        base.Write(value);
-    }
+    private record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs);
+    private record WorkerError(string Message);
 }

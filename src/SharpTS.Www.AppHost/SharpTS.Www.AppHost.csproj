@@ -7,6 +7,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SharpTS.Www.Api\SharpTS.Www.Api.csproj" />
     <ProjectReference Include="..\SharpTS.Www.Web\SharpTS.Www.Web.csproj" />
+    <!-- Not an Aspire-managed service; referenced to ensure it builds with the solution -->
+    <ProjectReference Include="..\SharpTS.Www.Worker\SharpTS.Www.Worker.csproj" />
   </ItemGroup>
 
 </Project>

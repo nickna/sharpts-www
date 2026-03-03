@@ -23,13 +23,32 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        }
+        else if (builder.Environment.IsDevelopment())
+        {
+            // In development, allow any origin for convenience
+            policy.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        }
+        else
+        {
+            // In production with no configured origins, deny all cross-origin requests
+            policy.WithOrigins("https://localhost")
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        }
     });
 });
 

@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SharpTS.Www.ServiceDefaults\SharpTS.Www.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\..\..\SharpTS\SharpTS.csproj" />
   </ItemGroup>
 
 </Project>
