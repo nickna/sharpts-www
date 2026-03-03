@@ -6,6 +6,7 @@ WORKDIR /src
 COPY Directory.Build.props ./
 COPY SharpTS.Www.slnx ./
 COPY src/SharpTS.Www.ServiceDefaults/ src/SharpTS.Www.ServiceDefaults/
+COPY lib/SharpTS/ lib/SharpTS/
 COPY src/SharpTS.Www.Api/ src/SharpTS.Www.Api/
 COPY src/SharpTS.Www.Worker/ src/SharpTS.Www.Worker/
 

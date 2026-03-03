@@ -6,5 +6,7 @@
     <Project Path="src/SharpTS.Www.Web/SharpTS.Www.Web.csproj" />
     <Project Path="src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj" />
   </Folder>
-
+  <Folder Name="/lib/">
+    <Project Path="lib/SharpTS/SharpTS.csproj" />
+  </Folder>
 </Solution>

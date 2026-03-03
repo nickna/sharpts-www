@@ -1,0 +1,3 @@
+[submodule "lib/SharpTS"]
+	path = lib/SharpTS
+	url = https://github.com/nickna/SharpTS.git
