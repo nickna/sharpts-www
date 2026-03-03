@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution and build files first for layer caching
+COPY Directory.Build.props ./
+COPY SharpTS.Www.slnx ./
+COPY src/SharpTS.Www.ServiceDefaults/ src/SharpTS.Www.ServiceDefaults/
+COPY src/SharpTS.Www.Web/ src/SharpTS.Www.Web/
+
+RUN dotnet restore src/SharpTS.Www.Web/SharpTS.Www.Web.csproj
+RUN dotnet publish src/SharpTS.Www.Web/SharpTS.Www.Web.csproj -c Release -o /app/web --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/web ./
+
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "SharpTS.Www.Web.dll"]

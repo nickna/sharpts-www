@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution and build files first for layer caching
+COPY Directory.Build.props ./
+COPY SharpTS.Www.slnx ./
+COPY src/SharpTS.Www.ServiceDefaults/ src/SharpTS.Www.ServiceDefaults/
+COPY src/SharpTS.Www.Api/ src/SharpTS.Www.Api/
+COPY src/SharpTS.Www.Worker/ src/SharpTS.Www.Worker/
+
+RUN dotnet restore src/SharpTS.Www.Api/SharpTS.Www.Api.csproj
+RUN dotnet restore src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj
+
+RUN dotnet publish src/SharpTS.Www.Api/SharpTS.Www.Api.csproj -c Release -o /app/api --no-restore
+RUN dotnet publish src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj -c Release -o /app/worker --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/api ./api/
+COPY --from=build /app/worker ./worker/
+
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+ENV Worker__ExecutablePath=/app/worker/SharpTS.Www.Worker
+
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "api/SharpTS.Www.Api.dll"]

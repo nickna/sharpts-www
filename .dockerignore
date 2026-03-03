@@ -1,0 +1,10 @@
+.git
+.vs
+.idea
+.vscode
+.claude
+bin
+obj
+*.user
+*.suo
+*.log

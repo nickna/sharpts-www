@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\SharpTS\SharpTS.csproj" />
+    <PackageReference Include="SharpTS" Version="1.0.7" />
   </ItemGroup>
 
 </Project>

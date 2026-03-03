@@ -8,9 +8,10 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https+http://api";
 builder.Services.AddHttpClient<PlaygroundApiClient>(client =>
 {
-    client.BaseAddress = new("https+http://api");
+    client.BaseAddress = new(apiBaseUrl);
 });
 
 var app = builder.Build();
