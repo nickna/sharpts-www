@@ -1,6 +1,20 @@
 @inherits LayoutComponentBase
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
 
 <NavHeader />
 <div class="page">
     @Body
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var clarityTag = Configuration["CLARITY_TAG"];
+            if (!string.IsNullOrEmpty(clarityTag))
+                await JS.InvokeVoidAsync("initClarity", clarityTag);
+        }
+    }
+}
