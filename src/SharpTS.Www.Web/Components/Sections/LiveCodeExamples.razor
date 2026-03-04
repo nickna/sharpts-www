@@ -164,6 +164,12 @@
 
     protected override void OnInitialized() => _active = _examples[0];
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("highlightCode", _element);
+    }
+
     private async Task SetActive(Example example)
     {
         _active = example;
