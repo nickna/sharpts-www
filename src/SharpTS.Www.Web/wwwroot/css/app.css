@@ -362,6 +362,14 @@ img, svg {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
 @media (min-width: 769px) and (max-width: 1024px) {
     :root {
         --section-padding: 5rem 1.5rem;

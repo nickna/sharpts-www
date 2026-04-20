@@ -30,10 +30,10 @@
     <link href="css/app.css" rel="stylesheet" />
     <link href="SharpTS.Www.Web.styles.css" rel="stylesheet" />
 
-    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: true)" />
 </head>
 <body>
-    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: true)" />
 
     <!-- Prism.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

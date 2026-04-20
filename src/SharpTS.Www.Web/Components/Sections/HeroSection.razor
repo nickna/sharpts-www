@@ -78,6 +78,7 @@ console.log(bot.greet(""Developer""));
     {
         if (firstRender)
         {
+            await JS.InvokeVoidAsync("triggerHeroEntrance", "hero");
             await JS.InvokeVoidAsync("initHeroParticles", "hero-particles");
             await JS.InvokeVoidAsync("initTypingEffect", "hero-typed-code");
         }

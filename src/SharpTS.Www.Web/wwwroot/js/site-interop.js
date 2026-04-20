@@ -43,6 +43,15 @@ window.initNavScroll = (dotNetRef) => {
     check();
 };
 
+// === Hero entrance trigger (prerender guard) ===
+window.triggerHeroEntrance = (heroId) => {
+    const hero = document.getElementById(heroId);
+    if (!hero) return;
+    requestAnimationFrame(() => {
+        hero.classList.add('hero--animated');
+    });
+};
+
 // === Scroll reveal animations with stagger ===
 (function () {
     const observeAll = () => {
@@ -75,7 +84,29 @@ window.initNavScroll = (dotNetRef) => {
     });
 
     // Watch for Blazor dynamically adding elements
-    const mutationObserver = new MutationObserver(() => {
+    // When Blazor reconciles prerendered DOM, newly-observed .reveal elements
+    // that are already in the viewport get .visible immediately (no transition)
+    // to prevent a visible flash.
+    const mutationObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== 1) continue;
+                const reveals = node.matches && node.matches('.reveal:not(.visible)')
+                    ? [node]
+                    : (node.querySelectorAll ? Array.from(node.querySelectorAll('.reveal:not(.visible)')) : []);
+                for (const el of reveals) {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top < window.innerHeight && rect.bottom > 0) {
+                        el.style.transition = 'none';
+                        el.classList.add('visible');
+                        // Re-enable transitions after paint
+                        requestAnimationFrame(() => {
+                            el.style.transition = '';
+                        });
+                    }
+                }
+            }
+        }
         observeAll();
     });
 
@@ -176,11 +207,25 @@ window.initHeroParticles = (canvasId) => {
 };
 
 // === Typing effect for hero code ===
+// Record when the script loads so we can detect slow circuit connections
+window.__pageShown = performance.now();
+
 window.initTypingEffect = (elementId) => {
     const el = document.getElementById(elementId);
     if (!el) return;
 
     const fullText = el.textContent || '';
+
+    // If >1s has elapsed and element already has text (prerender scenario),
+    // skip typing animation and just apply syntax highlighting
+    const elapsed = performance.now() - window.__pageShown;
+    if (elapsed > 1000 && fullText.trim().length > 0) {
+        if (window.Prism) {
+            Prism.highlightElement(el);
+        }
+        return;
+    }
+
     el.textContent = '';
     el.style.minHeight = '300px';
 
