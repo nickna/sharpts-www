@@ -78,7 +78,9 @@ console.log(bot.greet(""Developer""));
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("triggerHeroEntrance", "hero");
+            // The entrance animation is pure CSS (see HeroSection.razor.css) and
+            // needs no JS trigger. Interop here is only for effects that genuinely
+            // require the runtime: the particle canvas and Prism re-highlighting.
             await JS.InvokeVoidAsync("initHeroParticles", "hero-particles");
             // Re-highlight after Blazor reconciles the prerendered DOM, which
             // would otherwise strip Prism's markup back to plain text.

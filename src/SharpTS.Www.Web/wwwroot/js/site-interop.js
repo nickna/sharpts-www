@@ -49,25 +49,6 @@ window.initNavScroll = (dotNetRef) => {
     handler();
 };
 
-// === Hero entrance trigger (prerender guard) ===
-window.triggerHeroEntrance = (heroId) => {
-    const hero = document.getElementById(heroId);
-    if (!hero) return;
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // The hero is prerendered and visible by default. If the interactive
-    // circuit connected slowly, the user has already seen it — replaying the
-    // entrance would re-flash content. Only animate on a quick connect, and
-    // never under reduced-motion.
-    const elapsed = performance.now() - window.__pageShown;
-    if (reduceMotion || elapsed > 800) return;
-
-    requestAnimationFrame(() => {
-        hero.classList.add('hero--animated');
-    });
-};
-
 // === Highlight a single code element by id ===
 window.highlightById = (id) => {
     const el = document.getElementById(id);
@@ -272,10 +253,6 @@ window.initHeroParticles = (canvasId) => {
         resizeTimer = setTimeout(init, 200);
     });
 };
-
-// Record when the script loads so we can detect slow circuit connections
-// (used by triggerHeroEntrance to decide whether the entrance is still timely).
-window.__pageShown = performance.now();
 
 // === Microsoft Clarity analytics ===
 window.initClarity = (tagId) => {
