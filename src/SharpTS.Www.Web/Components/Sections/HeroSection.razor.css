@@ -222,12 +222,22 @@
     }
 }
 
-/* Accessibility: disable hero animation for reduced-motion users */
+/* Accessibility: disable hero animations for reduced-motion users */
 @media (prefers-reduced-motion: reduce) {
     .hero--animated .hero-enter {
         animation: none;
         opacity: 1;
         transform: translateY(0);
+    }
+
+    .hero__orb,
+    .hero__badge-dot {
+        animation: none;
+    }
+
+    /* Canvas particle loop is also skipped in JS; hide the element regardless. */
+    .hero__particles {
+        display: none;
     }
 }
 

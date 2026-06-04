@@ -162,19 +162,27 @@
             """)
     ];
 
+    private bool _highlightPending;
+
     protected override void OnInitialized() => _active = _examples[0];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        // Highlight on first render and after every tab switch. Running here —
+        // rather than after a guessed Task.Delay — guarantees the new tab's DOM
+        // is committed before Prism runs over it.
+        if (firstRender || _highlightPending)
+        {
+            _highlightPending = false;
             await JS.InvokeVoidAsync("highlightCode", _element);
+        }
     }
 
-    private async Task SetActive(Example example)
+    private void SetActive(Example example)
     {
         _active = example;
-        StateHasChanged();
-        await Task.Delay(10);
-        await JS.InvokeVoidAsync("highlightCode", _element);
+        _highlightPending = true;
+        // The click handler's automatic re-render triggers OnAfterRenderAsync,
+        // which performs the highlight once the new DOM is in place.
     }
 }

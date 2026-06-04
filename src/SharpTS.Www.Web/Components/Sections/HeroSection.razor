@@ -80,7 +80,9 @@ console.log(bot.greet(""Developer""));
         {
             await JS.InvokeVoidAsync("triggerHeroEntrance", "hero");
             await JS.InvokeVoidAsync("initHeroParticles", "hero-particles");
-            await JS.InvokeVoidAsync("initTypingEffect", "hero-typed-code");
+            // Re-highlight after Blazor reconciles the prerendered DOM, which
+            // would otherwise strip Prism's markup back to plain text.
+            await JS.InvokeVoidAsync("highlightById", "hero-typed-code");
         }
     }
 }

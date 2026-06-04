@@ -1,4 +1,5 @@
 @inject IJSRuntime JS
+@implements IDisposable
 
 <header class="nav @(_scrolled ? "nav--scrolled" : "")" @ref="_headerEl">
     <div class="container nav__inner">
@@ -56,7 +57,7 @@
 
     private async Task ScrollToTop()
     {
-        await JS.InvokeVoidAsync("eval", "window.scrollTo({top:0,behavior:'smooth'})");
+        await JS.InvokeVoidAsync("scrollToTop");
         _menuOpen = false;
     }
 
