@@ -29,27 +29,32 @@ window.highlightAll = () => {
     }
 };
 
+// === Smooth scroll to top ===
+window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
 // === Sticky navbar scroll detection ===
 window.initNavScroll = (dotNetRef) => {
     let lastState = false;
-    const check = () => {
+    const handler = () => {
         const scrolled = window.scrollY > 20;
         if (scrolled !== lastState) {
             lastState = scrolled;
-            dotNetRef.invokeMethodAsync('OnScrollStateChanged', scrolled);
+            // If the component/circuit is gone the invoke rejects — self-clean
+            // the listener so it doesn't leak for the life of the page.
+            dotNetRef.invokeMethodAsync('OnScrollStateChanged', scrolled)
+                .catch(() => window.removeEventListener('scroll', handler));
         }
     };
-    window.addEventListener('scroll', check, { passive: true });
-    check();
+    window.addEventListener('scroll', handler, { passive: true });
+    handler();
 };
 
-// === Hero entrance trigger (prerender guard) ===
-window.triggerHeroEntrance = (heroId) => {
-    const hero = document.getElementById(heroId);
-    if (!hero) return;
-    requestAnimationFrame(() => {
-        hero.classList.add('hero--animated');
-    });
+// === Highlight a single code element by id ===
+window.highlightById = (id) => {
+    const el = document.getElementById(id);
+    if (el && window.Prism) {
+        Prism.highlightElement(el);
+    }
 };
 
 // === Scroll reveal animations with stagger ===
@@ -83,6 +88,15 @@ window.triggerHeroEntrance = (heroId) => {
         rootMargin: '50px 0px -20px 0px'  // generous top margin so above-fold items trigger
     });
 
+    // Coalesce re-scans: the body-wide observer can fire on unrelated mutations
+    // (e.g. every CodeMirror keystroke), so collapse work into one per frame.
+    let observeScheduled = false;
+    const scheduleObserve = () => {
+        if (observeScheduled) return;
+        observeScheduled = true;
+        requestAnimationFrame(() => { observeScheduled = false; observeAll(); });
+    };
+
     // Watch for Blazor dynamically adding elements
     // When Blazor reconciles prerendered DOM, newly-observed .reveal elements
     // that are already in the viewport get .visible immediately (no transition)
@@ -107,7 +121,7 @@ window.triggerHeroEntrance = (heroId) => {
                 }
             }
         }
-        observeAll();
+        scheduleObserve();
     });
 
     mutationObserver.observe(document.body, { childList: true, subtree: true });
@@ -128,8 +142,15 @@ window.initHeroParticles = (canvasId) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
+    // Respect reduced-motion: skip the perpetual canvas animation entirely.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        canvas.style.display = 'none';
+        return;
+    }
+
     const ctx = canvas.getContext('2d');
-    let animId;
+    let animId = null;
+    let running = false;
     let particles = [];
 
     const resize = () => {
@@ -189,14 +210,41 @@ window.initHeroParticles = (canvasId) => {
     };
 
     const animate = () => {
+        if (!running) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
         drawConnections();
         animId = requestAnimationFrame(animate);
     };
 
+    const start = () => {
+        if (running) return;
+        running = true;
+        animId = requestAnimationFrame(animate);
+    };
+
+    const stop = () => {
+        running = false;
+        if (animId) { cancelAnimationFrame(animId); animId = null; }
+    };
+
     init();
-    animate();
+    start();
+
+    // Pause when the hero scrolls out of view (no point animating off-screen).
+    const visibility = new IntersectionObserver((entries) => {
+        entries.forEach(e => e.isIntersecting ? start() : stop());
+    }, { threshold: 0 });
+    visibility.observe(canvas);
+
+    // Pause when the tab is backgrounded.
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stop();
+        } else if (canvas.getBoundingClientRect().top < window.innerHeight) {
+            start();
+        }
+    });
 
     // Debounced resize
     let resizeTimer;
@@ -204,52 +252,6 @@ window.initHeroParticles = (canvasId) => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(init, 200);
     });
-};
-
-// === Typing effect for hero code ===
-// Record when the script loads so we can detect slow circuit connections
-window.__pageShown = performance.now();
-
-window.initTypingEffect = (elementId) => {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-
-    const fullText = el.textContent || '';
-
-    // If >1s has elapsed and element already has text (prerender scenario),
-    // skip typing animation and just apply syntax highlighting
-    const elapsed = performance.now() - window.__pageShown;
-    if (elapsed > 1000 && fullText.trim().length > 0) {
-        if (window.Prism) {
-            Prism.highlightElement(el);
-        }
-        return;
-    }
-
-    el.textContent = '';
-    el.style.minHeight = '300px';
-
-    let index = 0;
-    const speed = 18; // ms per character
-
-    const type = () => {
-        if (index < fullText.length) {
-            // Add characters in small bursts for speed
-            const burst = Math.min(3, fullText.length - index);
-            el.textContent += fullText.substring(index, index + burst);
-            index += burst;
-            setTimeout(type, speed);
-        } else {
-            // Done typing, apply syntax highlighting
-            el.style.minHeight = '';
-            if (window.Prism) {
-                Prism.highlightElement(el);
-            }
-        }
-    };
-
-    // Start after a small delay to let the page settle
-    setTimeout(type, 400);
 };
 
 // === Microsoft Clarity analytics ===

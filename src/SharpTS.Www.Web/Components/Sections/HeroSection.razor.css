@@ -194,22 +194,25 @@
 .hero__code-dot--yellow { background: #febc2e; }
 .hero__code-dot--green { background: #28c840; }
 
-/* Hero entrance animation — visible by default (prerender), animated via JS guard */
+/* Hero entrance animation — pure CSS, plays once on first paint.
+   Resting state is opacity:0, applied via render-blocking head CSS so it's in
+   effect before the first paint (no flash-of-visible-then-hidden). The
+   animation fades each element in with a stagger and holds the final state via
+   `both`. There is deliberately no JS and no circuit-timing gate: this runs
+   against the prerendered DOM and does not depend on when — or whether — the
+   Blazor circuit connects. Because the resting state is invisible, even a
+   spurious re-render that restarts the animation just re-fades in; it can never
+   produce a hide-then-show flash. */
 .hero-enter {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* When JS adds .hero--animated, gate the entrance animation */
-.hero--animated .hero-enter {
+    opacity: 0;
     animation: heroFadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-.hero--animated .hero-enter--1 { animation-delay: 0.1s; }
-.hero--animated .hero-enter--2 { animation-delay: 0.25s; }
-.hero--animated .hero-enter--3 { animation-delay: 0.4s; }
-.hero--animated .hero-enter--4 { animation-delay: 0.55s; }
-.hero--animated .hero-enter--5 { animation-delay: 0.7s; }
+.hero-enter--1 { animation-delay: 0.1s; }
+.hero-enter--2 { animation-delay: 0.25s; }
+.hero-enter--3 { animation-delay: 0.4s; }
+.hero-enter--4 { animation-delay: 0.55s; }
+.hero-enter--5 { animation-delay: 0.7s; }
 
 @keyframes heroFadeIn {
     from {
@@ -222,12 +225,22 @@
     }
 }
 
-/* Accessibility: disable hero animation for reduced-motion users */
+/* Accessibility: disable hero animations for reduced-motion users */
 @media (prefers-reduced-motion: reduce) {
-    .hero--animated .hero-enter {
+    .hero-enter {
         animation: none;
         opacity: 1;
         transform: translateY(0);
+    }
+
+    .hero__orb,
+    .hero__badge-dot {
+        animation: none;
+    }
+
+    /* Canvas particle loop is also skipped in JS; hide the element regardless. */
+    .hero__particles {
+        display: none;
     }
 }
 
