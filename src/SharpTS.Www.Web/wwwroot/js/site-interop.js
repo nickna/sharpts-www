@@ -334,3 +334,23 @@ window.disposeCodeMirror = (elementId) => {
         delete window.cmInstances[elementId];
     }
 };
+
+// === Language selector: close the native <details> menu on outside-click / Escape ===
+// Document-level delegation so it keeps working across Blazor re-renders without per-component
+// interop. Clicking the summary still toggles natively; we only close *other* open selectors.
+(function () {
+    const closeExcept = (keep) => {
+        document.querySelectorAll('details.lang-selector[open]').forEach(d => {
+            if (d !== keep) d.removeAttribute('open');
+        });
+    };
+
+    document.addEventListener('click', (e) => {
+        const target = e.target instanceof Element ? e.target : null;
+        closeExcept(target ? target.closest('details.lang-selector') : null);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeExcept(null);
+    });
+})();

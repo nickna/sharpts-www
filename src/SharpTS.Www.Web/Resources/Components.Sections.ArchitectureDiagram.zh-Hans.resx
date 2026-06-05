@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>工作原理</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>从源代码到执行的多阶段流水线</value>
+  </data>
+  <data name="Label_Source" xml:space="preserve">
+    <value>源代码</value>
+  </data>
+  <data name="Label_Lexer" xml:space="preserve">
+    <value>词法分析器</value>
+  </data>
+  <data name="Detail_Lexer" xml:space="preserve">
+    <value>分词</value>
+  </data>
+  <data name="Label_Parser" xml:space="preserve">
+    <value>解析器</value>
+  </data>
+  <data name="Detail_Parser" xml:space="preserve">
+    <value>生成 AST</value>
+  </data>
+  <data name="Label_TypeChecker" xml:space="preserve">
+    <value>类型检查器</value>
+  </data>
+  <data name="Detail_TypeChecker" xml:space="preserve">
+    <value>静态分析</value>
+  </data>
+  <data name="Label_Interpreter" xml:space="preserve">
+    <value>解释器</value>
+  </data>
+  <data name="Detail_Interpreter" xml:space="preserve">
+    <value>树遍历</value>
+  </data>
+  <data name="Label_Output" xml:space="preserve">
+    <value>输出</value>
+  </data>
+  <data name="Label_ILCompiler" xml:space="preserve">
+    <value>IL 编译器</value>
+  </data>
+  <data name="Detail_ILCompiler" xml:space="preserve">
+    <value>AOT 编译</value>
+  </data>
+  <data name="Label_DotNetAssembly" xml:space="preserve">
+    <value>.NET 程序集</value>
+  </data>
+</root>

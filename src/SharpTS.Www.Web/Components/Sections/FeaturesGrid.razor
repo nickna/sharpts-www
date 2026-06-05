@@ -1,7 +1,9 @@
+@inject IStringLocalizer<FeaturesGrid> L
+
 <section class="section">
     <div class="container">
-        <h2 class="section-title reveal">What SharpTS Does</h2>
-        <p class="section-subtitle reveal">A complete TypeScript runtime and compiler built entirely in C#</p>
+        <h2 class="section-title reveal">@L["Title"]</h2>
+        <p class="section-subtitle reveal">@L["Subtitle"]</p>
 
         <div class="features-grid">
             <div class="card feature-card reveal">
@@ -11,8 +13,8 @@
                         <line x1="12" y1="19" x2="20" y2="19"></line>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">Interpret</h3>
-                <p class="feature-card__desc">Tree-walking execution with instant startup. Perfect for scripting, REPL sessions, and rapid prototyping.</p>
+                <h3 class="feature-card__title">@L["Card1_Title"]</h3>
+                <p class="feature-card__desc">@L["Card1_Desc"]</p>
             </div>
 
             <div class="card feature-card reveal">
@@ -23,8 +25,8 @@
                         <path d="M2 12l10 5 10-5"></path>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">Compile</h3>
-                <p class="feature-card__desc">AOT compilation to standalone .NET assemblies. Ship native binaries with full .NET performance.</p>
+                <h3 class="feature-card__title">@L["Card2_Title"]</h3>
+                <p class="feature-card__desc">@L["Card2_Desc"]</p>
             </div>
 
             <div class="card feature-card reveal">
@@ -35,8 +37,8 @@
                         <line x1="10" y1="14" x2="21" y2="3"></line>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">.NET Interop</h3>
-                <p class="feature-card__desc">Access .NET BCL types directly via <code>@@DotNetType</code> decorators. Bridge TypeScript and C# seamlessly.</p>
+                <h3 class="feature-card__title">@L["Card3_Title"]</h3>
+                <p class="feature-card__desc">@((MarkupString)L["Card3_Desc"].Value)</p>
             </div>
 
             <div class="card feature-card reveal">
@@ -46,8 +48,8 @@
                         <polyline points="8 6 2 12 8 18"></polyline>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">Full TypeScript</h3>
-                <p class="feature-card__desc">Types, generics, classes, interfaces, modules, decorators, mapped types, conditional types, and more.</p>
+                <h3 class="feature-card__title">@L["Card4_Title"]</h3>
+                <p class="feature-card__desc">@L["Card4_Desc"]</p>
             </div>
 
             <div class="card feature-card reveal">
@@ -57,8 +59,8 @@
                         <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">Async & Generators</h3>
-                <p class="feature-card__desc">Full async/await support, Promise combinators, generator functions, and async iterators.</p>
+                <h3 class="feature-card__title">@L["Card5_Title"]</h3>
+                <p class="feature-card__desc">@L["Card5_Desc"]</p>
             </div>
 
             <div class="card feature-card reveal">
@@ -69,8 +71,8 @@
                         <line x1="12" y1="22.08" x2="12" y2="12"></line>
                     </svg>
                 </div>
-                <h3 class="feature-card__title">Module System</h3>
-                <p class="feature-card__desc">ES6 imports/exports, namespaces, dynamic imports, re-exports, and CommonJS interop.</p>
+                <h3 class="feature-card__title">@L["Card6_Title"]</h3>
+                <p class="feature-card__desc">@L["Card6_Desc"]</p>
             </div>
         </div>
     </div>

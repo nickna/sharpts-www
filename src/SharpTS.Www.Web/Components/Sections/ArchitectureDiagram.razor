@@ -1,14 +1,16 @@
+@inject IStringLocalizer<ArchitectureDiagram> L
+
 <section class="section">
     <div class="container">
-        <h2 class="section-title reveal">How It Works</h2>
-        <p class="section-subtitle reveal">A multi-stage pipeline from source to execution</p>
+        <h2 class="section-title reveal">@L["Title"]</h2>
+        <p class="section-subtitle reveal">@L["Subtitle"]</p>
 
         <div class="architecture reveal">
             <div class="pipeline">
                 <div class="pipeline__step">
                     <div class="pipeline__box pipeline__box--input">
                         <span class="pipeline__icon">📄</span>
-                        <span class="pipeline__label">Source</span>
+                        <span class="pipeline__label">@L["Label_Source"]</span>
                     </div>
                     <div class="pipeline__arrow"></div>
                 </div>
@@ -16,8 +18,8 @@
                 <div class="pipeline__step">
                     <div class="pipeline__box">
                         <span class="pipeline__icon">🔤</span>
-                        <span class="pipeline__label">Lexer</span>
-                        <span class="pipeline__detail">Tokenization</span>
+                        <span class="pipeline__label">@L["Label_Lexer"]</span>
+                        <span class="pipeline__detail">@L["Detail_Lexer"]</span>
                     </div>
                     <div class="pipeline__arrow"></div>
                 </div>
@@ -25,8 +27,8 @@
                 <div class="pipeline__step">
                     <div class="pipeline__box">
                         <span class="pipeline__icon">🌳</span>
-                        <span class="pipeline__label">Parser</span>
-                        <span class="pipeline__detail">AST Generation</span>
+                        <span class="pipeline__label">@L["Label_Parser"]</span>
+                        <span class="pipeline__detail">@L["Detail_Parser"]</span>
                     </div>
                     <div class="pipeline__arrow"></div>
                 </div>
@@ -34,8 +36,8 @@
                 <div class="pipeline__step">
                     <div class="pipeline__box pipeline__box--accent">
                         <span class="pipeline__icon">🔍</span>
-                        <span class="pipeline__label">TypeChecker</span>
-                        <span class="pipeline__detail">Static Analysis</span>
+                        <span class="pipeline__label">@L["Label_TypeChecker"]</span>
+                        <span class="pipeline__detail">@L["Detail_TypeChecker"]</span>
                     </div>
                     <div class="pipeline__arrow pipeline__arrow--fork"></div>
                 </div>
@@ -46,12 +48,12 @@
                     <div class="pipeline__branch-arrow pipeline__branch-arrow--top"></div>
                     <div class="pipeline__box pipeline__box--interpret">
                         <span class="pipeline__icon">▶️</span>
-                        <span class="pipeline__label">Interpreter</span>
-                        <span class="pipeline__detail">Tree-walking</span>
+                        <span class="pipeline__label">@L["Label_Interpreter"]</span>
+                        <span class="pipeline__detail">@L["Detail_Interpreter"]</span>
                     </div>
                     <div class="pipeline__arrow"></div>
                     <div class="pipeline__box pipeline__box--output">
-                        <span class="pipeline__label">Output</span>
+                        <span class="pipeline__label">@L["Label_Output"]</span>
                     </div>
                 </div>
 
@@ -59,12 +61,12 @@
                     <div class="pipeline__branch-arrow pipeline__branch-arrow--bottom"></div>
                     <div class="pipeline__box pipeline__box--compile">
                         <span class="pipeline__icon">⚙️</span>
-                        <span class="pipeline__label">IL Compiler</span>
-                        <span class="pipeline__detail">AOT Compilation</span>
+                        <span class="pipeline__label">@L["Label_ILCompiler"]</span>
+                        <span class="pipeline__detail">@L["Detail_ILCompiler"]</span>
                     </div>
                     <div class="pipeline__arrow"></div>
                     <div class="pipeline__box pipeline__box--output">
-                        <span class="pipeline__label">.NET Assembly</span>
+                        <span class="pipeline__label">@L["Label_DotNetAssembly"]</span>
                     </div>
                 </div>
             </div>

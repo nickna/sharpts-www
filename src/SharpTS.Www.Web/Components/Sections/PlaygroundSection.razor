@@ -1,16 +1,17 @@
 @inject PlaygroundApiClient Api
 @inject IJSRuntime JS
+@inject IStringLocalizer<PlaygroundSection> L
 
 <section class="section" id="playground">
     <div class="container">
-        <h2 class="section-title reveal">Interactive Playground</h2>
-        <p class="section-subtitle reveal">Write TypeScript and run it on .NET — right in your browser</p>
+        <h2 class="section-title reveal">@L["Title"]</h2>
+        <p class="section-subtitle reveal">@L["Subtitle"]</p>
 
         <div class="playground reveal">
             <div class="playground__toolbar">
                 <div class="playground__toolbar-left">
                     <select class="playground__preset" @onchange="OnPresetChanged">
-                        <option value="">Select a preset...</option>
+                        <option value="">@L["SelectPreset"]</option>
                         @foreach (var preset in _presets)
                         {
                             <option value="@preset.Name">@preset.Name</option>
@@ -18,7 +19,7 @@
                     </select>
                 </div>
                 <div class="playground__toolbar-right">
-                    <button class="btn btn-sm btn-secondary" @onclick="ClearOutput">Clear</button>
+                    <button class="btn btn-sm btn-secondary" @onclick="ClearOutput">@L["Clear"]</button>
                     <button id="playground-run-btn"
                             class="btn btn-sm btn-primary"
                             @onclick="RunCode"
@@ -26,15 +27,15 @@
                         @if (_running)
                         {
                             <span class="playground__spinner"></span>
-                            <span>Running...</span>
+                            <span>@L["Running"]</span>
                         }
                         else
                         {
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
                             </svg>
-                            <span>Run</span>
-                            <kbd class="playground__kbd">Ctrl+Enter</kbd>
+                            <span>@L["Run"]</span>
+                            <kbd class="playground__kbd">@L["RunShortcut"]</kbd>
                         }
                     </button>
                 </div>
@@ -46,7 +47,7 @@
                 </div>
                 <div class="playground__output">
                     <div class="playground__output-header">
-                        <span>Output</span>
+                        <span>@L["Output"]</span>
                         @if (_executionTime.HasValue)
                         {
                             <span class="playground__timing">@(_executionTime)ms</span>
@@ -68,7 +69,7 @@
                         }
                         @if (string.IsNullOrEmpty(_output) && _errors.Count == 0 && !_running)
                         {
-                            <span class="playground__placeholder">Click Run or press Ctrl+Enter to execute</span>
+                            <span class="playground__placeholder">@L["Placeholder"]</span>
                         }
                     </div>
                 </div>
@@ -85,22 +86,7 @@
     private long? _executionTime;
     private bool _editorReady;
 
-    private const string _defaultCode = """
-        // Welcome to the SharpTS Playground!
-        // Write TypeScript and click Run (or Ctrl+Enter)
-
-        interface Person {
-            name: string;
-            age: number;
-        }
-
-        function greet(person: Person): string {
-            return `Hello, ${person.name}! You are ${person.age} years old.`;
-        }
-
-        const developer: Person = { name: "World", age: 1 };
-        console.log(greet(developer));
-        """;
+    private string DefaultCode => L["DefaultCode"];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -118,7 +104,7 @@
 
             try
             {
-                _editorReady = await JS.InvokeAsync<bool>("createCodeMirror", "playground-editor", _defaultCode);
+                _editorReady = await JS.InvokeAsync<bool>("createCodeMirror", "playground-editor", DefaultCode);
             }
             catch
             {

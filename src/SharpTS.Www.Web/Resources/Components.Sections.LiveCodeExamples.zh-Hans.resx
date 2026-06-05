@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>实际体验</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>真实的 TypeScript 运行在 .NET 运行时上</value>
+  </data>
+  <data name="Output" xml:space="preserve">
+    <value>输出</value>
+  </data>
+  <data name="Ex1_Title" xml:space="preserve">
+    <value>你好，世界</value>
+  </data>
+  <data name="Ex2_Title" xml:space="preserve">
+    <value>类与泛型</value>
+  </data>
+  <data name="Ex3_Title" xml:space="preserve">
+    <value>异步/等待</value>
+  </data>
+  <data name="Ex4_Title" xml:space="preserve">
+    <value>函数式</value>
+  </data>
+  <data name="Ex5_Title" xml:space="preserve">
+    <value>.NET 互操作</value>
+  </data>
+  <data name="Ex1_Code" xml:space="preserve">
+    <value>const greeting: string = &quot;Hello from SharpTS!&quot;;
+const version: number = 1.0;
+console.log(`${greeting} v${version}`);
+
+const languages = [&quot;TypeScript&quot;, &quot;C#&quot;, &quot;.NET&quot;];
+languages.forEach(lang =&gt; console.log(`  ✓ ${lang}`));</value>
+  </data>
+  <data name="Ex2_Code" xml:space="preserve">
+    <value>interface Comparable&lt;T&gt; {
+    compareTo(other: T): number;
+}
+
+class Temperature implements Comparable&lt;Temperature&gt; {
+    constructor(private celsius: number) {}
+
+    get fahrenheit(): number {
+        return this.celsius * 9 / 5 + 32;
+    }
+
+    compareTo(other: Temperature): number {
+        return this.celsius - other.celsius;
+    }
+
+    toString(): string {
+        return `${this.celsius}°C (${this.fahrenheit}°F)`;
+    }
+}
+
+const temps = [new Temperature(100), new Temperature(0), new Temperature(37)];
+temps.sort((a, b) =&gt; a.compareTo(b));
+temps.forEach(t =&gt; console.log(t.toString()));</value>
+  </data>
+  <data name="Ex3_Code" xml:space="preserve">
+    <value>async function delay(ms: number): Promise&lt;string&gt; {
+    return `Done after ${ms}ms`;
+}
+
+async function main() {
+    const result = await delay(100);
+    console.log(result);
+
+    const all = await Promise.all([
+        delay(50), delay(100), delay(150)
+    ]);
+    all.forEach(r =&gt; console.log(r));
+}
+
+main();</value>
+  </data>
+  <data name="Ex4_Code" xml:space="preserve">
+    <value>const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+const result = data
+    .filter(n =&gt; n % 2 === 0)
+    .map(n =&gt; n ** 2)
+    .reduce((sum, n) =&gt; sum + n, 0);
+
+console.log(`Sum of squares of evens: ${result}`);
+
+// 解构
+const [first, second, ...rest] = data;
+console.log(`First: ${first}, Second: ${second}`);
+console.log(`Rest: [${rest.join(&quot;, &quot;)}]`);</value>
+  </data>
+  <data name="Ex5_Code" xml:space="preserve">
+    <value>// 数学运算（由 System.Math 支持）
+console.log(`PI = ${Math.PI}`);
+console.log(`E  = ${Math.E}`);
+console.log(`sqrt(144) = ${Math.sqrt(144)}`);
+
+// 日期（由 System.DateTime 支持）
+const now = new Date();
+console.log(`ISO: ${now.toISOString()}`);
+
+// JSON 往返转换
+const obj = { name: &quot;SharpTS&quot;, nums: [1, 2, 3] };
+const json = JSON.stringify(obj);
+console.log(`JSON: ${json}`);</value>
+  </data>
+</root>

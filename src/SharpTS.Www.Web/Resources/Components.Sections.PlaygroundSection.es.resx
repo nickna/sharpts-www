@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Entorno de pruebas interactivo</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Escribe TypeScript y ejecútalo en .NET, directamente en tu navegador</value>
+  </data>
+  <data name="SelectPreset" xml:space="preserve">
+    <value>Selecciona un ejemplo…</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Ejecutando…</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Ejecutar</value>
+  </data>
+  <data name="RunShortcut" xml:space="preserve">
+    <value>Ctrl+Enter</value>
+  </data>
+  <data name="Output" xml:space="preserve">
+    <value>Salida</value>
+  </data>
+  <data name="Placeholder" xml:space="preserve">
+    <value>Haz clic en Ejecutar o pulsa Ctrl+Entrar para ejecutar</value>
+  </data>
+  <data name="DefaultCode" xml:space="preserve">
+    <value>// ¡Bienvenido al entorno de pruebas de SharpTS!
+// Escribe TypeScript y haz clic en Ejecutar (o Ctrl+Entrar)
+
+interface Person {
+    name: string;
+    age: number;
+}
+
+function greet(person: Person): string {
+    return `Hello, ${person.name}! You are ${person.age} years old.`;
+}
+
+const developer: Person = { name: &quot;World&quot;, age: 1 };
+console.log(greet(developer));</value>
+  </data>
+</root>

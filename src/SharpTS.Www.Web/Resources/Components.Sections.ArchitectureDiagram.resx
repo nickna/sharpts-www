@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>How It Works</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>A multi-stage pipeline from source to execution</value>
+  </data>
+  <data name="Label_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Label_Lexer" xml:space="preserve">
+    <value>Lexer</value>
+  </data>
+  <data name="Detail_Lexer" xml:space="preserve">
+    <value>Tokenization</value>
+  </data>
+  <data name="Label_Parser" xml:space="preserve">
+    <value>Parser</value>
+  </data>
+  <data name="Detail_Parser" xml:space="preserve">
+    <value>AST Generation</value>
+  </data>
+  <data name="Label_TypeChecker" xml:space="preserve">
+    <value>TypeChecker</value>
+  </data>
+  <data name="Detail_TypeChecker" xml:space="preserve">
+    <value>Static Analysis</value>
+  </data>
+  <data name="Label_Interpreter" xml:space="preserve">
+    <value>Interpreter</value>
+  </data>
+  <data name="Detail_Interpreter" xml:space="preserve">
+    <value>Tree-walking</value>
+  </data>
+  <data name="Label_Output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="Label_ILCompiler" xml:space="preserve">
+    <value>IL Compiler</value>
+  </data>
+  <data name="Detail_ILCompiler" xml:space="preserve">
+    <value>AOT Compilation</value>
+  </data>
+  <data name="Label_DotNetAssembly" xml:space="preserve">
+    <value>.NET Assembly</value>
+  </data>
+</root>
