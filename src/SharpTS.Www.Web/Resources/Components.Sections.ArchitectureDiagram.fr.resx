@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Comment ça marche</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Un pipeline multi-étapes, de la source à l&apos;exécution</value>
+  </data>
+  <data name="Label_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Label_Lexer" xml:space="preserve">
+    <value>Lexer</value>
+  </data>
+  <data name="Detail_Lexer" xml:space="preserve">
+    <value>Tokenisation</value>
+  </data>
+  <data name="Label_Parser" xml:space="preserve">
+    <value>Analyseur</value>
+  </data>
+  <data name="Detail_Parser" xml:space="preserve">
+    <value>Génération de l&apos;AST</value>
+  </data>
+  <data name="Label_TypeChecker" xml:space="preserve">
+    <value>Vérificateur de types</value>
+  </data>
+  <data name="Detail_TypeChecker" xml:space="preserve">
+    <value>Analyse statique</value>
+  </data>
+  <data name="Label_Interpreter" xml:space="preserve">
+    <value>Interpréteur</value>
+  </data>
+  <data name="Detail_Interpreter" xml:space="preserve">
+    <value>Parcours d&apos;arbre</value>
+  </data>
+  <data name="Label_Output" xml:space="preserve">
+    <value>Sortie</value>
+  </data>
+  <data name="Label_ILCompiler" xml:space="preserve">
+    <value>Compilateur IL</value>
+  </data>
+  <data name="Detail_ILCompiler" xml:space="preserve">
+    <value>Compilation AOT</value>
+  </data>
+  <data name="Label_DotNetAssembly" xml:space="preserve">
+    <value>Assembly .NET</value>
+  </data>
+</root>

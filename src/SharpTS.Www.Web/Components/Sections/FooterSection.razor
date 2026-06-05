@@ -1,3 +1,5 @@
+@inject IStringLocalizer<FooterSection> L
+
 <footer class="footer">
     <div class="footer__gradient-border"></div>
 
@@ -7,36 +9,36 @@
                 <a href="#" class="footer__logo-link">
                     <span class="footer__logo-name">SharpTS</span>
                 </a>
-                <p class="footer__tagline">A TypeScript interpreter and AOT compiler built entirely in C# for the .NET runtime.</p>
+                <p class="footer__tagline">@L["Tagline"]</p>
             </div>
 
             <div class="footer__links">
                 <div class="footer__col">
-                    <h4 class="footer__col-title">Resources</h4>
+                    <h4 class="footer__col-title">@L["Col_Resources"]</h4>
                     <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener">GitHub</a>
-                    <a href="https://www.nuget.org/packages/SharpTS" target="_blank" rel="noopener">NuGet Package</a>
-                    <a href="https://github.com/nickna/SharpTS/blob/main/STATUS.md" target="_blank" rel="noopener">Implementation Status</a>
-                    <a href="https://github.com/nickna/SharpTS/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture Guide</a>
+                    <a href="https://www.nuget.org/packages/SharpTS" target="_blank" rel="noopener">@L["Link_NuGet"]</a>
+                    <a href="https://github.com/nickna/SharpTS/blob/main/STATUS.md" target="_blank" rel="noopener">@L["Link_Status"]</a>
+                    <a href="https://github.com/nickna/SharpTS/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">@L["Link_Architecture"]</a>
                 </div>
                 <div class="footer__col">
-                    <h4 class="footer__col-title">Community</h4>
-                    <a href="https://github.com/nickna/SharpTS/issues" target="_blank" rel="noopener">Report an Issue</a>
-                    <a href="https://github.com/nickna/SharpTS/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
-                    <a href="https://github.com/nickna/SharpTS/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+                    <h4 class="footer__col-title">@L["Col_Community"]</h4>
+                    <a href="https://github.com/nickna/SharpTS/issues" target="_blank" rel="noopener">@L["Link_ReportIssue"]</a>
+                    <a href="https://github.com/nickna/SharpTS/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">@L["Link_Contributing"]</a>
+                    <a href="https://github.com/nickna/SharpTS/blob/main/LICENSE" target="_blank" rel="noopener">@L["Link_License"]</a>
                 </div>
                 <div class="footer__col">
-                    <h4 class="footer__col-title">On This Page</h4>
-                    <a href="#features">Features</a>
-                    <a href="#examples">Code Examples</a>
-                    <a href="#playground">Playground</a>
-                    <a href="#get-started">Get Started</a>
+                    <h4 class="footer__col-title">@L["Col_OnThisPage"]</h4>
+                    <a href="#features">@L["Link_Features"]</a>
+                    <a href="#examples">@L["Link_CodeExamples"]</a>
+                    <a href="#playground">@L["Link_Playground"]</a>
+                    <a href="#get-started">@L["Link_GetStarted"]</a>
                 </div>
             </div>
         </div>
 
         <div class="footer__bottom">
             <p>&copy; 2026 <a href="https://github.com/nickna" target="_blank" rel="noopener">Nick Nassiri</a>.</p>
-            <p>Built with Blazor, .NET Aspire, and a lot of ☕</p>
+            <p>@L["BuiltWith"]</p>
         </div>
     </div>
 </footer>

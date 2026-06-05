@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Hero_Badge" xml:space="preserve">
+    <value>开源 — MIT 许可证</value>
+  </data>
+  <data name="Hero_Tagline" xml:space="preserve">
+    <value>面向 .NET 的 TypeScript 解释器和 AOT 编译器</value>
+  </data>
+  <data name="Hero_StarOnGitHub" xml:space="preserve">
+    <value>在 GitHub 上 Star</value>
+  </data>
+  <data name="Hero_Code" xml:space="preserve">
+    <value>// 直接在 .NET 上运行 TypeScript
+interface Greeter {
+    greet(name: string): string;
+}
+
+class WelcomeBot implements Greeter {
+    constructor(private prefix: string) {}
+
+    greet(name: string): string {
+        return `${this.prefix}, ${name}! Welcome to SharpTS.`;
+    }
+}
+
+const bot = new WelcomeBot(&quot;Hello&quot;);
+console.log(bot.greet(&quot;Developer&quot;));
+// → Hello, Developer! Welcome to SharpTS.</value>
+  </data>
+</root>

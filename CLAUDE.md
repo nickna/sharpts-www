@@ -18,9 +18,9 @@ Target framework is `net10.0` (see `Directory.Build.props`), orchestrated with *
 .\scripts\run.ps1      # Windows; bash equivalent: ./scripts/run.sh
 ```
 
-The script trusts the HTTPS dev cert, builds, and launches the Aspire AppHost. It prints an Aspire dashboard URL (with a login token) plus child-service URLs — open the **web** endpoint for the site. `Ctrl+C` stops everything.
+The script initializes the `lib/SharpTS` submodule if missing, trusts the HTTPS dev cert, builds, and launches the Aspire AppHost. It prints an Aspire dashboard URL (with a login token) plus child-service URLs — open the **web** endpoint for the site. `Ctrl+C` stops everything.
 
-Equivalent manual run: `dotnet run --project src/SharpTS.Www.AppHost`. For C# hot reload, `dotnet watch` on the AppHost. CSS/JS edits under `wwwroot` are picked up on browser refresh; `.razor`/C# changes need a rebuild.
+Equivalent manual run: `dotnet run --project src/SharpTS.Www.AppHost` (but first run `git submodule update --init --recursive` — the Worker has a project reference to `lib/SharpTS/SharpTS.csproj`, so a fresh clone fails the build with `MSB9008`/`CS0246 'SharpTS'` until the submodule is checked out; `run.ps1`/`run.sh` do this for you). For C# hot reload, `dotnet watch` on the AppHost. CSS/JS edits under `wwwroot` are picked up on browser refresh; `.razor`/C# changes need a rebuild.
 
 Build the whole solution: `dotnet build SharpTS.Www.slnx`.
 
@@ -62,6 +62,17 @@ The site is **Blazor Server with prerendering** (`InteractiveServerRenderMode(pr
 - JS-driven entrance animations and `IJSRuntime` calls only run from `OnAfterRenderAsync(firstRender)`, i.e. *after* the circuit connects. On slow connections this is well after the user sees prerendered content, so naive "play animation on connect" code re-flashes already-visible content. Guard timing-sensitive effects (see `wwwroot/js/site-interop.js`'s `__pageShown` elapsed check and `prefers-reduced-motion` handling).
 - Blazor reconciliation can strip JS/Prism DOM mutations made before the circuit attaches, so syntax highlighting is (re)applied from `OnAfterRenderAsync` rather than relying on Prism's auto-pass.
 - Component-scoped CSS lives in `*.razor.css`; global styles and design tokens are in `wwwroot/css/app.css` and `theme.css`.
+
+### Localization (i18n)
+
+The site ships in English (default), Simplified Chinese, French, Spanish, and German via the canonical ASP.NET Core stack: `IStringLocalizer<T>` backed by per-component `.resx` files under `Web/Resources/`. The supported set lives in one place — `Localization/SupportedCultures.cs` (`All`, `Default`, `Normalize`, `DisplayNames`, `OpenGraphLocale`). English is the **neutral** (unsuffixed) `.resx`; the other languages are satellite assemblies (`.<culture>.resx`).
+
+Key invariants — breaking any of these silently regresses localization (verify in a real browser, not just a passing build):
+
+- **Each language has a URL path prefix** (`/fr`, `/es`, `/de`, `/zh-Hans`); English is the bare `/`. `Home.razor` is `@page "/{culture?}"` and redirects unknown single-segment paths to `/`. Culture is resolved by `RequestLocalizationMiddleware` (providers, in order: `PathCultureProvider` → cookie → `Accept-Language`) set up in `Program.cs`.
+- **The culture cookie is what localizes the interactive circuit.** The SignalR circuit reconnects to `/_blazor` (no path prefix), so `CultureRedirectMiddleware` writes/refreshes the culture cookie on every prefixed page request. The middleware also auto-redirects `/` to the detected language. Without the cookie, prerender is translated but post-circuit interactive content reverts to the browser's `Accept-Language`.
+- **Language switching must `forceLoad`.** The selector (`Components/Shared/LanguageSelector.razor`) navigates to the `/set-culture?culture=…` minimal-API endpoint via `NavigateTo(forceLoad: true)`. A normal `<a>`/enhanced-nav click is intercepted by the interactive router and matched against the `{culture?}` route instead of hitting the server (it would bounce to `/` = English). `data-enhance-nav="false"` is **not** enough — that only governs enhanced navigation, not interactive-router link interception.
+- **Adding a user-facing string**: add the key to that component's `.resx` for **all five** cultures (`Component.resx` + four `Component.<culture>.resx`) and reference it via `@inject IStringLocalizer<TComponent> L` / `L["Key"]`. Components that build lists from localized strings (`LiveCodeExamples`, `FeatureComparison`) populate them in `OnInitialized` (the injected `L` isn't available in field initializers). Code-sample comments are localized; program *output* is left as the interpreter's literal stdout. `App.razor` owns `<html lang>`, the localized `<title>`/meta, `og:locale`, and the `hreflang` alternates.
 
 ## Deployment
 

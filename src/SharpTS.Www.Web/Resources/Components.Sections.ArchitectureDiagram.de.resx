@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>So funktioniert es</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Eine mehrstufige Pipeline vom Quellcode bis zur Ausführung</value>
+  </data>
+  <data name="Label_Source" xml:space="preserve">
+    <value>Quellcode</value>
+  </data>
+  <data name="Label_Lexer" xml:space="preserve">
+    <value>Lexer</value>
+  </data>
+  <data name="Detail_Lexer" xml:space="preserve">
+    <value>Tokenisierung</value>
+  </data>
+  <data name="Label_Parser" xml:space="preserve">
+    <value>Parser</value>
+  </data>
+  <data name="Detail_Parser" xml:space="preserve">
+    <value>AST-Erzeugung</value>
+  </data>
+  <data name="Label_TypeChecker" xml:space="preserve">
+    <value>Typprüfer</value>
+  </data>
+  <data name="Detail_TypeChecker" xml:space="preserve">
+    <value>Statische Analyse</value>
+  </data>
+  <data name="Label_Interpreter" xml:space="preserve">
+    <value>Interpreter</value>
+  </data>
+  <data name="Detail_Interpreter" xml:space="preserve">
+    <value>Baumdurchlauf</value>
+  </data>
+  <data name="Label_Output" xml:space="preserve">
+    <value>Ausgabe</value>
+  </data>
+  <data name="Label_ILCompiler" xml:space="preserve">
+    <value>IL-Compiler</value>
+  </data>
+  <data name="Detail_ILCompiler" xml:space="preserve">
+    <value>AOT-Kompilierung</value>
+  </data>
+  <data name="Label_DotNetAssembly" xml:space="preserve">
+    <value>.NET-Assembly</value>
+  </data>
+</root>

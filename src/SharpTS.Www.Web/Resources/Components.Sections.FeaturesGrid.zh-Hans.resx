@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>SharpTS 能做什么</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>完全用 C# 构建的完整 TypeScript 运行时和编译器</value>
+  </data>
+  <data name="Card1_Title" xml:space="preserve">
+    <value>解释执行</value>
+  </data>
+  <data name="Card1_Desc" xml:space="preserve">
+    <value>树遍历执行，瞬间启动。非常适合脚本编写、REPL 会话和快速原型设计。</value>
+  </data>
+  <data name="Card2_Title" xml:space="preserve">
+    <value>编译</value>
+  </data>
+  <data name="Card2_Desc" xml:space="preserve">
+    <value>AOT 编译为独立的 .NET 程序集。以完整的 .NET 性能交付原生二进制文件。</value>
+  </data>
+  <data name="Card3_Title" xml:space="preserve">
+    <value>.NET 互操作</value>
+  </data>
+  <data name="Card3_Desc" xml:space="preserve">
+    <value>通过 &lt;code&gt;@DotNetType&lt;/code&gt; 装饰器直接访问 .NET BCL 类型。无缝衔接 TypeScript 和 C#。</value>
+  </data>
+  <data name="Card4_Title" xml:space="preserve">
+    <value>完整的 TypeScript</value>
+  </data>
+  <data name="Card4_Desc" xml:space="preserve">
+    <value>类型、泛型、类、接口、模块、装饰器、映射类型、条件类型等等。</value>
+  </data>
+  <data name="Card5_Title" xml:space="preserve">
+    <value>异步与生成器</value>
+  </data>
+  <data name="Card5_Desc" xml:space="preserve">
+    <value>完整的 async/await 支持、Promise 组合器、生成器函数和异步迭代器。</value>
+  </data>
+  <data name="Card6_Title" xml:space="preserve">
+    <value>模块系统</value>
+  </data>
+  <data name="Card6_Desc" xml:space="preserve">
+    <value>ES6 导入/导出、命名空间、动态导入、重新导出以及 CommonJS 互操作。</value>
+  </data>
+</root>

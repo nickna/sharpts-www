@@ -1,6 +1,8 @@
-@page "/"
+@page "/{culture?}"
+@inject IStringLocalizer<App> L
+@inject NavigationManager Nav
 
-<PageTitle>SharpTS — TypeScript for .NET</PageTitle>
+<PageTitle>@L["Meta_Title"]</PageTitle>
 
 <main class="landing">
     <HeroSection />
@@ -20,3 +22,18 @@
     </div>
     <FooterSection />
 </main>
+
+@code {
+    // Captures the optional language prefix (e.g. /fr). The request culture itself is
+    // already resolved by the localization middleware; this only guards against arbitrary
+    // single-segment paths so the one-page site doesn't render for /not-a-language.
+    [Parameter] public string? Culture { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Culture is not null && !SupportedCultures.IsSupported(Culture))
+        {
+            Nav.NavigateTo("/", replace: true);
+        }
+    }
+}

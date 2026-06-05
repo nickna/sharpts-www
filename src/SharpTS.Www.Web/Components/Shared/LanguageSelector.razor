@@ -1,0 +1,61 @@
+@using System.Globalization
+@inject IStringLocalizer<LanguageSelector> L
+@inject NavigationManager Nav
+
+@* Native <details> disclosure: works during prerender before the SignalR circuit attaches
+   (no JS needed). The items are real <a href> links (accessible, crawlable, and they work
+   pre-circuit via a normal browser GET). Once the circuit is connected, Blazor's interactive
+   router would otherwise intercept the click and route /set-culture client-side as if it were
+   the Home "{culture?}" route — so we cancel that (@onclick:preventDefault) and force a full
+   browser navigation via NavigateTo(forceLoad: true). A full load is required anyway: the new
+   culture must flow into a fresh prerender AND a fresh interactive circuit. *@
+<details class="lang-selector">
+    <summary class="lang-selector__button" title="@L["ChangeLanguage"]" aria-label="@L["ChangeLanguage"]">
+        <svg class="lang-selector__globe" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+        <span class="lang-selector__current">@CurrentDisplayName</span>
+        <svg class="lang-selector__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    </summary>
+    <ul class="lang-selector__menu" role="listbox" aria-label="@L["ChangeLanguage"]">
+        @foreach (var culture in SupportedCultures.All)
+        {
+            var isCurrent = culture == Current;
+            <li role="option" aria-selected="@isCurrent">
+                <a class="lang-selector__item @(isCurrent ? "lang-selector__item--active" : "")"
+                   href="@($"/set-culture?culture={culture}")" hreflang="@culture"
+                   @onclick="() => SwitchTo(culture)" @onclick:preventDefault>
+                    <span class="lang-selector__check" aria-hidden="true">
+                        @if (isCurrent)
+                        {
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        }
+                    </span>
+                    @SupportedCultures.DisplayNames[culture]
+                </a>
+            </li>
+        }
+    </ul>
+</details>
+
+@code {
+    private static string Current =>
+        SupportedCultures.Normalize(CultureInfo.CurrentCulture.Name) ?? SupportedCultures.Default;
+
+    private static string CurrentDisplayName => SupportedCultures.DisplayNames[Current];
+
+    // forceLoad: true bypasses the interactive router so the request actually reaches the
+    // server's /set-culture endpoint (which sets the culture cookie and redirects to the
+    // localized home), rather than being handled client-side as a Home route navigation.
+    private void SwitchTo(string culture) =>
+        Nav.NavigateTo($"/set-culture?culture={culture}", forceLoad: true);
+}

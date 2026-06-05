@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Qué hace SharpTS</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Un runtime y compilador de TypeScript completo, creado enteramente en C#</value>
+  </data>
+  <data name="Card1_Title" xml:space="preserve">
+    <value>Interpretar</value>
+  </data>
+  <data name="Card1_Desc" xml:space="preserve">
+    <value>Ejecución por recorrido de árbol con inicio instantáneo. Perfecto para scripting, sesiones REPL y creación rápida de prototipos.</value>
+  </data>
+  <data name="Card2_Title" xml:space="preserve">
+    <value>Compilar</value>
+  </data>
+  <data name="Card2_Desc" xml:space="preserve">
+    <value>Compilación AOT a ensamblados .NET independientes. Distribuye binarios nativos con todo el rendimiento de .NET.</value>
+  </data>
+  <data name="Card3_Title" xml:space="preserve">
+    <value>Interoperabilidad con .NET</value>
+  </data>
+  <data name="Card3_Desc" xml:space="preserve">
+    <value>Accede directamente a los tipos de la BCL de .NET mediante decoradores &lt;code&gt;@DotNetType&lt;/code&gt;. Conecta TypeScript y C# sin fricciones.</value>
+  </data>
+  <data name="Card4_Title" xml:space="preserve">
+    <value>TypeScript completo</value>
+  </data>
+  <data name="Card4_Desc" xml:space="preserve">
+    <value>Tipos, genéricos, clases, interfaces, módulos, decoradores, tipos mapeados, tipos condicionales y más.</value>
+  </data>
+  <data name="Card5_Title" xml:space="preserve">
+    <value>Async y generadores</value>
+  </data>
+  <data name="Card5_Desc" xml:space="preserve">
+    <value>Compatibilidad completa con async/await, combinadores de Promise, funciones generadoras e iteradores asíncronos.</value>
+  </data>
+  <data name="Card6_Title" xml:space="preserve">
+    <value>Sistema de módulos</value>
+  </data>
+  <data name="Card6_Desc" xml:space="preserve">
+    <value>Importaciones/exportaciones ES6, espacios de nombres, importaciones dinámicas, reexportaciones e interoperabilidad con CommonJS.</value>
+  </data>
+</root>
