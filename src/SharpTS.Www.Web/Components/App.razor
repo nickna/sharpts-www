@@ -6,6 +6,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    @* Entrance-animation gate. This synchronous inline script runs before first paint and
+       before the render-blocking stylesheets below, so `html.preload` is in effect when the
+       hero's hidden start state is computed — no flash-of-visible-then-hidden. JS removes it
+       after the first paint (see site-interop.js) to trigger the one-shot fade-in. It lives on
+       <html>, which is outside the interactive <Routes> island, so Blazor never reconciles it.
+       No-JS never adds it, so the resting state (visible) is what ships — fails safe. *@
+    <script>document.documentElement.classList.add('preload');</script>
     <meta name="description" content="@L["Meta_Description"]" />
     <meta name="theme-color" content="#0d1117" />
 
