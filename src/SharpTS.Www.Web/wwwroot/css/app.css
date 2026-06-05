@@ -317,16 +317,40 @@ img, svg {
     border-bottom-color: var(--accent-neon);
 }
 
-/* === Scroll animations === */
+/* === Scroll reveal animations ===
+   Driven by CSS scroll-driven animations: the browser computes each element's progress
+   from its position in the viewport, so the "revealed" state lives in the engine, not in a
+   JS-added class. Nothing for Blazor's prerender→interactive reconcile to strip, and a
+   re-render can never desync it — a restarted scroll-timeline animation lands at the state
+   for the current scroll position, never back at opacity:0. The default/fallback state is
+   VISIBLE, so browsers without scroll-driven animations (and reduced-motion users) just see
+   the content — it can never get stuck hidden. */
 .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    transform: none;
 }
 
-.reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            animation: revealIn linear both;
+            animation-timeline: view();
+            animation-range: entry 5% cover 30%;
+        }
+    }
+}
+
+@keyframes revealIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 /* === Gradient text === */
@@ -362,13 +386,9 @@ img, svg {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .reveal {
-        opacity: 1;
-        transform: none;
-        transition: none;
-    }
-}
+/* Reduced-motion is handled at the source: the reveal animation is gated behind
+   (prefers-reduced-motion: no-preference) above, so these users keep the visible
+   default `.reveal` state and never see motion. No override needed here. */
 
 @media (min-width: 769px) and (max-width: 1024px) {
     :root {

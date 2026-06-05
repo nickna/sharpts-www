@@ -1,3 +1,13 @@
+// === Entrance-animation gate ===
+// The inline head script adds `html.preload`, which paints the hero in its hidden start
+// state. Remove it after the first paint has committed (two rAFs) so the change from hidden
+// → visible animates the one-shot fade-in transition. This fires once per document load and
+// is independent of the Blazor circuit, so the circuit's prerender→interactive re-render
+// can't restart it — by then the resting (visible) state is what's in the CSS.
+requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.documentElement.classList.remove('preload');
+}));
+
 // === Clipboard interop ===
 window.copyToClipboard = async (text) => {
     try {
@@ -57,85 +67,14 @@ window.highlightById = (id) => {
     }
 };
 
-// === Scroll reveal animations with stagger ===
-(function () {
-    const observeAll = () => {
-        document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
-            observer.observe(el);
-        });
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                // Stagger siblings
-                const parent = entry.target.parentElement;
-                if (parent) {
-                    const siblings = Array.from(parent.querySelectorAll('.reveal:not(.visible)'));
-                    const idx = siblings.indexOf(entry.target);
-                    const delay = Math.max(0, idx) * 80;
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, delay);
-                } else {
-                    entry.target.classList.add('visible');
-                }
-                observer.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.05,
-        rootMargin: '50px 0px -20px 0px'  // generous top margin so above-fold items trigger
-    });
-
-    // Coalesce re-scans: the body-wide observer can fire on unrelated mutations
-    // (e.g. every CodeMirror keystroke), so collapse work into one per frame.
-    let observeScheduled = false;
-    const scheduleObserve = () => {
-        if (observeScheduled) return;
-        observeScheduled = true;
-        requestAnimationFrame(() => { observeScheduled = false; observeAll(); });
-    };
-
-    // Watch for Blazor dynamically adding elements
-    // When Blazor reconciles prerendered DOM, newly-observed .reveal elements
-    // that are already in the viewport get .visible immediately (no transition)
-    // to prevent a visible flash.
-    const mutationObserver = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType !== 1) continue;
-                const reveals = node.matches && node.matches('.reveal:not(.visible)')
-                    ? [node]
-                    : (node.querySelectorAll ? Array.from(node.querySelectorAll('.reveal:not(.visible)')) : []);
-                for (const el of reveals) {
-                    const rect = el.getBoundingClientRect();
-                    if (rect.top < window.innerHeight && rect.bottom > 0) {
-                        el.style.transition = 'none';
-                        el.classList.add('visible');
-                        // Re-enable transitions after paint
-                        requestAnimationFrame(() => {
-                            el.style.transition = '';
-                        });
-                    }
-                }
-            }
-        }
-        scheduleObserve();
-    });
-
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
-
-    // Initial pass
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', observeAll);
-    } else {
-        observeAll();
-    }
-    // Also run after a short delay for Blazor Server render
-    setTimeout(observeAll, 100);
-    setTimeout(observeAll, 500);
-})();
+// === Scroll reveal animations ===
+// Reveal-on-scroll is now driven entirely by CSS scroll-driven animations
+// (animation-timeline: view() in app.css). There is deliberately no JS here: the old
+// IntersectionObserver added a `.visible` class that Blazor's prerender→interactive
+// reconcile kept stripping (resetting class back to the server-rendered "reveal"),
+// which caused a re-hide/re-reveal flash and required ever-growing mitigation. With the
+// state computed from scroll position by the browser, there is nothing for Blazor to
+// strip and nothing to re-sync.
 
 // === Hero floating particles ===
 window.initHeroParticles = (canvasId) => {
