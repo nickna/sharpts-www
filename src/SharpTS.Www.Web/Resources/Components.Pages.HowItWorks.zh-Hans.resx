@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Meta_Title" xml:space="preserve">
+    <value>SharpTS 工作原理 — SharpTS</value>
+  </data>
+  <data name="Terminal" xml:space="preserve">
+    <value>终端</value>
+  </data>
+  <data name="Modes_Title" xml:space="preserve">
+    <value>两种运行方式</value>
+  </data>
+  <data name="Modes_Subtitle" xml:space="preserve">
+    <value>同一份 TypeScript 既可以即时解释执行，也可以提前编译为 .NET 程序集。你可以按命令自行选择。</value>
+  </data>
+  <data name="Mode_Interpret_Title" xml:space="preserve">
+    <value>解释执行</value>
+  </data>
+  <data name="Mode_Interpret_Desc" xml:space="preserve">
+    <value>采用树遍历执行，启动即时、无需构建步骤——非常适合脚本编写、REPL 和快速迭代。只需让 SharpTS 指向某个文件即可。</value>
+  </data>
+  <data name="Mode_Compile_Title" xml:space="preserve">
+    <value>编译（AOT）</value>
+  </data>
+  <data name="Mode_Compile_Desc" xml:space="preserve">
+    <value>生成可在 CLR 上原生运行的真正 .NET 程序集。同一条路径还能产出自包含可执行文件、NuGet 包（--pack），或用于 C# 互操作的引用程序集（--ref-asm）。</value>
+  </data>
+  <data name="Typing_Title" xml:space="preserve">
+    <value>先类型检查，再运行</value>
+  </data>
+  <data name="Typing_Subtitle" xml:space="preserve">
+    <value>SharpTS 会在程序运行前对整个程序进行类型检查——随后类型便退场，只有值才起作用。</value>
+  </data>
+  <data name="Typing_CompileTime_Title" xml:space="preserve">
+    <value>编译期——类型</value>
+  </data>
+  <data name="Typing_CompileTime_Desc" xml:space="preserve">
+    <value>类型检查器依据 TypeScript 的规则校验每个表达式：类采用名义类型，接口采用结构类型。类型错误会在程序运行前将其中止。</value>
+  </data>
+  <data name="Typing_Runtime_Title" xml:space="preserve">
+    <value>运行期——值</value>
+  </data>
+  <data name="Typing_Runtime_Desc" xml:space="preserve">
+    <value>检查通过后，类型随即消失，你的程序便在普通的值上运行——就像编译后的 JavaScript。编写时获得的安全性，在运行时不带来任何代价。</value>
+  </data>
+  <data name="Typing_Caption" xml:space="preserve">
+    <value>结构类型的体现：Dog 满足 Walkable，仅仅因为它拥有 walk() 方法——无需显式的 “implements”。</value>
+  </data>
+  <data name="Dotnet_Title" xml:space="preserve">
+    <value>在 .NET 上运行的 TypeScript</value>
+  </data>
+  <data name="Dotnet_Subtitle" xml:space="preserve">
+    <value>由于 SharpTS 以 CLR 为目标，你的 TypeScript 成为一等的 .NET 公民——既能调用 .NET，也能被 .NET 调用。</value>
+  </data>
+  <data name="Cap1_Title" xml:space="preserve">
+    <value>从 TypeScript 调用 .NET</value>
+  </data>
+  <data name="Cap1_Body" xml:space="preserve">
+    <value>通过 @DotNetType 装饰器访问 BCL——StringBuilder、Guid、DateTime、TimeSpan——并自动进行类型转换和重载解析。</value>
+  </data>
+  <data name="Cap2_Title" xml:space="preserve">
+    <value>从 C# 使用 TypeScript</value>
+  </data>
+  <data name="Cap2_Body" xml:space="preserve">
+    <value>使用 --ref-asm 编译以获得引用程序集，然后直接从 C# 实例化你的 TypeScript 类并调用其方法，类型完整。</value>
+  </data>
+  <data name="Cap3_Title" xml:space="preserve">
+    <value>交付真正的 .NET 制品</value>
+  </data>
+  <data name="Cap3_Body" xml:space="preserve">
+    <value>直接从你的 TypeScript 源代码生成 .NET 程序集、自包含可执行文件，或带版本号的 NuGet 包。</value>
+  </data>
+  <data name="Cap4_Title" xml:space="preserve">
+    <value>MSBuild SDK</value>
+  </data>
+  <data name="Cap4_Body" xml:space="preserve">
+    <value>将 SharpTS.Sdk 添加到项目文件中，由 tsconfig.json 驱动，将 .ts 文件作为常规 .NET 构建的一部分进行编译。</value>
+  </data>
+  <data name="Cap5_Title" xml:space="preserve">
+    <value>编辑器支持</value>
+  </data>
+  <data name="Cap5_Body" xml:space="preserve">
+    <value>语言服务器（vscode-sharpts 扩展）以及 .d.ts 声明生成，为你的编辑器提供补全和类型信息。</value>
+  </data>
+  <data name="Cap6_Title" xml:space="preserve">
+    <value>完整的语言特性</value>
+  </data>
+  <data name="Cap6_Body" xml:space="preserve">
+    <value>类、泛型、async/await、生成器、装饰器、模块、Map 与 Set、BigInt、Date、RegExp、Symbol 和 JSON。</value>
+  </data>
+  <data name="Cta_Title" xml:space="preserve">
+    <value>亲自试试</value>
+  </data>
+  <data name="Cta_Body" xml:space="preserve">
+    <value>理解管道的最佳方式，就是让代码穿过它。</value>
+  </data>
+  <data name="Cta_Playground" xml:space="preserve">
+    <value>打开演练场</value>
+  </data>
+  <data name="Cta_GitHub" xml:space="preserve">
+    <value>在 GitHub 上查看</value>
+  </data>
+</root>

@@ -1,0 +1,172 @@
+@page "/how-it-works"
+@page "/{culture}/how-it-works"
+@using System.Globalization
+@inject IStringLocalizer<HowItWorks> L
+@inject NavigationManager Nav
+
+<PageTitle>@L["Meta_Title"]</PageTitle>
+
+<main class="landing">
+    @* 1. The compilation pipeline — the interactive diagram leads the guide. *@
+    <ArchitectureDiagram />
+
+    @* 2. Two ways to run: interpret vs AOT-compile — the user-facing meaning of the fork. *@
+    <section class="section section--alt">
+        <div class="container">
+            <h2 class="section-title reveal">@L["Modes_Title"]</h2>
+            <p class="section-subtitle reveal">@L["Modes_Subtitle"]</p>
+
+            <div class="modes reveal">
+                <div class="card mode-card">
+                    <span class="mode-card__icon" aria-hidden="true">▶️</span>
+                    <h3 class="mode-card__title">@L["Mode_Interpret_Title"]</h3>
+                    <p class="mode-card__desc">@L["Mode_Interpret_Desc"]</p>
+                    <CodeBlock Title="@L["Terminal"]" Language="bash" Code="sharpts script.ts" />
+                </div>
+                <div class="card mode-card">
+                    <span class="mode-card__icon" aria-hidden="true">⚙️</span>
+                    <h3 class="mode-card__title">@L["Mode_Compile_Title"]</h3>
+                    <p class="mode-card__desc">@L["Mode_Compile_Desc"]</p>
+                    <CodeBlock Title="@L["Terminal"]" Language="bash" Code="@CompileCmd" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* 3. Static typing before execution: two separate environments. *@
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title reveal">@L["Typing_Title"]</h2>
+            <p class="section-subtitle reveal">@L["Typing_Subtitle"]</p>
+
+            <div class="typing reveal">
+                <div class="typing__cols">
+                    <div class="card typing-card">
+                        <h3 class="typing-card__title">@L["Typing_CompileTime_Title"]</h3>
+                        <p class="typing-card__desc">@L["Typing_CompileTime_Desc"]</p>
+                    </div>
+                    <div class="typing__arrow" aria-hidden="true">→</div>
+                    <div class="card typing-card">
+                        <h3 class="typing-card__title">@L["Typing_Runtime_Title"]</h3>
+                        <p class="typing-card__desc">@L["Typing_Runtime_Desc"]</p>
+                    </div>
+                </div>
+
+                <div class="typing__example">
+                    <CodeBlock Title="shapes.ts" Language="typescript" Code="@TypingExample" />
+                    <p class="typing__caption">@L["Typing_Caption"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* 4. The .NET interop & tooling story — why SharpTS, not tsc. *@
+    <section class="section section--alt">
+        <div class="container">
+            <h2 class="section-title reveal">@L["Dotnet_Title"]</h2>
+            <p class="section-subtitle reveal">@L["Dotnet_Subtitle"]</p>
+
+            <div class="capability-grid">
+                @foreach (var c in _capabilities)
+                {
+                    <div class="card capability-card reveal">
+                        <span class="capability-card__icon" aria-hidden="true">@c.Icon</span>
+                        <h3 class="capability-card__title">@c.Title</h3>
+                        <p class="capability-card__body">@c.Body</p>
+                    </div>
+                }
+            </div>
+
+            <div class="dotnet-example reveal">
+                <CodeBlock Title="dotnet-interop.ts" Language="typescript" Code="@DotNetExample" />
+            </div>
+        </div>
+    </section>
+
+    @* 5. Call to action. *@
+    <section class="section">
+        <div class="container">
+            <div class="guide-cta reveal">
+                <h2 class="guide-cta__title">@L["Cta_Title"]</h2>
+                <p class="guide-cta__body">@L["Cta_Body"]</p>
+                <div class="guide-cta__actions">
+                    <a href="@PlaygroundHref" class="btn btn-primary">@L["Cta_Playground"]</a>
+                    <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary">@L["Cta_GitHub"]</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <FooterSection />
+</main>
+
+@code {
+    // Optional language prefix (e.g. /fr/how-it-works). The request culture is already
+    // resolved by the localization middleware; this only guards against bogus prefixes so
+    // the page doesn't render for /not-a-language/how-it-works.
+    [Parameter] public string? Culture { get; set; }
+
+    private List<Capability> _capabilities = new();
+
+    // Localized lists are built here (not in field initializers) because the injected
+    // IStringLocalizer isn't available until the component is initialized.
+    protected override void OnInitialized()
+    {
+        _capabilities =
+        [
+            new("🔌", L["Cap1_Title"], L["Cap1_Body"]),
+            new("🤝", L["Cap2_Title"], L["Cap2_Body"]),
+            new("📦", L["Cap3_Title"], L["Cap3_Body"]),
+            new("🛠️", L["Cap4_Title"], L["Cap4_Body"]),
+            new("💡", L["Cap5_Title"], L["Cap5_Body"]),
+            new("🧩", L["Cap6_Title"], L["Cap6_Body"]),
+        ];
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Culture is not null && !SupportedCultures.IsSupported(Culture))
+        {
+            Nav.NavigateTo("/how-it-works", replace: true);
+        }
+    }
+
+    // Culture-correct deep link back to the home playground section.
+    private static string PlaygroundHref
+    {
+        get
+        {
+            var culture = SupportedCultures.Normalize(CultureInfo.CurrentCulture.Name) ?? SupportedCultures.Default;
+            var home = culture == SupportedCultures.Default ? "/" : $"/{culture}";
+            return $"{home}#playground";
+        }
+    }
+
+    // Code samples are literal (no prose/comments), so they're identical across cultures.
+    private const string CompileCmd = """
+        sharpts --compile script.ts
+        dotnet script.dll
+        """;
+
+    private const string TypingExample = """
+        interface Walkable { walk(): void }
+        class Dog { walk(): void {} }
+
+        let w: Walkable = new Dog();
+        """;
+
+    private const string DotNetExample = """
+        @DotNetType("System.Text.StringBuilder")
+        declare class StringBuilder {
+            constructor();
+            append(value: string): StringBuilder;
+            toString(): string;
+        }
+
+        const sb = new StringBuilder();
+        sb.append("Hello from .NET!");
+        console.log(sb.toString());
+        """;
+
+    private record Capability(string Icon, string Title, string Body);
+}

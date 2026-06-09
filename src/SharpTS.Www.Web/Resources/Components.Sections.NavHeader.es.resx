@@ -18,8 +18,8 @@
   <data name="Nav_Examples" xml:space="preserve">
     <value>Ejemplos</value>
   </data>
-  <data name="Nav_Architecture" xml:space="preserve">
-    <value>Arquitectura</value>
+  <data name="Nav_HowItWorks" xml:space="preserve">
+    <value>Cómo funciona</value>
   </data>
   <data name="Nav_Playground" xml:space="preserve">
     <value>Entorno de pruebas</value>

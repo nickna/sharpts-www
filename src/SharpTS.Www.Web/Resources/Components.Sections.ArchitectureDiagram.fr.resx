@@ -57,4 +57,25 @@
   <data name="Label_DotNetAssembly" xml:space="preserve">
     <value>Assembly .NET</value>
   </data>
+  <data name="SelectHint" xml:space="preserve">
+    <value>Sélectionnez une étape ci-dessus pour voir ce qu'elle fait.</value>
+  </data>
+  <data name="Explain_Lexer" xml:space="preserve">
+    <value>Un balayage en une seule passe transforme le code source TypeScript brut en un flux de jetons — mots-clés, identifiants, littéraux et opérateurs — le vocabulaire que lit l'analyseur.</value>
+  </data>
+  <data name="Explain_Parser" xml:space="preserve">
+    <value>Un analyseur à descente récursive lit les jetons et construit un arbre syntaxique abstrait (AST) fait d'enregistrements immuables, en transformant au passage des constructions comme les boucles for en boucles while et en développant la déstructuration.</value>
+  </data>
+  <data name="Explain_TypeChecker" xml:space="preserve">
+    <value>Valide statiquement l'AST selon les règles de typage de TypeScript avant toute exécution — typage nominal pour les classes, typage structurel pour les interfaces. Les erreurs de type arrêtent le programme ici.</value>
+  </data>
+  <data name="Explain_Interpreter" xml:space="preserve">
+    <value>Parcourt l'AST validé et l'exécute directement, sans étape de compilation — la voie rapide derrière le REPL et le bac à sable. Les valeurs d'exécution vivent dans leur propre environnement, séparé des types.</value>
+  </data>
+  <data name="Explain_ILCompiler" xml:space="preserve">
+    <value>La voie anticipée (AOT) : abaisse le programme en IL .NET en une vingtaine de phases — les fermetures deviennent des classes de display, l'async et les générateurs deviennent des machines à états — et émet un véritable assembly .NET.</value>
+  </data>
+  <data name="Cta_LearnMore" xml:space="preserve">
+    <value>Découvrir le fonctionnement</value>
+  </data>
 </root>

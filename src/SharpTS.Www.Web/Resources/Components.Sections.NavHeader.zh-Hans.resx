@@ -18,8 +18,8 @@
   <data name="Nav_Examples" xml:space="preserve">
     <value>示例</value>
   </data>
-  <data name="Nav_Architecture" xml:space="preserve">
-    <value>架构</value>
+  <data name="Nav_HowItWorks" xml:space="preserve">
+    <value>工作原理</value>
   </data>
   <data name="Nav_Playground" xml:space="preserve">
     <value>演练场</value>

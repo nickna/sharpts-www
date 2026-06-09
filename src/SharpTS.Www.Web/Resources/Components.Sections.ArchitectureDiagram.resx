@@ -57,4 +57,25 @@
   <data name="Label_DotNetAssembly" xml:space="preserve">
     <value>.NET Assembly</value>
   </data>
+  <data name="SelectHint" xml:space="preserve">
+    <value>Select a stage above to see what it does.</value>
+  </data>
+  <data name="Explain_Lexer" xml:space="preserve">
+    <value>A single-pass scan turns the raw TypeScript source into a stream of tokens — keywords, identifiers, literals, and operators — the vocabulary the parser reads.</value>
+  </data>
+  <data name="Explain_Parser" xml:space="preserve">
+    <value>A recursive-descent parser reads the tokens and builds an Abstract Syntax Tree of immutable records, desugaring constructs like for-loops into while-loops and expanding destructuring along the way.</value>
+  </data>
+  <data name="Explain_TypeChecker" xml:space="preserve">
+    <value>Statically validates the AST against TypeScript's type rules before anything runs — nominal typing for classes, structural typing for interfaces. Type errors stop the program here.</value>
+  </data>
+  <data name="Explain_Interpreter" xml:space="preserve">
+    <value>Tree-walks the validated AST and executes it directly, with no build step — the fast path behind the REPL and the playground. Runtime values live in their own environment, separate from the types.</value>
+  </data>
+  <data name="Explain_ILCompiler" xml:space="preserve">
+    <value>The ahead-of-time path: lowers the program to .NET IL across roughly twenty phases — closures become display classes, async and generators become state machines — and emits a real .NET assembly.</value>
+  </data>
+  <data name="Cta_LearnMore" xml:space="preserve">
+    <value>Learn how it works</value>
+  </data>
 </root>

@@ -57,4 +57,25 @@
   <data name="Label_DotNetAssembly" xml:space="preserve">
     <value>.NET 程序集</value>
   </data>
+  <data name="SelectHint" xml:space="preserve">
+    <value>选择上方的某个阶段，查看它的作用。</value>
+  </data>
+  <data name="Explain_Lexer" xml:space="preserve">
+    <value>单遍扫描将原始 TypeScript 源代码转换为词法单元流——关键字、标识符、字面量和运算符——也就是解析器读取的词汇。</value>
+  </data>
+  <data name="Explain_Parser" xml:space="preserve">
+    <value>递归下降解析器读取词法单元并构建由不可变记录组成的抽象语法树（AST），同时将 for 循环等结构降级为 while 循环，并展开解构。</value>
+  </data>
+  <data name="Explain_TypeChecker" xml:space="preserve">
+    <value>在任何代码运行之前，依据 TypeScript 的类型规则对 AST 进行静态校验——类对应名义类型，接口对应结构类型。类型错误会在此处中止程序。</value>
+  </data>
+  <data name="Explain_Interpreter" xml:space="preserve">
+    <value>对校验后的 AST 进行树遍历并直接执行，无需构建步骤——这是 REPL 和演练场背后的快速路径。运行期的值存放在自己的环境中，与类型相互分离。</value>
+  </data>
+  <data name="Explain_ILCompiler" xml:space="preserve">
+    <value>预先编译（AOT）路径：经过约二十个阶段将程序降级为 .NET IL——闭包变为 display 类，async 与生成器变为状态机——并生成真正的 .NET 程序集。</value>
+  </data>
+  <data name="Cta_LearnMore" xml:space="preserve">
+    <value>了解工作原理</value>
+  </data>
 </root>

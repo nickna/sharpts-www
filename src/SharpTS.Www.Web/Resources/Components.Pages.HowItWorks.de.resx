@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Meta_Title" xml:space="preserve">
+    <value>Wie SharpTS funktioniert — SharpTS</value>
+  </data>
+  <data name="Terminal" xml:space="preserve">
+    <value>Terminal</value>
+  </data>
+  <data name="Modes_Title" xml:space="preserve">
+    <value>Zwei Wege zur Ausführung</value>
+  </data>
+  <data name="Modes_Subtitle" xml:space="preserve">
+    <value>Dasselbe TypeScript kann direkt interpretiert oder vorab zu einer .NET-Assembly kompiliert werden. Sie wählen pro Befehl.</value>
+  </data>
+  <data name="Mode_Interpret_Title" xml:space="preserve">
+    <value>Interpretieren</value>
+  </data>
+  <data name="Mode_Interpret_Desc" xml:space="preserve">
+    <value>Ausführung per Baumdurchlauf mit sofortigem Start und ohne Build-Schritt — ideal für Skripting, die REPL und schnelle Iteration. Richten Sie SharpTS einfach auf eine Datei.</value>
+  </data>
+  <data name="Mode_Compile_Title" xml:space="preserve">
+    <value>Kompilieren (AOT)</value>
+  </data>
+  <data name="Mode_Compile_Desc" xml:space="preserve">
+    <value>Erzeugt eine echte .NET-Assembly, die nativ auf der CLR läuft. Derselbe Weg kann auch eine eigenständige ausführbare Datei, ein NuGet-Paket (--pack) oder eine Referenz-Assembly für die C#-Interop (--ref-asm) erzeugen.</value>
+  </data>
+  <data name="Typing_Title" xml:space="preserve">
+    <value>Erst typisiert, dann ausgeführt</value>
+  </data>
+  <data name="Typing_Subtitle" xml:space="preserve">
+    <value>SharpTS prüft die Typen Ihres gesamten Programms, bevor es läuft — danach treten die Typen zurück und nur die Werte zählen.</value>
+  </data>
+  <data name="Typing_CompileTime_Title" xml:space="preserve">
+    <value>Kompilierzeit — Typen</value>
+  </data>
+  <data name="Typing_CompileTime_Desc" xml:space="preserve">
+    <value>Der Typprüfer validiert jeden Ausdruck anhand der TypeScript-Regeln: nominale Typisierung für Klassen, strukturelle Typisierung für Schnittstellen. Ein Typfehler stoppt das Programm vor der Ausführung.</value>
+  </data>
+  <data name="Typing_Runtime_Title" xml:space="preserve">
+    <value>Laufzeit — Werte</value>
+  </data>
+  <data name="Typing_Runtime_Desc" xml:space="preserve">
+    <value>Sobald die Prüfungen bestanden sind, fallen die Typen weg und Ihr Programm läuft mit einfachen Werten — wie kompiliertes JavaScript. Die Sicherheit beim Schreiben kostet zur Laufzeit nichts.</value>
+  </data>
+  <data name="Typing_Caption" xml:space="preserve">
+    <value>Strukturelle Typisierung in Aktion: Dog erfüllt Walkable allein deshalb, weil es eine walk()-Methode hat — kein explizites „implements“ nötig.</value>
+  </data>
+  <data name="Dotnet_Title" xml:space="preserve">
+    <value>TypeScript, das auf .NET läuft</value>
+  </data>
+  <data name="Dotnet_Subtitle" xml:space="preserve">
+    <value>Da SharpTS die CLR als Ziel hat, wird Ihr TypeScript zu einem vollwertigen .NET-Bürger — es ruft .NET auf und ist aus .NET aufrufbar.</value>
+  </data>
+  <data name="Cap1_Title" xml:space="preserve">
+    <value>.NET aus TypeScript aufrufen</value>
+  </data>
+  <data name="Cap1_Body" xml:space="preserve">
+    <value>Greifen Sie mit dem @DotNetType-Decorator auf die BCL zu — StringBuilder, Guid, DateTime, TimeSpan — mit automatischer Konvertierung und Überladungsauflösung.</value>
+  </data>
+  <data name="Cap2_Title" xml:space="preserve">
+    <value>TypeScript aus C# nutzen</value>
+  </data>
+  <data name="Cap2_Body" xml:space="preserve">
+    <value>Kompilieren Sie mit --ref-asm, um eine Referenz-Assembly zu erhalten, und instanziieren Sie dann Ihre TypeScript-Klassen und rufen ihre Methoden direkt aus C# auf — vollständig typisiert.</value>
+  </data>
+  <data name="Cap3_Title" xml:space="preserve">
+    <value>Echte .NET-Artefakte ausliefern</value>
+  </data>
+  <data name="Cap3_Body" xml:space="preserve">
+    <value>Erzeugen Sie eine .NET-Assembly, eine eigenständige ausführbare Datei oder ein versioniertes NuGet-Paket direkt aus Ihrem TypeScript-Quelltext.</value>
+  </data>
+  <data name="Cap4_Title" xml:space="preserve">
+    <value>MSBuild-SDK</value>
+  </data>
+  <data name="Cap4_Body" xml:space="preserve">
+    <value>Fügen Sie SharpTS.Sdk zu einer Projektdatei hinzu und bauen Sie .ts-Dateien als Teil Ihres normalen .NET-Builds, gesteuert über tsconfig.json.</value>
+  </data>
+  <data name="Cap5_Title" xml:space="preserve">
+    <value>Editor-Unterstützung</value>
+  </data>
+  <data name="Cap5_Body" xml:space="preserve">
+    <value>Ein Language Server (die Erweiterung vscode-sharpts) sowie die Generierung von .d.ts-Deklarationen liefern Vervollständigung und Typinformationen in Ihrem Editor.</value>
+  </data>
+  <data name="Cap6_Title" xml:space="preserve">
+    <value>Vollständiger Sprachumfang</value>
+  </data>
+  <data name="Cap6_Body" xml:space="preserve">
+    <value>Klassen, Generics, async/await, Generatoren, Decorators, Module, Map und Set, BigInt, Date, RegExp, Symbol und JSON.</value>
+  </data>
+  <data name="Cta_Title" xml:space="preserve">
+    <value>Probieren Sie es selbst aus</value>
+  </data>
+  <data name="Cta_Body" xml:space="preserve">
+    <value>Der beste Weg, die Pipeline zu verstehen, ist, Code durch sie laufen zu lassen.</value>
+  </data>
+  <data name="Cta_Playground" xml:space="preserve">
+    <value>Playground öffnen</value>
+  </data>
+  <data name="Cta_GitHub" xml:space="preserve">
+    <value>Auf GitHub ansehen</value>
+  </data>
+</root>

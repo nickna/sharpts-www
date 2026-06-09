@@ -57,4 +57,25 @@
   <data name="Label_DotNetAssembly" xml:space="preserve">
     <value>Ensamblado .NET</value>
   </data>
+  <data name="SelectHint" xml:space="preserve">
+    <value>Selecciona una etapa arriba para ver qué hace.</value>
+  </data>
+  <data name="Explain_Lexer" xml:space="preserve">
+    <value>Un barrido en una sola pasada convierte el código fuente TypeScript en bruto en un flujo de tokens — palabras clave, identificadores, literales y operadores — el vocabulario que lee el analizador.</value>
+  </data>
+  <data name="Explain_Parser" xml:space="preserve">
+    <value>Un analizador de descenso recursivo lee los tokens y construye un árbol de sintaxis abstracta (AST) de registros inmutables, transformando de paso construcciones como los bucles for en bucles while y expandiendo la desestructuración.</value>
+  </data>
+  <data name="Explain_TypeChecker" xml:space="preserve">
+    <value>Valida estáticamente el AST según las reglas de tipos de TypeScript antes de que se ejecute nada — tipado nominal para clases, tipado estructural para interfaces. Los errores de tipo detienen el programa aquí.</value>
+  </data>
+  <data name="Explain_Interpreter" xml:space="preserve">
+    <value>Recorre el AST validado y lo ejecuta directamente, sin paso de compilación — la vía rápida tras el REPL y el espacio de pruebas. Los valores en ejecución viven en su propio entorno, separado de los tipos.</value>
+  </data>
+  <data name="Explain_ILCompiler" xml:space="preserve">
+    <value>La vía anticipada (AOT): reduce el programa a IL de .NET a lo largo de unas veinte fases — los cierres se convierten en clases de display, el async y los generadores en máquinas de estados — y emite un ensamblado .NET real.</value>
+  </data>
+  <data name="Cta_LearnMore" xml:space="preserve">
+    <value>Descubre cómo funciona</value>
+  </data>
 </root>

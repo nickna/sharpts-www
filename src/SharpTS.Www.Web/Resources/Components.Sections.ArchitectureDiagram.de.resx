@@ -57,4 +57,25 @@
   <data name="Label_DotNetAssembly" xml:space="preserve">
     <value>.NET-Assembly</value>
   </data>
+  <data name="SelectHint" xml:space="preserve">
+    <value>Wählen Sie oben eine Stufe aus, um zu sehen, was sie tut.</value>
+  </data>
+  <data name="Explain_Lexer" xml:space="preserve">
+    <value>Ein Scan in einem einzigen Durchgang wandelt den rohen TypeScript-Quelltext in einen Token-Strom um — Schlüsselwörter, Bezeichner, Literale und Operatoren — das Vokabular, das der Parser liest.</value>
+  </data>
+  <data name="Explain_Parser" xml:space="preserve">
+    <value>Ein Parser mit rekursivem Abstieg liest die Tokens und erstellt einen abstrakten Syntaxbaum (AST) aus unveränderlichen Records; dabei wandelt er Konstrukte wie for-Schleifen in while-Schleifen um und löst Destrukturierung auf.</value>
+  </data>
+  <data name="Explain_TypeChecker" xml:space="preserve">
+    <value>Validiert den AST statisch anhand der Typregeln von TypeScript, bevor irgendetwas läuft — nominale Typisierung für Klassen, strukturelle Typisierung für Schnittstellen. Typfehler stoppen das Programm hier.</value>
+  </data>
+  <data name="Explain_Interpreter" xml:space="preserve">
+    <value>Durchläuft den validierten AST und führt ihn direkt aus, ohne Build-Schritt — der schnelle Weg hinter REPL und Playground. Laufzeitwerte leben in ihrer eigenen Umgebung, getrennt von den Typen.</value>
+  </data>
+  <data name="Explain_ILCompiler" xml:space="preserve">
+    <value>Der vorzeitige Weg (AOT): überführt das Programm in rund zwanzig Phasen in .NET-IL — Closures werden zu Display-Klassen, Async und Generatoren zu Zustandsautomaten — und erzeugt eine echte .NET-Assembly.</value>
+  </data>
+  <data name="Cta_LearnMore" xml:space="preserve">
+    <value>So funktioniert es</value>
+  </data>
 </root>

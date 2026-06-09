@@ -38,6 +38,28 @@
     transform: translateY(-2px);
 }
 
+/* Stages that explain themselves are real <button>s — strip the UA chrome so they read
+   as boxes, but keep them keyboard-focusable and pointer-friendly. */
+button.pipeline__box {
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+button.pipeline__box:focus-visible {
+    outline: 2px solid var(--accent-neon);
+    outline-offset: 2px;
+}
+
+.pipeline__box--selected {
+    border-color: var(--accent-neon);
+    box-shadow: var(--shadow-glow-ts);
+    transform: translateY(-2px);
+}
+
 .pipeline__box--input {
     background: var(--bg-tertiary);
 }
@@ -158,6 +180,43 @@
     transform: translateY(-50%);
     border: 5px solid transparent;
     border-left: 7px solid var(--text-tertiary);
+}
+
+/* Explanatory panel below the diagram. Always rendered (stable layout); its content swaps
+   when a stage is selected. The subtle lift is a transition, never a re-fireable keyframe. */
+.pipeline__detail-panel {
+    max-width: 720px;
+    margin: 2.5rem auto 0;
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--border-radius-lg);
+    text-align: center;
+    min-height: 5.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pipeline__detail-hint {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.pipeline__detail-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.pipeline__detail-body {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
 @media (max-width: 768px) {

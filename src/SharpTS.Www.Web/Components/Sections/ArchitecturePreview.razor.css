@@ -1,0 +1,62 @@
+.arch-preview {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.arch-preview__flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.625rem;
+}
+
+.arch-preview__node {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.arch-preview__node--accent {
+    border-color: var(--accent-ts);
+    box-shadow: var(--shadow-glow-ts);
+}
+
+.arch-preview__node--interpret {
+    border-color: var(--accent-green);
+}
+
+.arch-preview__node--compile {
+    border-color: var(--accent-csharp);
+}
+
+.arch-preview__sep {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+.arch-preview__sep--or {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.arch-preview__cta {
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .arch-preview__node {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+}
