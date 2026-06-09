@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Implementation Status</value>
+    <value>What's Supported</value>
   </data>
   <data name="Subtitle" xml:space="preserve">
-    <value>Comprehensive TypeScript language support</value>
+    <value>The TypeScript you already write — feature by feature.</value>
   </data>
   <data name="Th_Feature" xml:space="preserve">
     <value>Feature</value>

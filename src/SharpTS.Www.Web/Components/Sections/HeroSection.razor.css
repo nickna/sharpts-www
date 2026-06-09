@@ -122,11 +122,19 @@
 .hero__tagline {
     font-size: 1.5rem;
     color: var(--text-secondary);
-    margin-bottom: 3rem;
+    margin-bottom: 1rem;
     max-width: 540px;
     margin-left: auto;
     margin-right: auto;
     line-height: 1.5;
+}
+
+.hero__subtagline {
+    font-size: 1.05rem;
+    color: var(--text-tertiary);
+    margin: 0 auto 3rem;
+    max-width: 620px;
+    line-height: 1.6;
 }
 
 .hero__ctas {
@@ -224,6 +232,7 @@ html.preload .hero-enter {
 .hero-enter--3 { transition-delay: 0.4s; }
 .hero-enter--4 { transition-delay: 0.55s; }
 .hero-enter--5 { transition-delay: 0.7s; }
+.hero-enter--6 { transition-delay: 0.85s; }
 
 /* Accessibility: no entrance for reduced-motion users — visible immediately, even while
    the preload gate is active. */
@@ -267,6 +276,10 @@ html.preload .hero-enter {
 
     .hero__tagline {
         font-size: 1.125rem;
+    }
+
+    .hero__subtagline {
+        font-size: 0.95rem;
     }
 
     .hero__ctas {

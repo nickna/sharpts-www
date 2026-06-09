@@ -16,42 +16,42 @@
     <value>SharpTS 能做什么</value>
   </data>
   <data name="Subtitle" xml:space="preserve">
-    <value>完全用 C# 构建的完整 TypeScript 运行时和编译器</value>
+    <value>编写在 .NET 运行时上运行的 TypeScript——可解释执行以快速迭代，也可编译为原生 .NET 程序集。</value>
   </data>
   <data name="Card1_Title" xml:space="preserve">
-    <value>解释执行</value>
+    <value>即刻运行</value>
   </data>
   <data name="Card1_Desc" xml:space="preserve">
-    <value>树遍历执行，瞬间启动。非常适合脚本编写、REPL 会话和快速原型设计。</value>
+    <value>让 SharpTS 指向一个 .ts 文件即可运行——无需构建步骤，无需配置。非常适合脚本、自动化以及在 REPL 中尝试想法。</value>
   </data>
   <data name="Card2_Title" xml:space="preserve">
-    <value>编译</value>
+    <value>编译为 .NET</value>
   </data>
   <data name="Card2_Desc" xml:space="preserve">
-    <value>AOT 编译为独立的 .NET 程序集。以完整的 .NET 性能交付原生二进制文件。</value>
+    <value>预先编译为真正的 .NET 程序集——DLL、自包含可执行文件或 NuGet 包——以原生 CLR 速度运行。</value>
   </data>
   <data name="Card3_Title" xml:space="preserve">
-    <value>.NET 互操作</value>
+    <value>双向互操作</value>
   </data>
   <data name="Card3_Desc" xml:space="preserve">
-    <value>通过 &lt;code&gt;@DotNetType&lt;/code&gt; 装饰器直接访问 .NET BCL 类型。无缝衔接 TypeScript 和 C#。</value>
+    <value>通过 &lt;code&gt;@DotNetType&lt;/code&gt; 从 TypeScript 调用 .NET 库，并从 C# 使用你编译后的 TypeScript。复用 BCL、NuGet 包以及你已有的代码。</value>
   </data>
   <data name="Card4_Title" xml:space="preserve">
-    <value>完整的 TypeScript</value>
+    <value>真正的 TypeScript</value>
   </data>
   <data name="Card4_Desc" xml:space="preserve">
-    <value>类型、泛型、类、接口、模块、装饰器、映射类型、条件类型等等。</value>
+    <value>并非子集——而是完整的语言：泛型、类、装饰器、异步、模块等等，在代码运行前全部经过类型检查。完整支持情况见下方对照表。</value>
   </data>
   <data name="Card5_Title" xml:space="preserve">
-    <value>异步与生成器</value>
+    <value>融入你的 .NET 构建</value>
   </data>
   <data name="Card5_Desc" xml:space="preserve">
-    <value>完整的 async/await 支持、Promise 组合器、生成器函数和异步迭代器。</value>
+    <value>将 &lt;code&gt;SharpTS.Sdk&lt;/code&gt; 加入 .NET 项目，&lt;code&gt;dotnet build&lt;/code&gt; 便会把你的 TypeScript 与 C# 一同编译——同一套工具链，同一种产物。</value>
   </data>
   <data name="Card6_Title" xml:space="preserve">
-    <value>模块系统</value>
+    <value>编辑器支持</value>
   </data>
   <data name="Card6_Desc" xml:space="preserve">
-    <value>ES6 导入/导出、命名空间、动态导入、重新导出以及 CommonJS 互操作。</value>
+    <value>语言服务器为 VS Code 和 Visual Studio 带来自动补全、类型检查和转到定义。</value>
   </data>
 </root>

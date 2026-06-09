@@ -18,6 +18,9 @@
   <data name="Hero_Tagline" xml:space="preserve">
     <value>Un interpréteur TypeScript et compilateur AOT pour .NET</value>
   </data>
+  <data name="Hero_Subtagline" xml:space="preserve">
+    <value>Exécutez-le comme un script pour un retour immédiat, ou compilez-le en assembly .NET natif — avec un accès complet à l'écosystème .NET.</value>
+  </data>
   <data name="Hero_StarOnGitHub" xml:space="preserve">
     <value>Mettre une étoile sur GitHub</value>
   </data>

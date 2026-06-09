@@ -16,42 +16,42 @@
     <value>Qué hace SharpTS</value>
   </data>
   <data name="Subtitle" xml:space="preserve">
-    <value>Un runtime y compilador de TypeScript completo, creado enteramente en C#</value>
+    <value>Escribe TypeScript que se ejecuta en el runtime de .NET — interpretado para iterar rápido, o compilado a ensamblados .NET nativos.</value>
   </data>
   <data name="Card1_Title" xml:space="preserve">
-    <value>Interpretar</value>
+    <value>Ejecútalo al instante</value>
   </data>
   <data name="Card1_Desc" xml:space="preserve">
-    <value>Ejecución por recorrido de árbol con inicio instantáneo. Perfecto para scripting, sesiones REPL y creación rápida de prototipos.</value>
+    <value>Apunta SharpTS a un archivo .ts y se ejecuta — sin paso de compilación ni configuración. Ideal para scripts, automatización y probar ideas en el REPL.</value>
   </data>
   <data name="Card2_Title" xml:space="preserve">
-    <value>Compilar</value>
+    <value>Compila a .NET</value>
   </data>
   <data name="Card2_Desc" xml:space="preserve">
-    <value>Compilación AOT a ensamblados .NET independientes. Distribuye binarios nativos con todo el rendimiento de .NET.</value>
+    <value>Compilación anticipada a un ensamblado .NET real — una DLL, un ejecutable autónomo o un paquete NuGet — que se ejecuta a la velocidad nativa del CLR.</value>
   </data>
   <data name="Card3_Title" xml:space="preserve">
-    <value>Interoperabilidad con .NET</value>
+    <value>Interoperabilidad en ambos sentidos</value>
   </data>
   <data name="Card3_Desc" xml:space="preserve">
-    <value>Accede directamente a los tipos de la BCL de .NET mediante decoradores &lt;code&gt;@DotNetType&lt;/code&gt;. Conecta TypeScript y C# sin fricciones.</value>
+    <value>Llama a bibliotecas .NET desde TypeScript con &lt;code&gt;@DotNetType&lt;/code&gt;, y usa tu TypeScript compilado desde C#. Reutiliza la BCL, los paquetes NuGet y el código que ya tienes.</value>
   </data>
   <data name="Card4_Title" xml:space="preserve">
-    <value>TypeScript completo</value>
+    <value>TypeScript de verdad</value>
   </data>
   <data name="Card4_Desc" xml:space="preserve">
-    <value>Tipos, genéricos, clases, interfaces, módulos, decoradores, tipos mapeados, tipos condicionales y más.</value>
+    <value>No es un subconjunto — el lenguaje real: genéricos, clases, decoradores, async, módulos y más, todos con comprobación de tipos antes de que se ejecute tu código. Consulta la matriz completa más abajo.</value>
   </data>
   <data name="Card5_Title" xml:space="preserve">
-    <value>Async y generadores</value>
+    <value>Encaja en tu build de .NET</value>
   </data>
   <data name="Card5_Desc" xml:space="preserve">
-    <value>Compatibilidad completa con async/await, combinadores de Promise, funciones generadoras e iteradores asíncronos.</value>
+    <value>Añade el &lt;code&gt;SharpTS.Sdk&lt;/code&gt; a un proyecto .NET y &lt;code&gt;dotnet build&lt;/code&gt; compila tu TypeScript junto a tu C# — la misma cadena de herramientas, el mismo resultado.</value>
   </data>
   <data name="Card6_Title" xml:space="preserve">
-    <value>Sistema de módulos</value>
+    <value>Soporte del editor</value>
   </data>
   <data name="Card6_Desc" xml:space="preserve">
-    <value>Importaciones/exportaciones ES6, espacios de nombres, importaciones dinámicas, reexportaciones e interoperabilidad con CommonJS.</value>
+    <value>Un servidor de lenguaje aporta autocompletado, comprobación de tipos e ir a definición en VS Code y Visual Studio.</value>
   </data>
 </root>

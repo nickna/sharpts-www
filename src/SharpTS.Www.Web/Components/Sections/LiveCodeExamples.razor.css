@@ -40,6 +40,25 @@
     margin: 0;
 }
 
+.examples__cta {
+    text-align: center;
+    margin: 1.75rem auto 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.examples__cta a {
+    color: var(--accent-neon);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-default);
+}
+
+.examples__cta a:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .examples__body {
         grid-template-columns: 1fr;

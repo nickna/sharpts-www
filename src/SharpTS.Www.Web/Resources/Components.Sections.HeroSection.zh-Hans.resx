@@ -18,6 +18,9 @@
   <data name="Hero_Tagline" xml:space="preserve">
     <value>面向 .NET 的 TypeScript 解释器和 AOT 编译器</value>
   </data>
+  <data name="Hero_Subtagline" xml:space="preserve">
+    <value>既可作为脚本运行以即时获得反馈，也可编译为原生 .NET 程序集——并能完整访问 .NET 生态系统。</value>
+  </data>
   <data name="Hero_StarOnGitHub" xml:space="preserve">
     <value>在 GitHub 上 Star</value>
   </data>

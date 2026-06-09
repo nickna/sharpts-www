@@ -34,7 +34,13 @@
     <value>Fonctionnel</value>
   </data>
   <data name="Ex5_Title" xml:space="preserve">
-    <value>Interop .NET</value>
+    <value>Fonctions intégrées</value>
+  </data>
+  <data name="Ex6_Title" xml:space="preserve">
+    <value>Appeler .NET</value>
+  </data>
+  <data name="Cta_TryYourOwn" xml:space="preserve">
+    <value>Envie d'exécuter le vôtre ? Ouvrez le Playground ↓</value>
   </data>
   <data name="Ex1_Code" xml:space="preserve">
     <value>const greeting: string = &quot;Hello from SharpTS!&quot;;
@@ -115,5 +121,25 @@ console.log(`ISO: ${now.toISOString()}`);
 const obj = { name: &quot;SharpTS&quot;, nums: [1, 2, 3] };
 const json = JSON.stringify(obj);
 console.log(`JSON: ${json}`);</value>
+  </data>
+  <data name="Ex6_Code" xml:space="preserve">
+    <value>// Appelez des types .NET directement depuis TypeScript
+@DotNetType(&quot;System.Text.StringBuilder&quot;)
+declare class StringBuilder {
+    constructor();
+    append(value: string): StringBuilder;
+    toString(): string;
+}
+
+@DotNetType(&quot;System.TimeSpan&quot;)
+declare class TimeSpan {
+    static fromHours(value: number): TimeSpan;
+    readonly totalMinutes: number;
+}
+
+const sb = new StringBuilder();
+sb.append(&quot;1.5 hours = &quot;);
+sb.append(`${TimeSpan.fromHours(1.5).totalMinutes} minutes`);
+console.log(sb.toString());</value>
   </data>
 </root>
