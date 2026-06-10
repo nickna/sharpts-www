@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using SharpTS.Compilation;
@@ -8,6 +10,21 @@ using SharpTS.Parsing;
 using SharpTS.TypeSystem;
 
 const int MaxOutputLength = 100 * 1024; // 100KB
+
+// The only network capability reachable from single-source playground code is the
+// global fetch() — the fs/net/http/dns modules all require imports, which this
+// (non-module) execution mode rejects. SharpTS' fetch routes through HttpClient,
+// which consults HttpClient.DefaultProxy for handlers that don't set their own
+// proxy (the engine's don't). Pointing that at a non-listening loopback port makes
+// every outbound request fail fast and is set here, in the host before any guest
+// code runs — TypeScript cannot reach or override it. This blocks server-side
+// request forgery (cloud metadata endpoints, internal services) in both modes.
+// The "sharpts-network-blocked" host is a recognizable sentinel for friendlier
+// error messaging upstream; it never resolves.
+HttpClient.DefaultProxy = new WebProxy("http://sharpts-network-blocked.invalid:9")
+{
+    BypassProxyOnLocal = false,
+};
 
 // Save the real stdout before we redirect Console.Out for the interpreter.
 var realStdout = Console.Out;

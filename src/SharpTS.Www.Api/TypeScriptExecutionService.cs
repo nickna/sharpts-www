@@ -208,10 +208,10 @@ public sealed class TypeScriptExecutionService
                     return new RunResponse(false, "", [new ErrorInfo("Invalid worker response.", null, null)], sw.ElapsedMilliseconds);
 
                 var errors = workerResponse.Errors
-                    .Select(e => new ErrorInfo(e.Message, null, null))
+                    .Select(e => new ErrorInfo(SanitizeNetworkBlock(e.Message), null, null))
                     .ToList();
 
-                return new RunResponse(workerResponse.Success, workerResponse.Output, errors, workerResponse.ExecutionTimeMs, workerResponse.CompileTimeMs);
+                return new RunResponse(workerResponse.Success, SanitizeNetworkBlock(workerResponse.Output), errors, workerResponse.ExecutionTimeMs, workerResponse.CompileTimeMs);
             }
             catch (JsonException ex)
             {
@@ -219,6 +219,21 @@ public sealed class TypeScriptExecutionService
                 return new RunResponse(false, "", [new ErrorInfo("Internal error: invalid worker response.", null, null)], sw.ElapsedMilliseconds);
             }
         }
+    }
+
+    // The worker forces fetch() through a dead proxy at sharpts-network-blocked.invalid
+    // (see Worker/Program.cs). When guest code attempts a network call, the engine's
+    // failure message names that sentinel host; rewrite it into a clear explanation so
+    // the playground shows intent rather than a confusing proxy/DNS error. This is
+    // cosmetic — the block itself is enforced in the worker, not here.
+    private const string NetworkBlockSentinel = "sharpts-network-blocked.invalid";
+
+    private static string SanitizeNetworkBlock(string text)
+    {
+        if (string.IsNullOrEmpty(text) || !text.Contains(NetworkBlockSentinel, StringComparison.Ordinal))
+            return text;
+
+        return "Network access is disabled in the SharpTS playground. fetch() and other outbound requests are blocked.";
     }
 
     private void KillProcess(Process process)
