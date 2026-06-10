@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>SharpTS 适合哪些场景</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>在这些具体场景里，.NET 上的 TypeScript 比转向 Node——或者 C#——更划算。</value>
+  </data>
+  <data name="Terminal" xml:space="preserve">
+    <value>终端</value>
+  </data>
+  <data name="Case1_Title" xml:space="preserve">
+    <value>面向 .NET 团队的脚本与自动化</value>
+  </data>
+  <data name="Case1_Desc" xml:space="preserve">
+    <value>用 TypeScript 编写构建脚本、开发工具和一次性自动化任务，完整的 BCL 随手可用——机器上已经装有 .NET SDK，不需要任何 Node 工具链。没有 &lt;code&gt;package.json&lt;/code&gt;，没有构建步骤：让 &lt;code&gt;sharpts&lt;/code&gt; 指向文件即可。</value>
+  </data>
+  <data name="Case2_Title" xml:space="preserve">
+    <value>把 TypeScript 逻辑作为 .NET 库发布</value>
+  </data>
+  <data name="Case2_Desc" xml:space="preserve">
+    <value>将 TypeScript 模块编译为真正的程序集，并作为带版本号的 NuGet 包发布。借助引用程序集，C# 调用方可以实例化你的类、以完整类型调用你的方法。</value>
+  </data>
+  <data name="Case3_Title" xml:space="preserve">
+    <value>让 TypeScript 开发者参与 .NET 代码库</value>
+  </data>
+  <data name="Case3_Desc" xml:space="preserve">
+    <value>让以 TypeScript 为主的同事用他们最熟悉的语言参与开发。借助 &lt;code&gt;SharpTS.Sdk&lt;/code&gt;，他们的 &lt;code&gt;.ts&lt;/code&gt; 文件与周围的 C# 项目在同一个 &lt;code&gt;dotnet build&lt;/code&gt; 中编译——同一套工具链，同一条 CI 流水线。</value>
+  </data>
+  <data name="Case4_Title" xml:space="preserve">
+    <value>自包含的命令行工具</value>
+  </data>
+  <data name="Case4_Desc" xml:space="preserve">
+    <value>编译为单个自包含可执行文件，无需单独安装运行时——目标机器上不需要 Node，工具旁边也不用附带 &lt;code&gt;node_modules&lt;/code&gt; 文件夹。</value>
+  </data>
+</root>

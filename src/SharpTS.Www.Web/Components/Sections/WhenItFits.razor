@@ -1,0 +1,60 @@
+@inject IStringLocalizer<WhenItFits> L
+
+<section class="section">
+    <div class="container">
+        <h2 class="section-title reveal">@L["Title"]</h2>
+        <p class="section-subtitle reveal">@L["Subtitle"]</p>
+
+        <div class="usecase-grid">
+            @foreach (var c in _cases)
+            {
+                <div class="card usecase-card reveal">
+                    <h3 class="usecase-card__title">@c.Title</h3>
+                    <p class="usecase-card__desc">@((MarkupString)c.Desc)</p>
+                    <CodeBlock Title="@c.CodeTitle" Language="@c.Language" Code="@c.Code" />
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private record UseCase(string Title, string Desc, string CodeTitle, string Language, string Code);
+
+    private List<UseCase> _cases = [];
+
+    // Localized lists are built here (not in field initializers) because the injected
+    // IStringLocalizer isn't available until the component is initialized.
+    protected override void OnInitialized()
+    {
+        _cases =
+        [
+            new(L["Case1_Title"], L["Case1_Desc"], L["Terminal"], "bash", Case1Code),
+            new(L["Case2_Title"], L["Case2_Desc"], L["Terminal"], "bash", Case2Code),
+            new(L["Case3_Title"], L["Case3_Desc"], "app.csproj", "xml", Case3Code),
+            new(L["Case4_Title"], L["Case4_Desc"], L["Terminal"], "bash", Case4Code),
+        ];
+    }
+
+    // Code samples are literal (no prose/comments), so they're identical across cultures.
+    private const string Case1Code = "sharpts rotate-logs.ts";
+
+    private const string Case2Code = """
+        sharpts --compile pricing.ts --ref-asm
+        sharpts --compile pricing.ts --pack
+        """;
+
+    private const string Case3Code = """
+        <Project Sdk="SharpTS.Sdk/1.0.0">
+          <PropertyGroup>
+            <TargetFramework>net10.0</TargetFramework>
+            <SharpTSEntryPoint>src/main.ts</SharpTSEntryPoint>
+          </PropertyGroup>
+        </Project>
+        """;
+
+    private const string Case4Code = """
+        sharpts --compile tool.ts -t exe
+        ./tool
+        """;
+}

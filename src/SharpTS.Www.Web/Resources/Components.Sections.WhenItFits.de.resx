@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Wann SharpTS passt</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Konkrete Situationen, in denen TypeScript auf .NET die bessere Wahl ist als Node — oder als C#.</value>
+  </data>
+  <data name="Terminal" xml:space="preserve">
+    <value>Terminal</value>
+  </data>
+  <data name="Case1_Title" xml:space="preserve">
+    <value>Skripte und Automatisierung für .NET-Teams</value>
+  </data>
+  <data name="Case1_Desc" xml:space="preserve">
+    <value>Schreiben Sie Build-Skripte, Entwickler-Tools und einmalige Automatisierung in TypeScript mit der gesamten BCL — auf Maschinen, die bereits das .NET SDK haben und keine Node-Toolchain. Kein &lt;code&gt;package.json&lt;/code&gt;, kein Build-Schritt: Richten Sie &lt;code&gt;sharpts&lt;/code&gt; auf die Datei.</value>
+  </data>
+  <data name="Case2_Title" xml:space="preserve">
+    <value>TypeScript-Logik als .NET-Bibliothek ausliefern</value>
+  </data>
+  <data name="Case2_Desc" xml:space="preserve">
+    <value>Kompilieren Sie ein TypeScript-Modul zu einer echten Assembly und veröffentlichen Sie es als versioniertes NuGet-Paket. Mit einer Referenz-Assembly instanziieren C#-Aufrufer Ihre Klassen und rufen Ihre Methoden vollständig typisiert auf.</value>
+  </data>
+  <data name="Case3_Title" xml:space="preserve">
+    <value>TypeScript-Entwickler in einer .NET-Codebasis</value>
+  </data>
+  <data name="Case3_Desc" xml:space="preserve">
+    <value>Lassen Sie Kolleginnen und Kollegen mit TypeScript-Hintergrund in der Sprache beitragen, die sie am besten kennen. Mit dem &lt;code&gt;SharpTS.Sdk&lt;/code&gt; werden ihre &lt;code&gt;.ts&lt;/code&gt;-Dateien im selben &lt;code&gt;dotnet build&lt;/code&gt; kompiliert wie die C#-Projekte drumherum — eine Toolchain, eine CI-Pipeline.</value>
+  </data>
+  <data name="Case4_Title" xml:space="preserve">
+    <value>Eigenständige Kommandozeilen-Tools</value>
+  </data>
+  <data name="Case4_Desc" xml:space="preserve">
+    <value>Kompilieren Sie zu einer einzigen eigenständigen ausführbaren Datei, die ohne separate Laufzeitinstallation läuft — kein Node auf der Zielmaschine, kein &lt;code&gt;node_modules&lt;/code&gt;-Ordner neben Ihrem Tool.</value>
+  </data>
+</root>

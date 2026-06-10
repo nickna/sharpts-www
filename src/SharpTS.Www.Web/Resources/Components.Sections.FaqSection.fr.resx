@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Questions fréquentes</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Les questions qui viennent en premier — avec des réponses directes.</value>
+  </data>
+  <data name="Q1" xml:space="preserve">
+    <value>En quoi SharpTS diffère-t-il de tsc ?</value>
+  </data>
+  <data name="A1" xml:space="preserve">
+    <value>tsc vérifie les types de votre code et émet du JavaScript qu'un moteur comme Node exécute. SharpTS ne produit jamais de JavaScript : il vérifie les types du même TypeScript, puis l'exécute directement ou le compile en assembly .NET. Il n'y a aucun Node dans la chaîne — le seul prérequis est le SDK .NET.</value>
+  </data>
+  <data name="Q2" xml:space="preserve">
+    <value>Pourquoi ne pas intégrer un moteur JavaScript comme Jint ou ClearScript ?</value>
+  </data>
+  <data name="A2" xml:space="preserve">
+    <value>Ces projets exécutent du JavaScript brut, non typé, dans un hôte .NET — très bien pour de petits scripts embarqués. SharpTS exécute TypeScript lui-même, vérifié avant l'exécution, et ajoute ce qu'un moteur JS embarqué ne peut pas offrir : la compilation anticipée vers IL, l'empaquetage NuGet et l'interop typée dans les deux sens entre TypeScript et C#.</value>
+  </data>
+  <data name="Q3" xml:space="preserve">
+    <value>Puis-je utiliser des paquets npm ?</value>
+  </data>
+  <data name="A3" xml:space="preserve">
+    <value>Partiellement. Les imports nus se résolvent via node_modules, donc les paquets qui livrent leur source TypeScript peuvent fonctionner, et un ensemble croissant de modules intégrés de Node — fs, path, process, buffer, events, streams — est implémenté nativement sur .NET. Les paquets qui livrent du JavaScript pur ou dépendent du champ « exports » de package.json ne sont pas encore pris en charge.</value>
+  </data>
+  <data name="Link_NodeStatus" xml:space="preserve">
+    <value>Voir le suivi de compatibilité Node.js →</value>
+  </data>
+  <data name="Q4" xml:space="preserve">
+    <value>Est-ce rapide ?</value>
+  </data>
+  <data name="A4" xml:space="preserve">
+    <value>Chaque mode répond différemment. L'interpréteur parcourt l'arbre syntaxique et vise un démarrage instantané — idéal pour les scripts et le REPL, pas pour le calcul intensif. Le mode compilé émet de l'IL que le CLR compile à la volée comme n'importe quel assembly C# : il s'exécute comme du code .NET natif. Dans les deux modes, les types sont vérifiés en amont puis effacés — ils ne coûtent rien à l'exécution.</value>
+  </data>
+  <data name="Q5" xml:space="preserve">
+    <value>Quelle est la maturité de SharpTS ?</value>
+  </data>
+  <data name="A5" xml:space="preserve">
+    <value>C'est un projet jeune, sous licence MIT et en développement actif. La matrice de prise en charge ci-dessus donne le tableau honnête : l'essentiel du langage moderne fonctionne, et les manques — comme Proxy et WeakRef — sont listés plutôt que cachés.</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>Suivre l'avancement dans STATUS.md →</value>
+  </data>
+  <data name="Q6" xml:space="preserve">
+    <value>Le playground est-il isolé (sandbox) ?</value>
+  </data>
+  <data name="A6" xml:space="preserve">
+    <value>Oui. Chaque exécution se déroule dans un processus isolé et éphémère, avec des limites strictes de temps, de mémoire et de sortie, et sans accès à l'environnement de l'hôte. C'est le même interpréteur que celui de la CLI — simplement encadré.</value>
+  </data>
+</root>

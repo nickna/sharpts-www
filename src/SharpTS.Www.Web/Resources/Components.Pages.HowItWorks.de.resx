@@ -88,16 +88,13 @@
     <value>Fügen Sie SharpTS.Sdk zu einer Projektdatei hinzu und bauen Sie .ts-Dateien als Teil Ihres normalen .NET-Builds, gesteuert über tsconfig.json.</value>
   </data>
   <data name="Cap5_Title" xml:space="preserve">
-    <value>Editor-Unterstützung</value>
+    <value>Editor-Tooling direkt aus dem Compiler</value>
   </data>
   <data name="Cap5_Body" xml:space="preserve">
-    <value>Ein Language Server (die Erweiterung vscode-sharpts) sowie die Generierung von .d.ts-Deklarationen liefern Vervollständigung und Typinformationen in Ihrem Editor.</value>
+    <value>Eine LSP-Brücke stellt SharpTS' eigenen Typprüfer über die Erweiterung vscode-sharpts in VS Code bereit — Editor und Laufzeit können sich nicht widersprechen. Die Deklarationsgenerierung geht den umgekehrten Weg und macht aus .NET-Typen .d.ts-Dateien: Auch die Interop-Oberfläche ist typisiert.</value>
   </data>
-  <data name="Cap6_Title" xml:space="preserve">
-    <value>Vollständiger Sprachumfang</value>
-  </data>
-  <data name="Cap6_Body" xml:space="preserve">
-    <value>Klassen, Generics, async/await, Generatoren, Decorators, Module, Map und Set, BigInt, Date, RegExp, Symbol und JSON.</value>
+  <data name="Matrix_Link" xml:space="preserve">
+    <value>Interessiert Sie ein bestimmtes Feature? Zur vollständigen Support-Übersicht →</value>
   </data>
   <data name="Cta_Title" xml:space="preserve">
     <value>Probieren Sie es selbst aus</value>

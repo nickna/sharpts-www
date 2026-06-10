@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Frequently Asked Questions</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>The questions that come up first — answered straight.</value>
+  </data>
+  <data name="Q1" xml:space="preserve">
+    <value>How is SharpTS different from tsc?</value>
+  </data>
+  <data name="A1" xml:space="preserve">
+    <value>tsc type-checks your code and emits JavaScript for an engine like Node to run. SharpTS never produces JavaScript: it type-checks the same TypeScript, then either executes it directly or compiles it to a .NET assembly. There is no Node anywhere in the chain — the only prerequisite is the .NET SDK.</value>
+  </data>
+  <data name="Q2" xml:space="preserve">
+    <value>Why not embed a JavaScript engine like Jint or ClearScript?</value>
+  </data>
+  <data name="A2" xml:space="preserve">
+    <value>Those projects run plain, untyped JavaScript inside a .NET host — a great fit for small embedded scripts. SharpTS runs TypeScript itself, type-checked before execution, and adds what an embedded JS engine can't: ahead-of-time compilation to IL, NuGet packaging, and typed interop in both directions between TypeScript and C#.</value>
+  </data>
+  <data name="Q3" xml:space="preserve">
+    <value>Can I use npm packages?</value>
+  </data>
+  <data name="A3" xml:space="preserve">
+    <value>Partially. Bare imports resolve through node_modules, so packages that ship TypeScript source can work, and a growing set of Node built-ins — fs, path, process, buffer, events, streams — is implemented natively on .NET. Packages that ship plain JavaScript or rely on package.json exports maps aren't supported yet.</value>
+  </data>
+  <data name="Link_NodeStatus" xml:space="preserve">
+    <value>See the Node.js compatibility tracker →</value>
+  </data>
+  <data name="Q4" xml:space="preserve">
+    <value>Is it fast?</value>
+  </data>
+  <data name="A4" xml:space="preserve">
+    <value>Each mode answers differently. The interpreter is a tree-walker tuned for instant startup — right for scripts and the REPL, not for number crunching. Compiled mode emits IL that the CLR JIT-compiles like any C# assembly, so it runs as native .NET code. In both modes, types are checked up front and then erased — they cost nothing at runtime.</value>
+  </data>
+  <data name="Q5" xml:space="preserve">
+    <value>How mature is SharpTS?</value>
+  </data>
+  <data name="A5" xml:space="preserve">
+    <value>It's a young, MIT-licensed project under active development. The support matrix above is the honest picture: most of the modern language works, and the gaps — like Proxy and WeakRef — are listed rather than hidden.</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>Follow progress in STATUS.md →</value>
+  </data>
+  <data name="Q6" xml:space="preserve">
+    <value>Is the playground sandboxed?</value>
+  </data>
+  <data name="A6" xml:space="preserve">
+    <value>Yes. Every run executes in an isolated, short-lived process with strict time, memory, and output limits, and no access to the host's environment. It's the same interpreter you get from the CLI — just fenced in.</value>
+  </data>
+</root>

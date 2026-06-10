@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>常见问题</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>大家最先问到的问题——直截了当地回答。</value>
+  </data>
+  <data name="Q1" xml:space="preserve">
+    <value>SharpTS 和 tsc 有什么不同？</value>
+  </data>
+  <data name="A1" xml:space="preserve">
+    <value>tsc 对代码做类型检查后生成 JavaScript，交给 Node 这样的引擎去运行。SharpTS 从不生成 JavaScript：它对同样的 TypeScript 做类型检查，然后要么直接执行，要么编译为 .NET 程序集。整条链路中没有 Node——唯一的前提是 .NET SDK。</value>
+  </data>
+  <data name="Q2" xml:space="preserve">
+    <value>为什么不嵌入 Jint 或 ClearScript 这样的 JavaScript 引擎？</value>
+  </data>
+  <data name="A2" xml:space="preserve">
+    <value>那些项目在 .NET 宿主中运行的是无类型的纯 JavaScript——非常适合小型嵌入式脚本。SharpTS 运行的是 TypeScript 本身，执行前经过类型检查，并提供嵌入式 JS 引擎做不到的能力：预先编译为 IL、打包 NuGet，以及 TypeScript 与 C# 之间的双向类型化互操作。</value>
+  </data>
+  <data name="Q3" xml:space="preserve">
+    <value>可以使用 npm 包吗？</value>
+  </data>
+  <data name="A3" xml:space="preserve">
+    <value>部分可以。裸导入会通过 node_modules 解析，因此随包提供 TypeScript 源码的包可以工作；同时越来越多的 Node 内置模块——fs、path、process、buffer、events、streams——已在 .NET 上原生实现。只提供纯 JavaScript 或依赖 package.json「exports」映射的包暂不支持。</value>
+  </data>
+  <data name="Link_NodeStatus" xml:space="preserve">
+    <value>查看 Node.js 兼容性进度 →</value>
+  </data>
+  <data name="Q4" xml:space="preserve">
+    <value>它快吗？</value>
+  </data>
+  <data name="A4" xml:space="preserve">
+    <value>两种模式的答案不同。解释器以遍历语法树的方式执行，为即时启动而调优——适合脚本和 REPL，不适合数值密集计算。编译模式生成的 IL 由 CLR 像任何 C# 程序集一样即时编译，作为原生 .NET 代码运行。两种模式下，类型都在前期检查后被擦除——运行时零开销。</value>
+  </data>
+  <data name="Q5" xml:space="preserve">
+    <value>SharpTS 有多成熟？</value>
+  </data>
+  <data name="A5" xml:space="preserve">
+    <value>这是一个年轻的项目，采用 MIT 许可证，正在积极开发中。上方的支持对照表就是真实情况：现代语言的绝大部分已经可用，而缺口——比如 Proxy 和 WeakRef——是公开列出的，而不是被藏起来。</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>在 STATUS.md 中关注进展 →</value>
+  </data>
+  <data name="Q6" xml:space="preserve">
+    <value>演练场是沙箱化的吗？</value>
+  </data>
+  <data name="A6" xml:space="preserve">
+    <value>是的。每次运行都在一个隔离的短生命周期进程中执行，受严格的时间、内存和输出限制，且无法访问宿主环境。它就是 CLI 中的那个解释器——只是被圈起来了。</value>
+  </data>
+</root>

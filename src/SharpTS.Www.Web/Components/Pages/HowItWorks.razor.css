@@ -129,6 +129,12 @@
     margin: 2.5rem auto 0;
 }
 
+.matrix-link {
+    margin: 2rem auto 0;
+    text-align: center;
+    font-size: 0.9375rem;
+}
+
 /* === CTA === */
 .guide-cta {
     max-width: 640px;

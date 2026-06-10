@@ -48,8 +48,14 @@
   <data name="Link_CodeExamples" xml:space="preserve">
     <value>代码示例</value>
   </data>
+  <data name="Link_UseCases" xml:space="preserve">
+    <value>适用场景</value>
+  </data>
   <data name="Link_Playground" xml:space="preserve">
     <value>演练场</value>
+  </data>
+  <data name="Link_Faq" xml:space="preserve">
+    <value>常见问题</value>
   </data>
   <data name="Link_GetStarted" xml:space="preserve">
     <value>快速开始</value>

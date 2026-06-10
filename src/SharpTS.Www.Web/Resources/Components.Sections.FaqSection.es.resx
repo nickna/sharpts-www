@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Preguntas frecuentes</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Las preguntas que surgen primero — respondidas sin rodeos.</value>
+  </data>
+  <data name="Q1" xml:space="preserve">
+    <value>¿En qué se diferencia SharpTS de tsc?</value>
+  </data>
+  <data name="A1" xml:space="preserve">
+    <value>tsc comprueba los tipos de tu código y emite JavaScript para que lo ejecute un motor como Node. SharpTS nunca produce JavaScript: comprueba los tipos del mismo TypeScript y luego lo ejecuta directamente o lo compila a un ensamblado .NET. No hay Node en ninguna parte de la cadena — el único requisito es el SDK de .NET.</value>
+  </data>
+  <data name="Q2" xml:space="preserve">
+    <value>¿Por qué no integrar un motor JavaScript como Jint o ClearScript?</value>
+  </data>
+  <data name="A2" xml:space="preserve">
+    <value>Esos proyectos ejecutan JavaScript plano y sin tipos dentro de un host .NET — perfectos para pequeños scripts embebidos. SharpTS ejecuta TypeScript en sí, con tipos comprobados antes de la ejecución, y añade lo que un motor JS embebido no puede: compilación anticipada a IL, empaquetado NuGet e interoperabilidad tipada en ambos sentidos entre TypeScript y C#.</value>
+  </data>
+  <data name="Q3" xml:space="preserve">
+    <value>¿Puedo usar paquetes de npm?</value>
+  </data>
+  <data name="A3" xml:space="preserve">
+    <value>Parcialmente. Los imports sin ruta se resuelven a través de node_modules, así que los paquetes que distribuyen su código TypeScript pueden funcionar, y un conjunto creciente de módulos integrados de Node — fs, path, process, buffer, events, streams — está implementado de forma nativa sobre .NET. Los paquetes que distribuyen JavaScript plano o dependen del campo «exports» de package.json aún no están soportados.</value>
+  </data>
+  <data name="Link_NodeStatus" xml:space="preserve">
+    <value>Ver el seguimiento de compatibilidad con Node.js →</value>
+  </data>
+  <data name="Q4" xml:space="preserve">
+    <value>¿Es rápido?</value>
+  </data>
+  <data name="A4" xml:space="preserve">
+    <value>Cada modo responde de forma distinta. El intérprete recorre el árbol sintáctico y está afinado para arrancar al instante — ideal para scripts y el REPL, no para cálculo intensivo. El modo compilado emite IL que el CLR compila al vuelo como cualquier ensamblado C#, así que se ejecuta como código .NET nativo. En ambos modos, los tipos se comprueban por adelantado y luego se borran — no cuestan nada en tiempo de ejecución.</value>
+  </data>
+  <data name="Q5" xml:space="preserve">
+    <value>¿Qué madurez tiene SharpTS?</value>
+  </data>
+  <data name="A5" xml:space="preserve">
+    <value>Es un proyecto joven, con licencia MIT y en desarrollo activo. La matriz de soporte de arriba es la imagen honesta: la mayor parte del lenguaje moderno funciona, y los huecos — como Proxy y WeakRef — están listados en lugar de ocultos.</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>Sigue el progreso en STATUS.md →</value>
+  </data>
+  <data name="Q6" xml:space="preserve">
+    <value>¿Está aislado el playground?</value>
+  </data>
+  <data name="A6" xml:space="preserve">
+    <value>Sí. Cada ejecución corre en un proceso aislado y de corta vida, con límites estrictos de tiempo, memoria y salida, y sin acceso al entorno del host. Es el mismo intérprete que obtienes en la CLI — solo que con vallas.</value>
+  </data>
+</root>

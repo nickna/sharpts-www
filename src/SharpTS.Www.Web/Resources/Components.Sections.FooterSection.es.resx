@@ -48,8 +48,14 @@
   <data name="Link_CodeExamples" xml:space="preserve">
     <value>Ejemplos de código</value>
   </data>
+  <data name="Link_UseCases" xml:space="preserve">
+    <value>Casos de uso</value>
+  </data>
   <data name="Link_Playground" xml:space="preserve">
     <value>Entorno de pruebas</value>
+  </data>
+  <data name="Link_Faq" xml:space="preserve">
+    <value>Preguntas frecuentes</value>
   </data>
   <data name="Link_GetStarted" xml:space="preserve">
     <value>Empezar</value>

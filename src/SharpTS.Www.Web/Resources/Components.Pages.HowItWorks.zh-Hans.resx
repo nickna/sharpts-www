@@ -88,16 +88,13 @@
     <value>将 SharpTS.Sdk 添加到项目文件中，由 tsconfig.json 驱动，将 .ts 文件作为常规 .NET 构建的一部分进行编译。</value>
   </data>
   <data name="Cap5_Title" xml:space="preserve">
-    <value>编辑器支持</value>
+    <value>编辑器工具直接来自编译器</value>
   </data>
   <data name="Cap5_Body" xml:space="preserve">
-    <value>语言服务器（vscode-sharpts 扩展）以及 .d.ts 声明生成，为你的编辑器提供补全和类型信息。</value>
+    <value>LSP 桥通过 vscode-sharpts 扩展把 SharpTS 自己的类型检查器暴露给 VS Code——编辑器与运行时不会产生分歧。声明生成则反向而行，把 .NET 类型转换为 .d.ts 文件：互操作接口同样有类型。</value>
   </data>
-  <data name="Cap6_Title" xml:space="preserve">
-    <value>完整的语言特性</value>
-  </data>
-  <data name="Cap6_Body" xml:space="preserve">
-    <value>类、泛型、async/await、生成器、装饰器、模块、Map 与 Set、BigInt、Date、RegExp、Symbol 和 JSON。</value>
+  <data name="Matrix_Link" xml:space="preserve">
+    <value>想了解某个具体特性？查看完整支持对照表 →</value>
   </data>
   <data name="Cta_Title" xml:space="preserve">
     <value>亲自试试</value>

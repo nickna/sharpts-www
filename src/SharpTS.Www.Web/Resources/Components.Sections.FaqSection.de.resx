@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Häufig gestellte Fragen</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Die Fragen, die zuerst kommen — direkt beantwortet.</value>
+  </data>
+  <data name="Q1" xml:space="preserve">
+    <value>Worin unterscheidet sich SharpTS von tsc?</value>
+  </data>
+  <data name="A1" xml:space="preserve">
+    <value>tsc prüft die Typen Ihres Codes und erzeugt JavaScript, das eine Engine wie Node ausführt. SharpTS erzeugt nie JavaScript: Es prüft dasselbe TypeScript und führt es dann entweder direkt aus oder kompiliert es zu einer .NET-Assembly. Nirgendwo in der Kette steckt Node — die einzige Voraussetzung ist das .NET SDK.</value>
+  </data>
+  <data name="Q2" xml:space="preserve">
+    <value>Warum nicht eine JavaScript-Engine wie Jint oder ClearScript einbetten?</value>
+  </data>
+  <data name="A2" xml:space="preserve">
+    <value>Diese Projekte führen reines, untypisiertes JavaScript in einem .NET-Host aus — gut geeignet für kleine eingebettete Skripte. SharpTS führt TypeScript selbst aus, typgeprüft vor der Ausführung, und bietet, was eine eingebettete JS-Engine nicht kann: vorzeitige Kompilierung zu IL, NuGet-Paketierung und typisierte Interop in beide Richtungen zwischen TypeScript und C#.</value>
+  </data>
+  <data name="Q3" xml:space="preserve">
+    <value>Kann ich npm-Pakete verwenden?</value>
+  </data>
+  <data name="A3" xml:space="preserve">
+    <value>Teilweise. Importe ohne Pfad werden über node_modules aufgelöst, daher können Pakete funktionieren, die TypeScript-Quellcode ausliefern, und eine wachsende Zahl von Node-Built-ins — fs, path, process, buffer, events, streams — ist nativ auf .NET implementiert. Pakete, die reines JavaScript ausliefern oder auf die „exports“-Einträge in package.json angewiesen sind, werden noch nicht unterstützt.</value>
+  </data>
+  <data name="Link_NodeStatus" xml:space="preserve">
+    <value>Zur Node.js-Kompatibilitätsübersicht →</value>
+  </data>
+  <data name="Q4" xml:space="preserve">
+    <value>Ist es schnell?</value>
+  </data>
+  <data name="A4" xml:space="preserve">
+    <value>Jeder Modus antwortet anders. Der Interpreter durchläuft den Syntaxbaum und ist auf sofortigen Start ausgelegt — richtig für Skripte und die REPL, nicht für Zahlenakrobatik. Der kompilierte Modus erzeugt IL, das der CLR-JIT wie jede C#-Assembly kompiliert: Es läuft als nativer .NET-Code. In beiden Modi werden die Typen vorab geprüft und dann entfernt — zur Laufzeit kosten sie nichts.</value>
+  </data>
+  <data name="Q5" xml:space="preserve">
+    <value>Wie ausgereift ist SharpTS?</value>
+  </data>
+  <data name="A5" xml:space="preserve">
+    <value>Es ist ein junges, MIT-lizenziertes Projekt in aktiver Entwicklung. Die Übersicht oben zeigt das ehrliche Bild: Der größte Teil der modernen Sprache funktioniert, und die Lücken — etwa Proxy und WeakRef — sind aufgelistet statt versteckt.</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>Fortschritt in STATUS.md verfolgen →</value>
+  </data>
+  <data name="Q6" xml:space="preserve">
+    <value>Ist der Playground isoliert (Sandbox)?</value>
+  </data>
+  <data name="A6" xml:space="preserve">
+    <value>Ja. Jeder Lauf wird in einem isolierten, kurzlebigen Prozess ausgeführt, mit strengen Zeit-, Speicher- und Ausgabelimits und ohne Zugriff auf die Umgebung des Hosts. Es ist derselbe Interpreter wie in der CLI — nur eingezäunt.</value>
+  </data>
+</root>
