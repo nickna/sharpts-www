@@ -27,4 +27,15 @@ ENV Worker__ExecutablePath=/app/worker/SharpTS.Www.Worker
 
 EXPOSE 8080
 
+# Run as the image's built-in non-root user. The API executes untrusted
+# playground code in the worker it spawns; the child inherits this UID, so
+# guest code runs unprivileged. Defense-in-depth for the file system: even if
+# a read/write path ever became reachable from playground TypeScript (today
+# none is — fs/require need module resolution, which single-source mode
+# rejects), an unprivileged process cannot reach root-owned secrets or config.
+# Pairs with the env-clearing in TypeScriptExecutionService and the network
+# egress block in the worker. For a stronger boundary, also configure a
+# read-only root filesystem at the Railway service level.
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "api/SharpTS.Www.Api.dll"]
