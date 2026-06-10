@@ -54,10 +54,4 @@
   <data name="Link_Status" xml:space="preserve">
     <value>Suivre l'avancement dans STATUS.md →</value>
   </data>
-  <data name="Q6" xml:space="preserve">
-    <value>Le playground est-il isolé (sandbox) ?</value>
-  </data>
-  <data name="A6" xml:space="preserve">
-    <value>Oui. Chaque exécution se déroule dans un processus isolé et éphémère, avec des limites strictes de temps, de mémoire et de sortie, et sans accès à l'environnement de l'hôte. C'est le même interpréteur que celui de la CLI — simplement encadré.</value>
-  </data>
 </root>

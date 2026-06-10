@@ -54,10 +54,4 @@
   <data name="Link_Status" xml:space="preserve">
     <value>Sigue el progreso en STATUS.md →</value>
   </data>
-  <data name="Q6" xml:space="preserve">
-    <value>¿Está aislado el playground?</value>
-  </data>
-  <data name="A6" xml:space="preserve">
-    <value>Sí. Cada ejecución corre en un proceso aislado y de corta vida, con límites estrictos de tiempo, memoria y salida, y sin acceso al entorno del host. Es el mismo intérprete que obtienes en la CLI — solo que con vallas.</value>
-  </data>
 </root>

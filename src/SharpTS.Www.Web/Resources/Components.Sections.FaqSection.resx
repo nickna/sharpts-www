@@ -54,10 +54,4 @@
   <data name="Link_Status" xml:space="preserve">
     <value>Follow progress in STATUS.md →</value>
   </data>
-  <data name="Q6" xml:space="preserve">
-    <value>Is the playground sandboxed?</value>
-  </data>
-  <data name="A6" xml:space="preserve">
-    <value>Yes. Every run executes in an isolated, short-lived process with strict time, memory, and output limits, and no access to the host's environment. It's the same interpreter you get from the CLI — just fenced in.</value>
-  </data>
 </root>

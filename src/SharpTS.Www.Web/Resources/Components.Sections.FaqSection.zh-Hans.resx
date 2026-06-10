@@ -54,10 +54,4 @@
   <data name="Link_Status" xml:space="preserve">
     <value>在 STATUS.md 中关注进展 →</value>
   </data>
-  <data name="Q6" xml:space="preserve">
-    <value>演练场是沙箱化的吗？</value>
-  </data>
-  <data name="A6" xml:space="preserve">
-    <value>是的。每次运行都在一个隔离的短生命周期进程中执行，受严格的时间、内存和输出限制，且无法访问宿主环境。它就是 CLI 中的那个解释器——只是被圈起来了。</value>
-  </data>
 </root>
