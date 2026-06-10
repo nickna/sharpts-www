@@ -8,7 +8,7 @@ public static class PlaygroundEndpoints
 
         group.MapPost("/run", async (RunRequest request, TypeScriptExecutionService service, CancellationToken ct) =>
         {
-            var response = await service.ExecuteAsync(request.Source, request.TimeoutMs, ct);
+            var response = await service.ExecuteAsync(request.Source, request.TimeoutMs, request.Mode, ct);
 
             if (response is null)
                 return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
@@ -28,13 +28,14 @@ public static class PlaygroundEndpoints
     }
 }
 
-public record RunRequest(string Source, int TimeoutMs = 5000);
+public record RunRequest(string Source, int TimeoutMs = 5000, string? Mode = null);
 
 public record RunResponse(
     bool Success,
     string Output,
     List<ErrorInfo> Errors,
-    long ExecutionTimeMs);
+    long ExecutionTimeMs,
+    long? CompileTimeMs = null);
 
 public record ErrorInfo(string Message, int? Line, int? Column);
 

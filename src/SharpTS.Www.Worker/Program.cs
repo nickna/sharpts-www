@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using SharpTS.Compilation;
+using SharpTS.Diagnostics;
 using SharpTS.Execution;
 using SharpTS.Parsing;
 using SharpTS.TypeSystem;
@@ -46,6 +48,30 @@ Console.SetError(outputWriter);
 
 try
 {
+    if (string.Equals(request.Mode, "compile", StringComparison.OrdinalIgnoreCase))
+    {
+        var compileResult = CompilationService.Compile(request.Source, new CompileOptions(DecoratorMode.None));
+
+        if (!compileResult.Success)
+        {
+            foreach (var diagnostic in compileResult.Diagnostics)
+                errors.Add(new WorkerError(diagnostic.ToString()));
+
+            WriteResponse(new WorkerResponse(false, outputBuilder.ToString(), errors, 0, compileResult.CompileTimeMs));
+            return 0;
+        }
+
+        // Execute swaps Console.Out/Error to the given writer for the duration of the
+        // run, so guest output lands in the same capped buffer as interpreted mode.
+        var runResult = CompilationService.Execute(compileResult.AssemblyBytes!, outputWriter);
+
+        if (!runResult.Success && runResult.Error is not null)
+            errors.Add(new WorkerError(runResult.Error));
+
+        WriteResponse(new WorkerResponse(runResult.Success, outputBuilder.ToString(), errors, runResult.ExecuteTimeMs, compileResult.CompileTimeMs));
+        return 0;
+    }
+
     // Lexing
     var lexer = new Lexer(request.Source);
     var tokens = lexer.ScanTokens();
@@ -111,6 +137,6 @@ void WriteResponse(WorkerResponse response)
     realStdout.Flush();
 }
 
-record WorkerRequest(string Source, int TimeoutMs);
-record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs);
+record WorkerRequest(string Source, int TimeoutMs, string? Mode = null);
+record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs, long? CompileTimeMs = null);
 record WorkerError(string Message);

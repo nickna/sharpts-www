@@ -17,6 +17,12 @@
                             <option value="@preset.Name">@preset.Name</option>
                         }
                     </select>
+                    <div class="playground__mode" role="group" aria-label="@L["ModeLabel"]">
+                        <button class="playground__mode-btn @(_mode == "interpret" ? "playground__mode-btn--active" : "")"
+                                @onclick="@(() => _mode = "interpret")">@L["ModeInterpret"]</button>
+                        <button class="playground__mode-btn @(_mode == "compile" ? "playground__mode-btn--active" : "")"
+                                @onclick="@(() => _mode = "compile")">@L["ModeCompile"]</button>
+                    </div>
                 </div>
                 <div class="playground__toolbar-right">
                     <button class="btn btn-sm btn-secondary" @onclick="ClearOutput">@L["Clear"]</button>
@@ -50,7 +56,11 @@
                         <span>@L["Output"]</span>
                         @if (_executionTime.HasValue)
                         {
-                            <span class="playground__timing">@(_executionTime)ms</span>
+                            <span class="playground__timing">
+                                @(_compileTime.HasValue
+                                    ? string.Format(L["TimingCompiled"], _compileTime, _executionTime)
+                                    : $"{_executionTime}ms")
+                            </span>
                         }
                     </div>
                     <div class="playground__output-body">
@@ -84,6 +94,8 @@
     private string _output = "";
     private List<ErrorInfo> _errors = [];
     private long? _executionTime;
+    private long? _compileTime;
+    private string _mode = "interpret";
     private bool _editorReady;
 
     private string DefaultCode => L["DefaultCode"];
@@ -121,18 +133,20 @@
         _output = "";
         _errors = [];
         _executionTime = null;
+        _compileTime = null;
         StateHasChanged();
 
         try
         {
             var source = await JS.InvokeAsync<string>("getCodeMirrorValue", "playground-editor");
-            var response = await Api.RunAsync(source);
+            var response = await Api.RunAsync(source, mode: _mode);
 
             if (response is not null)
             {
                 _output = response.Output;
                 _errors = response.Errors;
                 _executionTime = response.ExecutionTimeMs;
+                _compileTime = response.CompileTimeMs;
             }
         }
         catch (Exception ex)
@@ -150,6 +164,7 @@
         _output = "";
         _errors = [];
         _executionTime = null;
+        _compileTime = null;
     }
 
     private async Task OnPresetChanged(ChangeEventArgs e)

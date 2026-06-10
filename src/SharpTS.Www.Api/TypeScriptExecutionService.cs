@@ -22,13 +22,17 @@ public sealed class TypeScriptExecutionService
     /// <summary>
     /// Returns null when all worker slots are busy (caller should return 503).
     /// </summary>
-    public async Task<RunResponse?> ExecuteAsync(string source, int timeoutMs, CancellationToken cancellationToken = default)
+    public async Task<RunResponse?> ExecuteAsync(string source, int timeoutMs, string? mode = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(source))
             return new RunResponse(false, "", [new ErrorInfo("Source code cannot be empty.", null, null)], 0);
 
         if (source.Length > MaxSourceLength)
             return new RunResponse(false, "", [new ErrorInfo($"Source code exceeds maximum length of {MaxSourceLength} bytes.", null, null)], 0);
+
+        mode = string.IsNullOrWhiteSpace(mode) ? "interpret" : mode.ToLowerInvariant();
+        if (mode is not ("interpret" or "compile"))
+            return new RunResponse(false, "", [new ErrorInfo("Mode must be 'interpret' or 'compile'.", null, null)], 0);
 
         timeoutMs = Math.Clamp(timeoutMs, 100, MaxTimeoutMs);
 
@@ -37,7 +41,7 @@ public sealed class TypeScriptExecutionService
 
         try
         {
-            return await RunWorkerAsync(source, timeoutMs, cancellationToken);
+            return await RunWorkerAsync(source, timeoutMs, mode, cancellationToken);
         }
         finally
         {
@@ -45,7 +49,7 @@ public sealed class TypeScriptExecutionService
         }
     }
 
-    private async Task<RunResponse> RunWorkerAsync(string source, int timeoutMs, CancellationToken cancellationToken)
+    private async Task<RunResponse> RunWorkerAsync(string source, int timeoutMs, string mode, CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
 
@@ -77,7 +81,7 @@ public sealed class TypeScriptExecutionService
         using (process)
         {
             // Write request to stdin, then close it
-            var request = JsonSerializer.Serialize(new { Source = source, TimeoutMs = timeoutMs });
+            var request = JsonSerializer.Serialize(new { Source = source, TimeoutMs = timeoutMs, Mode = mode });
             await process.StandardInput.WriteLineAsync(request);
             process.StandardInput.Close();
 
@@ -187,6 +191,9 @@ public sealed class TypeScriptExecutionService
                 {
                     -1073741571 => "Execution terminated: stack overflow.", // 0xC00000FD
                     _ when !string.IsNullOrWhiteSpace(stderr) => $"Execution error: {stderr.Trim()[..Math.Min(stderr.Trim().Length, 500)]}",
+                    // Compiled guest code calling process.exit() exits the worker directly,
+                    // so no JSON response is ever written.
+                    _ when mode == "compile" => $"Program terminated the process (exit code {process.ExitCode}), e.g. via process.exit().",
                     _ => $"Execution terminated unexpectedly (exit code {process.ExitCode}).",
                 };
 
@@ -204,7 +211,7 @@ public sealed class TypeScriptExecutionService
                     .Select(e => new ErrorInfo(e.Message, null, null))
                     .ToList();
 
-                return new RunResponse(workerResponse.Success, workerResponse.Output, errors, workerResponse.ExecutionTimeMs);
+                return new RunResponse(workerResponse.Success, workerResponse.Output, errors, workerResponse.ExecutionTimeMs, workerResponse.CompileTimeMs);
             }
             catch (JsonException ex)
             {
@@ -226,6 +233,6 @@ public sealed class TypeScriptExecutionService
         }
     }
 
-    private record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs);
+    private record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs, long? CompileTimeMs = null);
     private record WorkerError(string Message);
 }
