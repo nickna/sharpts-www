@@ -1,11 +1,30 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using SharpTS.Compilation;
+using SharpTS.Diagnostics;
 using SharpTS.Execution;
 using SharpTS.Parsing;
 using SharpTS.TypeSystem;
 
 const int MaxOutputLength = 100 * 1024; // 100KB
+
+// The only network capability reachable from single-source playground code is the
+// global fetch() — the fs/net/http/dns modules all require imports, which this
+// (non-module) execution mode rejects. SharpTS' fetch routes through HttpClient,
+// which consults HttpClient.DefaultProxy for handlers that don't set their own
+// proxy (the engine's don't). Pointing that at a non-listening loopback port makes
+// every outbound request fail fast and is set here, in the host before any guest
+// code runs — TypeScript cannot reach or override it. This blocks server-side
+// request forgery (cloud metadata endpoints, internal services) in both modes.
+// The "sharpts-network-blocked" host is a recognizable sentinel for friendlier
+// error messaging upstream; it never resolves.
+HttpClient.DefaultProxy = new WebProxy("http://sharpts-network-blocked.invalid:9")
+{
+    BypassProxyOnLocal = false,
+};
 
 // Save the real stdout before we redirect Console.Out for the interpreter.
 var realStdout = Console.Out;
@@ -46,6 +65,30 @@ Console.SetError(outputWriter);
 
 try
 {
+    if (string.Equals(request.Mode, "compile", StringComparison.OrdinalIgnoreCase))
+    {
+        var compileResult = CompilationService.Compile(request.Source, new CompileOptions(DecoratorMode.None));
+
+        if (!compileResult.Success)
+        {
+            foreach (var diagnostic in compileResult.Diagnostics)
+                errors.Add(new WorkerError(diagnostic.ToString()));
+
+            WriteResponse(new WorkerResponse(false, outputBuilder.ToString(), errors, 0, compileResult.CompileTimeMs));
+            return 0;
+        }
+
+        // Execute swaps Console.Out/Error to the given writer for the duration of the
+        // run, so guest output lands in the same capped buffer as interpreted mode.
+        var runResult = CompilationService.Execute(compileResult.AssemblyBytes!, outputWriter);
+
+        if (!runResult.Success && runResult.Error is not null)
+            errors.Add(new WorkerError(runResult.Error));
+
+        WriteResponse(new WorkerResponse(runResult.Success, outputBuilder.ToString(), errors, runResult.ExecuteTimeMs, compileResult.CompileTimeMs));
+        return 0;
+    }
+
     // Lexing
     var lexer = new Lexer(request.Source);
     var tokens = lexer.ScanTokens();
@@ -111,6 +154,6 @@ void WriteResponse(WorkerResponse response)
     realStdout.Flush();
 }
 
-record WorkerRequest(string Source, int TimeoutMs);
-record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs);
+record WorkerRequest(string Source, int TimeoutMs, string? Mode = null);
+record WorkerResponse(bool Success, string Output, List<WorkerError> Errors, long ExecutionTimeMs, long? CompileTimeMs = null);
 record WorkerError(string Message);

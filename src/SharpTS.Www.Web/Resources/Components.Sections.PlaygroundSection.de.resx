@@ -55,4 +55,16 @@ function greet(person: Person): string {
 const developer: Person = { name: &quot;World&quot;, age: 1 };
 console.log(greet(developer));</value>
   </data>
+  <data name="ModeLabel" xml:space="preserve">
+    <value>Ausführungsmodus</value>
+  </data>
+  <data name="ModeInterpret" xml:space="preserve">
+    <value>Interpretieren</value>
+  </data>
+  <data name="ModeCompile" xml:space="preserve">
+    <value>Kompilieren</value>
+  </data>
+  <data name="TimingCompiled" xml:space="preserve">
+    <value>kompiliert in {0} ms · ausgeführt in {1} ms</value>
+  </data>
 </root>

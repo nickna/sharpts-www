@@ -4,9 +4,9 @@ namespace SharpTS.Www.Web;
 
 public class PlaygroundApiClient(HttpClient httpClient)
 {
-    public async Task<RunResponse?> RunAsync(string source, int timeoutMs = 5000)
+    public async Task<RunResponse?> RunAsync(string source, int timeoutMs = 5000, string? mode = null)
     {
-        var request = new RunRequest(source, timeoutMs);
+        var request = new RunRequest(source, timeoutMs, mode);
         var response = await httpClient.PostAsJsonAsync("/api/run", request);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<RunResponse>();
@@ -23,13 +23,14 @@ public class PlaygroundApiClient(HttpClient httpClient)
     }
 }
 
-public record RunRequest(string Source, int TimeoutMs = 5000);
+public record RunRequest(string Source, int TimeoutMs = 5000, string? Mode = null);
 
 public record RunResponse(
     bool Success,
     string Output,
     List<ErrorInfo> Errors,
-    long ExecutionTimeMs);
+    long ExecutionTimeMs,
+    long? CompileTimeMs = null);
 
 public record ErrorInfo(string Message, int? Line, int? Column);
 
