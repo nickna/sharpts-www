@@ -1,19 +1,22 @@
 # SharpTS self-hosting plan
 
-Status: SharpTS prerequisites merged and pinned; Linux container path validated locally; frontend migration remains
+Status: SharpTS prerequisites merged and pinned; Linux container and Aspire local-development paths implemented; frontend migration remains
 
 Last updated: 2026-08-04
 
 ## Objective
 
-Replace the Blazor Server, ASP.NET Core/Kestrel, and Aspire website hosts with a
-web server written in TypeScript and compiled or interpreted by SharpTS. Preserve
-the live playground's process isolation and resource controls.
+Replace the production Blazor Server and ASP.NET Core/Kestrel website hosts with
+a web server written in TypeScript and compiled or interpreted by SharpTS.
+Retain Aspire as a local-development orchestrator for that compiled host, not as
+a production server dependency. Preserve the live playground's process isolation
+and resource controls.
 
-This removes Blazor, ASP.NET Core, Kestrel, SignalR, Aspire, and the separate web
-and API services. It does not automatically remove the .NET runtime: ordinary
-compiled SharpTS output is .NET IL. Eliminating the installed runtime would be a
-separate Native AOT objective.
+This removes Blazor, ASP.NET Core, Kestrel, SignalR, and the separate web and API
+services from the production topology. Aspire remains a development-time process
+orchestrator and dashboard. This does not automatically remove the .NET runtime:
+ordinary compiled SharpTS output is .NET IL. Eliminating the installed runtime
+would be a separate Native AOT objective.
 
 ## Conclusion
 
@@ -33,6 +36,11 @@ production replacement. The Razor frontend must become static
 HTML plus browser-side JavaScript, and the ASP.NET execution supervisor must be
 ported or exposed through a small helper. Most CSS and existing browser
 JavaScript can be reused.
+
+During the migration, `scripts/run.ps1` and `scripts/run.sh` build the current
+SharpTS bundle and start it as a single Aspire executable resource. This gives
+the incomplete host a repeatable local URL, health status, lifecycle, and log
+view without accidentally exercising the legacy Kestrel applications.
 
 ## Evidence collected
 
@@ -124,15 +132,47 @@ The current frontend comprises approximately:
 | Minimal API endpoints | Small TypeScript router |
 | `TypeScriptExecutionService` | TypeScript child-process supervisor or a narrow helper |
 | `SharpTS.Www.Worker` | Keep unchanged initially |
-| Aspire service discovery | One container with a direct worker path |
+| Aspire service discovery | Local orchestration only; production uses one container with a direct worker path |
 | ServiceDefaults | Explicit health endpoints and structured logs |
+
+## Local development topology
+
+Aspire is intentionally retained for partial local testing while the frontend is
+being migrated:
+
+```text
+scripts/run.ps1 or scripts/run.sh
+  -> compile server.ts and publish SharpTS.Www.Worker
+  -> start Aspire AppHost
+       -> one `sharpts-www` executable resource
+            -> dotnet SharpTS.Www.SelfHost.dll
+                 -> static pages and same-origin /api/*
+                 -> isolated worker child process per admitted execution
+```
+
+The AppHost allocates and proxies a local HTTP port through `PORT`, reports
+`/health` in the dashboard, captures the compiled host's structured stdout, and
+stops the host with the Aspire application. It does not launch
+`SharpTS.Www.Web` or `SharpTS.Www.Api`; keeping those Kestrel projects in the
+solution during migration does not make them part of the self-host test path.
+Aspire's own AppHost and dashboard use ASP.NET Core internally, so their process
+logs can still mention Kestrel. The website resource itself is the emitted
+`SharpTS.Www.SelfHost.dll` and uses SharpTS's `http` implementation backed by
+`HttpListener`. The development-only AppHost is pinned to Aspire 13.4.6; this
+replaced 13.1.2 after its restore reported known vulnerable transitive packages.
+
+The run scripts always rebuild the bundle before Aspire starts. Directly running
+the AppHost is allowed only when `artifacts/self-host` already exists, and the
+AppHost fails with an actionable error if the server or worker artifact is
+missing. On Windows and macOS local development disables the Linux-only `/proc`
+RSS check; the Linux container suite remains authoritative for that control.
 
 ## Required SharpTS work
 
 ### P0: honor the HTTP listen host
 
-Local implementation status: complete in the sibling SharpTS working tree;
-not yet committed or pinned by this repository.
+Implementation status: complete in SharpTS and pinned by this repository at
+`32f9f4f43e856c9ba9bef5028274142e75241eb1`.
 
 The compiled HTTP emitter currently builds this prefix:
 
@@ -160,8 +200,8 @@ separate out-of-process smoke test so packaging cannot regress the binding.
 
 ### P0: preserve playground worker supervision
 
-Local implementation status: implemented in the compiled spike; Linux RSS and
-container-limit tests remain.
+Implementation status: implemented in the compiled spike and exercised by the
+Linux container suite, including RSS and container limits.
 
 The current API enforces all of the following:
 
@@ -364,9 +404,9 @@ the first release.
 1. **Complete:** SharpTS prerequisite changes were merged by PR #1348, the timer
    re-entrancy regression was merged by PR #1349, and the website submodule is
    pinned to merge commit `32f9f4f4`.
-2. **Implemented locally:** fix `server.listen(port, host)` in interpreted and
+2. **Complete and pinned:** fix `server.listen(port, host)` in interpreted and
    compiled SharpTS.
-3. **Implemented locally:** add non-loopback listener and emitted-host tests;
+3. **Complete and pinned:** add non-loopback listener and emitted-host tests;
    the repository now includes a Linux container suite and CI workflow.
 4. **Complete:** build a compiled spike serving health, static content, and POST
    JSON on the configured interface.
@@ -380,21 +420,25 @@ the first release.
    concurrency saturation, trusted-proxy rate-limit identity, and stack overflow
    are proven. Malformed worker output and shutdown under load also pass in the
    container suite. A deliberate hard-limit OOM test remains.
-8. **Not started:** convert resources and Razor markup into localized static
+8. **Complete for local development:** migrate the Aspire AppHost from the
+   legacy `SharpTS.Www.Web` and `SharpTS.Www.Api` Kestrel projects to one
+   executable resource running the compiled SharpTS server. The local run scripts
+   rebuild the server and worker bundle before starting Aspire.
+9. **Not started:** convert resources and Razor markup into localized static
    output.
-9. **Not started:** port browser interactivity and connect the real playground
+10. **Not started:** port browser interactivity and connect the real playground
    UI to the same-origin API.
-10. **Partial:** traversal containment, MIME, ETag/cache, body streaming, origin,
-    and trusted-IP logic exist. Automated encoded traversal, cache, malformed
-    JSON, origin, and trusted proxy/rate-limit tests pass; untrusted forwarded-IP
-    spoofing and request-body disconnect coverage remain.
-11. **Local Linux pass / hosted CI pending:** `Dockerfile.selfhost` contains the
-    compiled host, static assets, and worker and uses the .NET runtime (not
-    ASP.NET) image as a non-root user. The hardened image and container suite pass
-    from the clean `32f9f4f4` pin, and deterministic provenance metadata is
-    verified; the workflow will run when these changes push.
-12. **Not started:** load test and canary before removing the existing Railway
-    web and API services.
+11. **Partial:** traversal containment, MIME, ETag/cache, body streaming, origin,
+     and trusted-IP logic exist. Automated encoded traversal, cache, malformed
+     JSON, origin, and trusted proxy/rate-limit tests pass; untrusted forwarded-IP
+     spoofing and request-body disconnect coverage remain.
+12. **Local and hosted Linux CI pass:** `Dockerfile.selfhost` contains the
+     compiled host, static assets, and worker and uses the .NET runtime (not
+     ASP.NET) image as a non-root user. The hardened image and container suite pass
+     from the clean `32f9f4f4` pin, and deterministic provenance metadata is
+     verified by the repository workflow.
+13. **Not started:** load test and canary before removing the existing Railway
+     web and API services.
 
 ## Acceptance criteria
 
@@ -415,13 +459,16 @@ the first release.
 - **Local pass:** health endpoints and structured request/worker logs exist.
 - **Linux forced-drain pass / load pending:** graceful termination drains
   responses and the cutoff kills remaining worker trees.
-- **Local Linux image pass / hosted CI pending:** the runtime stage contains no
+- **Local and hosted Linux image pass:** the runtime stage contains no
   SDK, Blazor, ASP.NET Core, Kestrel, SignalR, or Aspire host.
 
 ## Open decisions
 
 Decisions made for the spike:
 
+- Retain Aspire for local development and partial migration testing, but run the
+  compiled SharpTS server as its only website resource. Aspire is not included in
+  the production image or request path.
 - Use compiled managed IL for the first production host. Native AOT remains a
   separate later objective.
 - Use immutable SharpTS gitlinks; `32f9f4f4` is the reviewed shipping pin and

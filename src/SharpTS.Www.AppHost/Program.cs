@@ -1,23 +1,37 @@
-using Microsoft.Extensions.Hosting;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Compute the worker executable path.
-// The Worker project is built by the AppHost's project reference (see .csproj),
-// but it's not an Aspire-managed service — the API spawns it per-request.
-var workerProjectDir = Path.GetFullPath(
-    Path.Combine(builder.AppHostDirectory, "..", "SharpTS.Www.Worker"));
-
-var configuration = builder.Environment.IsDevelopment() ? "Debug" : "Release";
-var workerExe = Path.Combine(workerProjectDir, "bin", configuration, "net10.0",
+// The local AppHost orchestrates the same compiled SharpTS server shape used by
+// the production image. scripts/run.ps1 and scripts/run.sh create this bundle
+// before starting Aspire so TypeScript changes cannot run as stale emitted IL.
+var repoRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
+var bundleDirectory = Path.Combine(repoRoot, "artifacts", "self-host");
+var serverAssembly = Path.Combine(bundleDirectory, "SharpTS.Www.SelfHost.dll");
+var publicDirectory = Path.Combine(bundleDirectory, "public");
+var workerExecutable = Path.Combine(bundleDirectory, "worker",
     OperatingSystem.IsWindows() ? "SharpTS.Www.Worker.exe" : "SharpTS.Www.Worker");
 
-var api = builder.AddProject<Projects.SharpTS_Www_Api>("api")
-    .WithEnvironment("Worker__ExecutablePath", workerExe);
+if (!File.Exists(serverAssembly) || !File.Exists(workerExecutable))
+{
+    throw new InvalidOperationException(
+        "The SharpTS self-host bundle is missing. Start the site with " +
+        "scripts/run.ps1 (Windows) or scripts/run.sh (Linux/macOS)."
+    );
+}
 
-builder.AddProject<Projects.SharpTS_Www_Web>("web")
+builder.AddExecutable(
+        "sharpts-www",
+        "dotnet",
+        bundleDirectory,
+        serverAssembly)
+    // Aspire allocates and proxies the local port, then supplies the listener's
+    // target port through the same PORT variable used in production.
+    .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
-    .WithReference(api)
-    .WaitFor(api);
+    .WithEnvironment("SHARPTS_WWW_HOST", "127.0.0.1")
+    .WithEnvironment("SHARPTS_WWW_CONTENT_ROOT", publicDirectory)
+    .WithEnvironment("SHARPTS_WWW_WORKER_PATH", workerExecutable)
+    .WithEnvironment("SHARPTS_WWW_REQUIRE_RSS_MONITORING",
+        OperatingSystem.IsLinux() ? "true" : "false")
+    .WithHttpHealthCheck("/health");
 
 builder.Build().Run();

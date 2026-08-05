@@ -5,11 +5,16 @@ on:
   pull_request:
     paths:
       - ".dockerignore"
+      - ".gitattributes"
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
       - "scripts/build-self-host.ps1"
+      - "scripts/build-self-host.sh"
+      - "scripts/run.ps1"
+      - "scripts/run.sh"
       - "scripts/test-self-host-container.ps1"
+      - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Worker/**"
   push:
@@ -17,11 +22,16 @@ on:
       - main
     paths:
       - ".dockerignore"
+      - ".gitattributes"
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
       - "scripts/build-self-host.ps1"
+      - "scripts/build-self-host.sh"
+      - "scripts/run.ps1"
+      - "scripts/run.sh"
       - "scripts/test-self-host-container.ps1"
+      - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Worker/**"
 
@@ -44,6 +54,11 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
       - name: Verify immutable SharpTS input
         shell: bash
         run: |
@@ -52,6 +67,12 @@ jobs:
           checked_out_commit="$(git -C lib/SharpTS rev-parse HEAD)"
           test "$recorded_commit" = "$checked_out_commit"
           test -z "$(git -C lib/SharpTS status --porcelain)"
+
+      - name: Build the local Aspire topology
+        shell: bash
+        run: |
+          bash ./scripts/build-self-host.sh Debug
+          dotnet build src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj -c Debug
 
       - name: Build and test the Linux self-host image
         shell: pwsh
