@@ -1,9 +1,18 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+    ExecutionError,
+    ExecutionResponse,
+    ExecutionResponseBody,
+    RunRequest,
+    WorkerErrorPayload,
+    WorkerResponsePayload,
+    normalizeExecutionMode,
+    normalizeExecutionTimeout
+} from './execution-contract';
 
 const maxSourceBytes = 10 * 1024;
-const maxTimeoutMs = 10_000;
 const maxWorkerRssBytes = 150 * 1024 * 1024;
 const maxWorkerOutputBytes = 256 * 1024;
 const memoryPollIntervalMs = 500;
@@ -11,6 +20,7 @@ const workerTimeoutBufferMs = 1_000;
 const maxConcurrentWorkers = 3;
 const concurrencyWaitMs = 2_000;
 const networkBlockSentinel = 'sharpts-network-blocked.invalid';
+const utf8Encoder = new TextEncoder();
 
 const workerPath = path.resolve(process.env.SHARPTS_WWW_WORKER_PATH ||
     path.join(process.cwd(), 'worker', process.platform === 'win32'
@@ -22,25 +32,32 @@ const requireRssMonitoring = process.env.SHARPTS_WWW_REQUIRE_RSS_MONITORING !== 
 let activeWorkerCount = 0;
 let acceptingWork = true;
 let queueSequence = 0;
-const waiting: any[] = [];
 const activeChildren: any[] = [];
-
-export interface RunRequest {
-    source: string;
-    timeoutMs?: number;
-    mode?: string;
-}
 
 export interface RunResult {
     status: number;
-    body: any;
+    body: ExecutionResponseBody;
 }
 
 export interface ExecutionHandle {
     cancel(): void;
 }
 
-function errorResponse(message: string, executionTimeMs: number = 0): any {
+interface QueueEntry {
+    id: number;
+    settled: boolean;
+    completed: (acquired: boolean) => void;
+    timer: any;
+}
+
+interface ExecutionControl {
+    cancelled: boolean;
+    child: any;
+}
+
+const waiting: QueueEntry[] = [];
+
+function errorResponse(message: string, executionTimeMs: number = 0): ExecutionResponse {
     return {
         success: false,
         output: '',
@@ -56,24 +73,34 @@ function sanitizeNetworkBlock(text: string): string {
     return 'Network access is disabled in the SharpTS playground. fetch() and other outbound requests are blocked.';
 }
 
-function normalizeWorkerResponse(value: any, fallbackElapsedMs: number): any {
-    const rawErrors = Array.isArray(value.Errors) ? value.Errors : [];
-    return {
-        success: value.Success === true,
-        output: sanitizeNetworkBlock(String(value.Output || '')),
-        errors: rawErrors.map((error: any) => ({
+function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: number): ExecutionResponse {
+    if (!value || typeof value !== 'object')
+        return errorResponse('Internal error: invalid worker response.', fallbackElapsedMs);
+
+    const worker = value as WorkerResponsePayload;
+    const rawErrors: WorkerErrorPayload[] = Array.isArray(worker.Errors)
+        ? worker.Errors
+        : [];
+    const errors: ExecutionError[] = [];
+    for (const error of rawErrors) {
+        errors.push({
             message: sanitizeNetworkBlock(String(error.Message || 'Unknown worker error.')),
             line: null,
             column: null
-        })),
-        executionTimeMs: Number(value.ExecutionTimeMs || fallbackElapsedMs),
-        compileTimeMs: value.CompileTimeMs === null || value.CompileTimeMs === undefined
+        });
+    }
+    return {
+        success: worker.Success === true,
+        output: sanitizeNetworkBlock(String(worker.Output || '')),
+        errors,
+        executionTimeMs: Number(worker.ExecutionTimeMs || fallbackElapsedMs),
+        compileTimeMs: worker.CompileTimeMs === null || worker.CompileTimeMs === undefined
             ? null
-            : Number(value.CompileTimeMs)
+            : Number(worker.CompileTimeMs)
     };
 }
 
-function removeFromArray(values: any[], value: any): void {
+function removeFromArray<T>(values: T[], value: T): void {
     const index = values.indexOf(value);
     if (index >= 0)
         values.splice(index, 1);
@@ -107,7 +134,7 @@ function acquireSlot(completed: (acquired: boolean) => void): void {
         return;
     }
 
-    const entry: any = {
+    const entry: QueueEntry = {
         id: ++queueSequence,
         settled: false,
         completed,
@@ -157,12 +184,12 @@ function logWorker(event: string, executionId: string, extra?: { [key: string]: 
     console.log(JSON.stringify(entry));
 }
 
-function runWorker(request: RunRequest, executionId: string, control: any,
+function runWorker(request: RunRequest, executionId: string, control: ExecutionControl,
     started: () => void,
     completed: (result: RunResult) => void): void {
     const startedAt = Date.now();
-    const timeoutMs = Math.max(100, Math.min(maxTimeoutMs, Number(request.timeoutMs || 5000)));
-    const mode = String(request.mode || 'interpret').toLowerCase();
+    const timeoutMs = normalizeExecutionTimeout(request.timeoutMs);
+    const mode = normalizeExecutionMode(request.mode) || 'interpret';
     // SharpTS reports spawn failures through the child's asynchronous `error`
     // event, matching Node's normal spawn contract.
     const child: any = spawn(workerPath, [], {
@@ -178,6 +205,7 @@ function runWorker(request: RunRequest, executionId: string, control: any,
 
     let stdout = '';
     let stderr = '';
+    let outputBytes = 0;
     let settled = false;
     let killedForTimeout = false;
     let killedForMemory = false;
@@ -200,7 +228,7 @@ function runWorker(request: RunRequest, executionId: string, control: any,
         }
     }) as any, memoryPollIntervalMs);
 
-    const finish = (status: number, body: any, exitCode?: number): void => {
+    const finish = (status: number, body: ExecutionResponseBody, exitCode?: number): void => {
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
@@ -217,8 +245,9 @@ function runWorker(request: RunRequest, executionId: string, control: any,
 
     child.stdout.on('data', (chunk: any) => {
         if (settled) return;
+        outputBytes += Number(chunk.length || 0);
         stdout += chunk.toString();
-        if (stdout.length + stderr.length > maxWorkerOutputBytes) {
+        if (outputBytes > maxWorkerOutputBytes) {
             killedForOutput = true;
             logWorker('worker_output_limit', executionId, { pid: child.pid });
             killChild(child);
@@ -226,8 +255,9 @@ function runWorker(request: RunRequest, executionId: string, control: any,
     });
     child.stderr.on('data', (chunk: any) => {
         if (settled) return;
+        outputBytes += Number(chunk.length || 0);
         stderr += chunk.toString();
-        if (stdout.length + stderr.length > maxWorkerOutputBytes) {
+        if (outputBytes > maxWorkerOutputBytes) {
             killedForOutput = true;
             logWorker('worker_output_limit', executionId, { pid: child.pid });
             killChild(child);
@@ -299,7 +329,7 @@ export function isSupervisorReady(): boolean {
 
 export function execute(request: RunRequest, executionId: string,
     started: () => void, completed: (result: RunResult) => void): ExecutionHandle {
-    const control: any = { cancelled: false, child: null };
+    const control: ExecutionControl = { cancelled: false, child: null };
     const handle: ExecutionHandle = {
         cancel: () => {
             if (control.cancelled) return;
@@ -315,14 +345,14 @@ export function execute(request: RunRequest, executionId: string,
         completed({ status: 200, body: errorResponse('Source code cannot be empty.') });
         return handle;
     }
-    if (request.source.length > maxSourceBytes) {
+    if (utf8Encoder.encode(request.source).length > maxSourceBytes) {
         completed({ status: 200, body: errorResponse(
             'Source code exceeds maximum length of ' + maxSourceBytes + ' bytes.') });
         return handle;
     }
 
-    const mode = String(request.mode || 'interpret').toLowerCase();
-    if (mode !== 'interpret' && mode !== 'compile') {
+    const mode = normalizeExecutionMode(request.mode);
+    if (mode === null) {
         completed({ status: 200, body: errorResponse("Mode must be 'interpret' or 'compile'.") });
         return handle;
     }

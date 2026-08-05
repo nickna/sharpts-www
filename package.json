@@ -6,6 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "test": "npm run verify:browser",
+    "typecheck": "npm run typecheck:browser",
     "build:browser": "node scripts/build-browser.mjs",
     "test:browser": "vitest run",
     "test:browser-bundle": "node scripts/test-browser-bundle.mjs",

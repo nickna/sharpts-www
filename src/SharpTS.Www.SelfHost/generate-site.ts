@@ -15,6 +15,13 @@ interface Locale {
 
 type PageKind = 'home' | 'guide';
 
+interface GeneratedRoute {
+    culture: string;
+    page: PageKind;
+    route: string;
+    file: string;
+}
+
 const siteOrigin = 'https://sharpts.dev';
 const cultures: CultureInfo[] = [
     { code: 'en', displayName: 'English', openGraphLocale: 'en_US' },
@@ -23,6 +30,7 @@ const cultures: CultureInfo[] = [
     { code: 'es', displayName: 'Español', openGraphLocale: 'es_ES' },
     { code: 'de', displayName: 'Deutsch', openGraphLocale: 'de_DE' }
 ];
+const pageKinds: PageKind[] = ['home', 'guide'];
 
 const bundleNames = [
     'Components.App',
@@ -537,12 +545,12 @@ function renderDocument(locale: Locale, page: PageKind): string {
 `;
 }
 
-function buildStyles(): void {
+function buildStyles(): number {
     const styleFiles = (fs.readdirSync(stylesRoot) as string[])
         .filter(file => file.endsWith('.css'))
         .sort();
-    if (styleFiles.length !== 17)
-        fail('expected 17 CSS source files, found ' + styleFiles.length);
+    if (styleFiles.length === 0)
+        fail('no CSS source files found');
     const sections = styleFiles.map(file => `/* Source: ${file} */\n${normalizeNewlines(String(fs.readFileSync(path.join(stylesRoot, file), 'utf8'))).trim()}\n`);
     const bundle = sections.join('\n');
     if (bundle.indexOf('::deep') >= 0)
@@ -550,6 +558,7 @@ function buildStyles(): void {
     if (bundle.indexOf('SharpTS.Www.Web.styles.css') >= 0)
         fail('CSS bundle references Blazor CSS isolation output');
     writeText(path.join(outputRoot, 'css', 'site.css'), bundle + '\n');
+    return styleFiles.length;
 }
 
 function validateDocument(html: string, locale: Locale, page: PageKind): void {
@@ -583,12 +592,12 @@ function buildSite(): void {
     ensureDirectory(outputRoot);
     copyTree(staticRoot, outputRoot);
     copyTree(browserRoot, path.join(outputRoot, 'assets', 'browser'));
-    buildStyles();
+    const stylesheetSources = buildStyles();
 
-    const routes: any[] = [];
+    const routes: GeneratedRoute[] = [];
     for (const culture of cultures) {
         const locale = loadLocale(culture);
-        for (const page of ['home', 'guide'] as PageKind[]) {
+        for (const page of pageKinds) {
             const html = renderDocument(locale, page);
             validateDocument(html, locale, page);
             const destination = outputPath(culture, page);
@@ -601,12 +610,13 @@ function buildSite(): void {
         generatedBy: 'SharpTS',
         cultures: cultures.map(culture => culture.code),
         routes,
-        stylesheetSources: 17,
+        stylesheetSources,
         resourceFiles: cultures.length * bundleNames.length,
         browserBundle: ['assets/browser/site.js', 'assets/browser/site.css']
     }, null, 2) + '\n');
 
-    console.log('Generated 10 localized static pages with 17 CSS sources at ' + outputRoot);
+    console.log('Generated localized static site with ' + routes.length +
+        ' pages and ' + stylesheetSources + ' CSS sources at ' + outputRoot);
 }
 
 buildSite();

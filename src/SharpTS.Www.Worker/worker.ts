@@ -55,6 +55,10 @@ function failure(message: string): WorkerResponse {
     };
 }
 
+function errorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
 const inputLine = Console.ReadLine();
 if (inputLine === null || !String(inputLine).trim())
     exitInvalidRequest();
@@ -87,6 +91,6 @@ try {
             ? null
             : Number(execution.CompileTimeMs)
     });
-} catch (error: any) {
-    writeResponse(failure(error && error.message ? String(error.message) : String(error)));
+} catch (error: unknown) {
+    writeResponse(failure(errorMessage(error)));
 }

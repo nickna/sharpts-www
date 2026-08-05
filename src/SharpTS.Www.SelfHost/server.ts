@@ -1,6 +1,7 @@
 import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseRunRequest } from './execution-contract';
 import { presets } from './presets';
 import {
     beginSupervisorShutdown,
@@ -217,7 +218,7 @@ function serveStatic(request: any, response: any, requestId: string,
 
 function readJsonBody(request: any, response: any, requestId: string,
     method: string, normalizedPath: string, startedAt: number,
-    completed: (value: any) => void): void {
+    completed: (value: unknown) => void): void {
     const contentType = String(request.headers['content-type'] || '').toLowerCase();
     if (!contentType.startsWith('application/json')) {
         sendJson(response, requestId, method, normalizedPath, startedAt, 415,
@@ -340,6 +341,7 @@ const server: any = http.createServer((request: any, response: any) => {
 
         readJsonBody(request, response, requestId, method, normalizedPath, startedAt,
             value => {
+                const runRequest = parseRunRequest(value);
                 let disconnected = false;
                 let probeTimer: any = undefined;
                 let executionHandle: any = undefined;
@@ -360,11 +362,7 @@ const server: any = http.createServer((request: any, response: any) => {
                     }) as any, executionProbeIntervalMs);
                 };
 
-                executionHandle = execute({
-                source: String(value.source || ''),
-                timeoutMs: Number(value.timeoutMs || 5000),
-                mode: String(value.mode || 'interpret')
-                }, requestId, executionStarted, result => {
+                executionHandle = execute(runRequest, requestId, executionStarted, result => {
                     if (probeTimer !== undefined)
                         clearInterval(probeTimer);
                     if (disconnected)

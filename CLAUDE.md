@@ -83,7 +83,7 @@ rather than a shared assembly.
 
 ### Localization (i18n)
 
-The active static generator reads the 75 files under
+The active static generator reads the localized `.resx` files under
 `SharpTS.Www.SelfHost/locales`, validates every localized key set against English,
 and emits direct path-based routes. Add every new key to all five cultures and run
 `scripts/test-generated-site.ps1`; there is no culture cookie or `/set-culture`

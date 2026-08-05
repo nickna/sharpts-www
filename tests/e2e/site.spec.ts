@@ -11,6 +11,22 @@ test.beforeEach(async ({ page }) => {
     });
 });
 
+test('malformed playground input is rejected without destabilizing the host', async ({ request }) => {
+    const response = await request.post('/api/run', {
+        headers: { 'Content-Type': 'application/json' },
+        data: 'null'
+    });
+    expect(response.status()).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+        success: false,
+        errors: [{ message: 'Source code cannot be empty.' }]
+    });
+
+    const health = await request.get('/health');
+    expect(health.status()).toBe(200);
+    await expect(health.json()).resolves.toMatchObject({ status: 'healthy' });
+});
+
 test('static interactions work without Blazor or external browser assets', async ({ page }) => {
     const externalRequests: string[] = [];
     page.on('request', request => {

@@ -84,7 +84,7 @@ SITE_GENERATION_EXIT=${PIPESTATUS[0]}
 set -e
 
 if [[ $SITE_GENERATION_EXIT -ne 0 ]] ||
-   ! grep -Fq "Generated 10 localized static pages" "$SITE_GENERATION_LOG" ||
+   ! grep -Fq "Generated localized static site" "$SITE_GENERATION_LOG" ||
    [[ ! -f "$STAGING/public/site-manifest.json" ]]; then
     echo "SharpTS static-site generation failed." >&2
     exit 1

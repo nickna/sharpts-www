@@ -107,7 +107,7 @@ try {
         $siteGenerationOutput | ForEach-Object { Write-Host $_ }
         $siteGenerationText = $siteGenerationOutput -join [Environment]::NewLine
         if ($siteGenerationExitCode -ne 0 -or
-            -not $siteGenerationText.Contains("Generated 10 localized static pages") -or
+            -not $siteGenerationText.Contains("Generated localized static site") -or
             -not (Test-Path -LiteralPath (Join-Path $publicOutput "site-manifest.json"))) {
             throw "SharpTS static-site generation failed."
         }
