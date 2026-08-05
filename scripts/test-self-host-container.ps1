@@ -139,10 +139,56 @@ try {
     Assert-True ($index.Headers["X-Content-Type-Options"] -eq "nosniff") "Security headers are missing."
     Assert-True (-not [string]::IsNullOrWhiteSpace($index.Headers["Content-Security-Policy"])) `
         "Content-Security-Policy is missing."
+    $contentSecurityPolicy = [string]$index.Headers["Content-Security-Policy"]
+    Assert-True ($contentSecurityPolicy.Contains("font-src 'self'")) `
+        "Self-hosted fonts are not covered by Content-Security-Policy."
+    Assert-True (-not $contentSecurityPolicy.Contains("script-src 'self' 'unsafe-inline'")) `
+        "Content-Security-Policy unexpectedly allows inline scripts."
     $etag = [string]$index.Headers["ETag"]
     Assert-True (-not [string]::IsNullOrWhiteSpace($etag)) "Static response ETag is missing."
     $cached = Invoke-TestRequest -Method Get -Path "/" -Headers @{ "If-None-Match" = $etag }
     Assert-True ([int]$cached.StatusCode -eq 304) "Static ETag revalidation did not return HTTP 304."
+
+    $localizedRoutes = @{
+        "/" = "en"
+        "/how-it-works" = "en"
+        "/zh-Hans" = "zh-Hans"
+        "/zh-Hans/how-it-works" = "zh-Hans"
+        "/fr" = "fr"
+        "/fr/how-it-works" = "fr"
+        "/es" = "es"
+        "/es/how-it-works" = "es"
+        "/de" = "de"
+        "/de/how-it-works" = "de"
+    }
+    foreach ($route in $localizedRoutes.GetEnumerator()) {
+        $page = Invoke-TestRequest -Method Get -Path $route.Key
+        Assert-True ([int]$page.StatusCode -eq 200) "Localized route $($route.Key) did not return HTTP 200."
+        Assert-True ($page.Content.Contains("<html lang=`"$($route.Value)`">")) `
+            "Localized route $($route.Key) returned the wrong language."
+        Assert-True ($page.Content.Contains("rel=`"canonical`"")) `
+            "Localized route $($route.Key) is missing its canonical URL."
+        Assert-True (-not $page.Content.Contains("_framework/blazor")) `
+            "Localized route $($route.Key) still references Blazor."
+    }
+
+    $siteCss = Invoke-TestRequest -Method Get -Path "/css/site.css"
+    Assert-True ([int]$siteCss.StatusCode -eq 200) "Generated CSS bundle did not return HTTP 200."
+    Assert-True (-not $siteCss.Content.Contains("::deep")) "Generated CSS still contains ::deep."
+
+    $browserJavaScript = Invoke-TestRequest -Method Get -Path "/assets/browser/site.js"
+    Assert-True ([int]$browserJavaScript.StatusCode -eq 200) `
+        "Browser JavaScript bundle did not return HTTP 200."
+    Assert-True ($browserJavaScript.Headers["Content-Type"] -like "application/javascript*") `
+        "Browser JavaScript has the wrong content type."
+    Assert-True ($browserJavaScript.Headers["Cache-Control"] -like "*max-age=0*") `
+        "Browser JavaScript must revalidate because its public URL is not fingerprinted."
+    Assert-True (-not $browserJavaScript.Content.Contains("esm.sh")) `
+        "Browser JavaScript still loads remote CodeMirror assets."
+
+    $browserCss = Invoke-TestRequest -Method Get -Path "/assets/browser/site.css"
+    Assert-True ([int]$browserCss.StatusCode -eq 200) `
+        "Browser vendor CSS bundle did not return HTTP 200."
 
     $encodedPath = Invoke-TestRequest -Method Get -Path "/%2e%2e/Dockerfile.selfhost"
     Assert-True (@(400, 404) -contains [int]$encodedPath.StatusCode) `

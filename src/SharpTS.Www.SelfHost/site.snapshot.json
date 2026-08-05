@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "files": [
+    {
+      "path": "index.html",
+      "sha256": "566a92d8bb667cb41a2b5ac11e17c4e687573b776c9c34dd876bef26c67956b9"
+    },
+    {
+      "path": "how-it-works/index.html",
+      "sha256": "9a2645f30defedb78683d793f7e0db8ca8bceb89a154767fa3c7488bdabdec98"
+    },
+    {
+      "path": "zh-Hans/index.html",
+      "sha256": "94eeedb291e627b0324b051873d747d3fa881eaefc1105828768f03c7aa1e018"
+    },
+    {
+      "path": "zh-Hans/how-it-works/index.html",
+      "sha256": "c3d1b807141c4f0ceea0f9143106ed9e0c52c94c4b12409b217e62b369a5d4d2"
+    },
+    {
+      "path": "fr/index.html",
+      "sha256": "a3246d7939e320905c350826d7d8062493207eff5a79d13a31971a53de452a5d"
+    },
+    {
+      "path": "fr/how-it-works/index.html",
+      "sha256": "0fd5d7a3f672b609422e6f3ce3236e380cb0ad6948dc83994c4429eade8db398"
+    },
+    {
+      "path": "es/index.html",
+      "sha256": "f339233f419c13f942c601a25941d995f3e3cf680c34487cf3d62fb75a51075c"
+    },
+    {
+      "path": "es/how-it-works/index.html",
+      "sha256": "cee6b9db7957fc01531ceea7901e4951d64a7e2e3cd6a26896a051c41975cc96"
+    },
+    {
+      "path": "de/index.html",
+      "sha256": "160e463fd43a3ddf45cc6f03ec9854a5198aa8c1d3843dc1ab41c193fb3841ad"
+    },
+    {
+      "path": "de/how-it-works/index.html",
+      "sha256": "37be5563380dafc83a7bb6a5f1ddff24666e6df7aec306d5eb95b76e901b330c"
+    },
+    {
+      "path": "css/site.css",
+      "sha256": "5ba8048d7df720c1081c1081d79cd473fcb9a969d0a7f800360feb7853503f75"
+    },
+    {
+      "path": "assets/browser/site.js",
+      "sha256": "c61bdbbfd9fe7a2028b573b9c63182c488d61d1b83b369934606e65ecc3e35e1"
+    },
+    {
+      "path": "assets/browser/site.css",
+      "sha256": "36d0ab95ca02e40a4196f45209b7646dff66172eee4a89158434ca18ba8c4fd9"
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <ItemGroup>
-    <ProjectReference Include="..\SharpTS.Www.ServiceDefaults\SharpTS.Www.ServiceDefaults.csproj" />
-  </ItemGroup>
-
-</Project>

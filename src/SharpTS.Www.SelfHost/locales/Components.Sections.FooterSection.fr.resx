@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Tagline" xml:space="preserve">
+    <value>Un interpréteur TypeScript et compilateur AOT entièrement écrit en C# pour le runtime .NET.</value>
+  </data>
+  <data name="Col_Resources" xml:space="preserve">
+    <value>Ressources</value>
+  </data>
+  <data name="Col_Community" xml:space="preserve">
+    <value>Communauté</value>
+  </data>
+  <data name="Col_OnThisPage" xml:space="preserve">
+    <value>Sur cette page</value>
+  </data>
+  <data name="Link_NuGet" xml:space="preserve">
+    <value>Paquet NuGet</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>État d&apos;implémentation</value>
+  </data>
+  <data name="Link_Architecture" xml:space="preserve">
+    <value>Guide d&apos;architecture</value>
+  </data>
+  <data name="Link_ReportIssue" xml:space="preserve">
+    <value>Signaler un problème</value>
+  </data>
+  <data name="Link_Contributing" xml:space="preserve">
+    <value>Contribuer</value>
+  </data>
+  <data name="Link_License" xml:space="preserve">
+    <value>Licence MIT</value>
+  </data>
+  <data name="Link_Features" xml:space="preserve">
+    <value>Fonctionnalités</value>
+  </data>
+  <data name="Link_CodeExamples" xml:space="preserve">
+    <value>Exemples de code</value>
+  </data>
+  <data name="Link_UseCases" xml:space="preserve">
+    <value>Cas d'usage</value>
+  </data>
+  <data name="Link_Playground" xml:space="preserve">
+    <value>Bac à sable</value>
+  </data>
+  <data name="Link_Faq" xml:space="preserve">
+    <value>FAQ</value>
+  </data>
+  <data name="Link_GetStarted" xml:space="preserve">
+    <value>Démarrer</value>
+  </data>
+  <data name="BuiltWith" xml:space="preserve">
+    <value>Conçu avec SharpTS, TypeScript et beaucoup de ☕</value>
+  </data>
+</root>

@@ -51,7 +51,7 @@ function setSecurityHeaders(response: any, requestId: string): void {
     response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     response.setHeader('Content-Security-Policy',
-        "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; object-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'");
+        "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; object-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'");
 }
 
 function logRequest(requestId: string, method: string, normalizedPath: string,
@@ -158,6 +158,8 @@ function staticFileFor(normalizedPath: string): string | null {
     let relativePath = normalizedPath === '/' ? 'index.html' : normalizedPath.slice(1);
     if (relativePath.endsWith('/'))
         relativePath += 'index.html';
+    else if (path.extname(relativePath) === '')
+        relativePath = path.join(relativePath, 'index.html');
 
     const candidate = path.resolve(contentRoot, relativePath);
     if (candidate !== contentRoot && !candidate.startsWith(contentRootPrefix))
@@ -185,7 +187,12 @@ function serveStatic(request: any, response: any, requestId: string,
         response.setHeader('Content-Type', contentType);
         response.setHeader('ETag', etag);
         response.setHeader('Last-Modified', stat.mtime.toUTCString());
-        response.setHeader('Cache-Control', extension === '.html'
+        // Generated HTML, CSS, and JavaScript use stable URLs. Revalidate them
+        // so a deployment cannot leave clients running an older controller;
+        // fingerprinted fonts and media can retain the short freshness window.
+        const requiresRevalidation = extension === '.html' ||
+            extension === '.css' || extension === '.js';
+        response.setHeader('Cache-Control', requiresRevalidation
             ? 'public, max-age=0, must-revalidate'
             : 'public, max-age=3600');
 

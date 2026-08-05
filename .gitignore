@@ -9,6 +9,9 @@ obj/
 
 ## Build results
 artifacts/
+node_modules/
+playwright-report/
+test-results/
 [Dd]ebug/
 [Rr]elease/
 x64/

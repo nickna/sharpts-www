@@ -18,14 +18,14 @@ if (!File.Exists(serverAssembly) || !File.Exists(workerExecutable))
     );
 }
 
-builder.AddExecutable(
+var website = builder.AddExecutable(
         "sharpts-www",
         "dotnet",
         bundleDirectory,
         serverAssembly)
     // Aspire allocates and proxies the local port, then supplies the listener's
     // target port through the same PORT variable used in production.
-    .WithHttpEndpoint(env: "PORT")
+    .WithHttpEndpoint(name: "http", env: "PORT")
     .WithExternalHttpEndpoints()
     .WithEnvironment("SHARPTS_WWW_HOST", "127.0.0.1")
     .WithEnvironment("SHARPTS_WWW_CONTENT_ROOT", publicDirectory)
@@ -33,5 +33,13 @@ builder.AddExecutable(
     .WithEnvironment("SHARPTS_WWW_REQUIRE_RSS_MONITORING",
         OperatingSystem.IsLinux() ? "true" : "false")
     .WithHttpHealthCheck("/health");
+
+// Browser requests use Aspire's externally visible proxy origin, while the
+// SharpTS process receives the proxy's private Host header. Pass the public
+// endpoint explicitly so the same-origin guard on POST /api/run compares the
+// browser Origin against the URL that actually served the page.
+website.WithEnvironment(
+    "SHARPTS_WWW_PUBLIC_ORIGIN",
+    website.GetEndpoint("http"));
 
 builder.Build().Run();

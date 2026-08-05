@@ -1,8 +1,8 @@
 # SharpTS self-hosting plan
 
-Status: SharpTS prerequisites merged and pinned; Linux container and Aspire local-development paths implemented; frontend migration remains
+Status: SharpTS host, localized static frontend, browser interactivity, Linux container, Aspire path, and legacy-project retirement complete; production rollout remains
 
-Last updated: 2026-08-04
+Last updated: 2026-08-05
 
 ## Objective
 
@@ -31,16 +31,37 @@ Browser
        -> isolated SharpTS.Www.Worker child process for submitted code
 ```
 
-This is not a drop-in host substitution, and the current spike is not yet a
-production replacement. The Razor frontend must become static
-HTML plus browser-side JavaScript, and the ASP.NET execution supervisor must be
-ported or exposed through a small helper. Most CSS and existing browser
-JavaScript can be reused.
+This was not a drop-in host substitution, and the current implementation has not
+yet completed its production rollout. The Razor frontend now has a deterministic
+SharpTS build-time replacement that emits localized static HTML and CSS, and a
+pinned browser TypeScript bundle replaces the interactive circuit. The ASP.NET
+execution supervisor has also been ported. The legacy source projects have been
+retired; production load testing and canary rollout remain.
 
 During the migration, `scripts/run.ps1` and `scripts/run.sh` build the current
 SharpTS bundle and start it as a single Aspire executable resource. This gives
-the incomplete host a repeatable local URL, health status, lifecycle, and log
+the replacement host a repeatable local URL, health status, lifecycle, and log
 view without accidentally exercising the legacy Kestrel applications.
+
+## Remaining work
+
+The local product migration is functionally complete: generated pages, browser
+interactions, the embedded compiler API, worker isolation, Aspire orchestration,
+and the production-shaped Linux image are implemented. The obsolete Web, API,
+ServiceDefaults, and deployment projects have been removed. The remaining work
+is shipping and operational hardening rather than another application feature
+phase:
+
+1. Close the remaining automated control gaps: a deliberate container hard-limit
+   OOM test, untrusted forwarded-IP spoofing, and request-body disconnect
+   coverage.
+2. Configure and verify Railway's exact public origin, trusted-proxy boundary,
+   health check, drain window, memory limit, and outbound-egress policy.
+3. Run production-shaped load testing, deploy a canary, compare logs and failure
+   behavior, then cut traffic over and remove the legacy Railway services.
+4. Separately decide whether the connection probe and restricted process-control
+   switch become supported SharpTS APIs. They are already pinned and tested for
+   this site, so that API-design decision does not block local feature parity.
 
 ## Evidence collected
 
@@ -113,7 +134,7 @@ The Git-free Docker context supplies MinVer with the verified SharpTS version
 `1.0.9-alpha.0.55` and revision `32f9f4f4`, stamps that revision on the image,
 and fails the suite if the label ever differs from the checked-out gitlink.
 
-The current frontend comprises approximately:
+The retired Razor frontend used as parity input comprised approximately:
 
 - 21 Razor files / 1,332 lines
 - 14 component CSS files / 1,633 lines
@@ -152,14 +173,21 @@ scripts/run.ps1 or scripts/run.sh
 
 The AppHost allocates and proxies a local HTTP port through `PORT`, reports
 `/health` in the dashboard, captures the compiled host's structured stdout, and
-stops the host with the Aspire application. It does not launch
-`SharpTS.Www.Web` or `SharpTS.Www.Api`; keeping those Kestrel projects in the
-solution during migration does not make them part of the self-host test path.
+stops the host with the Aspire application. The retired Kestrel website and API
+projects are no longer present in the solution or working tree.
 Aspire's own AppHost and dashboard use ASP.NET Core internally, so their process
 logs can still mention Kestrel. The website resource itself is the emitted
 `SharpTS.Www.SelfHost.dll` and uses SharpTS's `http` implementation backed by
 `HttpListener`. The development-only AppHost is pinned to Aspire 13.4.6; this
 replaced 13.1.2 after its restore reported known vulnerable transitive packages.
+
+Aspire's proxy URL is also passed to the host as
+`SHARPTS_WWW_PUBLIC_ORIGIN`. This is distinct from the private listener port in
+`PORT` and is required by the `/api/run` same-origin guard: the browser sends
+the public proxy origin, while the host receives traffic on its private target
+endpoint. A manifest regression verifies both endpoint expressions, and a local
+Aspire smoke test has exercised presets plus interpreted and compiled runs
+through the allocated proxy while retaining cross-origin rejection.
 
 The run scripts always rebuild the bundle before Aspire starts. Directly running
 the AppHost is allowed only when `artifacts/self-host` already exists, and the
@@ -263,6 +291,13 @@ modern HTTP at its proxy and forward HTTP/1.1 to the container.
 
 ## Frontend migration
 
+Frontend replacement status: complete for local implementation. `generate-site.ts` runs through SharpTS,
+validates all 75 copied localization resources against the English key sets,
+and emits ten route documents, a manifest, root-relative assets, and one CSS
+bundle. A pinned esbuild step adds the first-party browser controller, CodeMirror,
+Prism, and local font files. Generated output is build-only rather than committed.
+The local bundle, Dockerfile, and CI all use the same build path.
+
 Generate five localized static versions of the two logical pages:
 
 - `/` and `/{culture}`
@@ -271,36 +306,42 @@ Generate five localized static versions of the two logical pages:
 This preserves server-rendered SEO metadata, `hreflang`, OpenGraph locale data,
 and direct localized links without requiring a server-side component framework.
 
-Suggested approach:
+Implemented approach:
 
-1. Convert `.resx` resources into build-time locale data, preferably JSON or
-   TypeScript objects.
-2. Implement a SharpTS build script that renders complete HTML for every route
-   and culture.
-3. Concatenate or otherwise publish the component CSS without Blazor's CSS
-   isolation transformation. The source selectors are reusable, but the
-   `SharpTS.Www.Web.styles.css` generated asset is not.
-4. Port simple Blazor event handlers to browser JavaScript:
+1. **Complete:** copy `.resx` resources into the self-host source tree and parse
+   them into validated build-time locale objects.
+2. **Complete:** run a SharpTS generator that renders complete HTML for every
+   route and culture, including canonical, `hreflang`, and OpenGraph metadata.
+3. **Complete:** concatenate the global and component CSS without Blazor's CSS
+   isolation transformation. The four `::deep` selectors were rewritten and
+   generated output is checked for legacy Blazor selectors and relative assets.
+4. **Complete:** port the interactive circuit to browser TypeScript:
    - mobile navigation
    - language selector
    - copy feedback
    - architecture selection
    - live example tabs
    - playground mode, preset, run, clear, and rendering state
-5. Keep the current Prism and CodeMirror browser integrations initially.
-6. Have the playground call same-origin `/api/run` directly with `fetch()`.
+5. **Complete:** bundle pinned Prism and CodeMirror dependencies and retain a
+   functional textarea fallback if editor enhancement fails.
+6. **Complete:** have the playground call same-origin `/api/presets` and
+   `/api/run` directly with `fetch()`, validate response shapes, render returned
+   text without HTML injection, and expose localized running/error/timing state.
 
-Two migration details need explicit work rather than mechanical copying:
+Prism, CodeMirror, and the Latin font subsets are installed from the locked npm
+dependency graph and bundled during local, CI, and container builds. Browser
+scripts and fonts remain restricted to `self`; CodeMirror's runtime style module
+requires `style-src 'unsafe-inline'`, so inline scripts remain forbidden and API
+content is inserted only through `textContent`.
 
-- Vendor and pin Prism, CodeMirror, fonts, and other browser assets. The current
-  CDN references are not deterministic and conflict with a strict self-only CSP.
-- Rewrite Blazor CSS-isolation selectors such as `::deep`, and make asset URLs
-  root-relative or generated per route so localized nested paths do not break
-  images, scripts, or styles.
+The bundle build injects Prism explicitly for its legacy language-component
+modules rather than relying on an ambient `Prism` global. An artifact-level DOM
+test executes the final generated IIFE and verifies preset loading, mode changes,
+and Run output, preventing a module-evaluation failure from leaving the entire
+playground inert.
 
-The culture cookie is no longer needed to carry culture into a SignalR circuit.
-It can still be retained for root-path language detection and user preference,
-or language links can navigate directly to localized paths.
+The generated language selector uses ordinary direct links to the equivalent
+localized route. No culture cookie or `/set-culture` endpoint is required.
 
 ## HTTP routes
 
@@ -311,13 +352,11 @@ GET  /
 GET  /{culture}
 GET  /how-it-works
 GET  /{culture}/how-it-works
-GET  /set-culture?culture=...
 GET  /api/presets
-GET  /api/presets/{name}
 POST /api/run
 GET  /health
 GET  /alive
-GET  /css/*, /js/*, /img/*, /favicon.*
+GET  /css/*, /js/*, /img/*, /assets/*, /favicon.*
 ```
 
 Static-file handling must use a fixed content root and verify the resolved path
@@ -325,12 +364,10 @@ remains inside it. Add explicit MIME types, cache headers, ETags or modification
 times, and optional precompressed assets. A general web framework is unnecessary
 for this route count.
 
-The spike deliberately rejects percent-encoded paths because SharpTS's compiled
-`decodeURIComponent` path was not yet parity-tested. That is safe but incomplete:
-encoded preset names and otherwise valid encoded static URLs will fail. Before
-shipping, either implement and test a strict UTF-8 percent-decoder with one
-canonical decoding pass, or change the preset detail route to documented ASCII
-slugs and keep static asset names unencoded.
+The host deliberately rejects percent-encoded paths because SharpTS's compiled
+`decodeURIComponent` path was not yet parity-tested. Generated routes and asset
+names use an ASCII-safe set and the browser no longer needs a name-based preset
+detail route, so rejecting encoded paths is the documented initial contract.
 
 ## Security invariants
 
@@ -423,11 +460,23 @@ the first release.
 8. **Complete for local development:** migrate the Aspire AppHost from the
    legacy `SharpTS.Www.Web` and `SharpTS.Www.Api` Kestrel projects to one
    executable resource running the compiled SharpTS server. The local run scripts
-   rebuild the server and worker bundle before starting Aspire.
-9. **Not started:** convert resources and Razor markup into localized static
-   output.
-10. **Not started:** port browser interactivity and connect the real playground
-   UI to the same-origin API.
+   rebuild the server and worker bundle before starting Aspire. The executable
+   receives both its private `PORT` and Aspire's public proxy URL; CI validates
+   those distinct manifest bindings so the playground's origin check remains
+   functional behind Aspire.
+9. **Complete:** the SharpTS generator converts the 75 copied resources and the
+   Razor page structure into ten localized static documents. It emits route-specific
+   metadata and direct language links, bundles 17 CSS sources after removing CSS
+   isolation syntax, copies self-hosted assets, writes a deterministic manifest,
+   and validates local references. The build scripts, Docker image, and CI use the
+   same generated-only output.
+10. **Complete locally / hosted browser run pending:** the generated markup has
+    stable accessible hooks and no Blazor runtime. The bundled controller owns
+    mobile navigation, language disclosure, copy feedback, architecture/example
+    selection, particles, syntax highlighting, CodeMirror enhancement, and the
+    real same-origin playground. Source-level DOM tests and a generated-bundle
+    bootstrap test pass, a real-browser suite is wired into Linux CI, and the
+    browser assets/API pass local HTTP smoke tests.
 11. **Partial:** traversal containment, MIME, ETag/cache, body streaming, origin,
      and trusted-IP logic exist. Automated encoded traversal, cache, malformed
      JSON, origin, and trusted proxy/rate-limit tests pass; untrusted forwarded-IP
@@ -437,15 +486,20 @@ the first release.
      ASP.NET) image as a non-root user. The hardened image and container suite pass
      from the clean `32f9f4f4` pin, and deterministic provenance metadata is
      verified by the repository workflow.
-13. **Not started:** load test and canary before removing the existing Railway
-     web and API services.
+13. **Complete:** remove the retired Web, API, and ServiceDefaults source
+    projects, their solution entries, and their deployment Dockerfiles.
+14. **Not started:** load test and canary before removing the existing Railway
+    web and API services.
 
 ## Acceptance criteria
 
 - **Linux container pass:** production listener is reachable on the container
   interface.
-- **Pending:** all localized routes render correct HTML, metadata, and internal
-  links with JavaScript disabled.
+- **Local generation, HTTP, and static visual review pass:** all localized routes
+  emit validated HTML, metadata, and internal links without a JavaScript dependency.
+- **Local DOM pass / hosted browser run pending:** browser interactions have unit
+  coverage and a Chromium suite exercises mobile navigation, copying, tabs,
+  architecture selection, localized assets, and both playground modes.
 - **Local pass:** playground protocol works in interpret and compile modes.
 - **Local pass:** submitted code runs only in an isolated worker process.
 - **Local Linux pass / deployment pending:** source, time, output, concurrency,
@@ -480,16 +534,19 @@ Decisions made for the spike:
 - Start with a 1 GiB hard memory limit for the host plus three workers; tune only
   after production-shaped load data.
 - Keep TLS/HSTS at Railway and bind `0.0.0.0:$PORT` in the container.
+- Generate localized HTML only during local/CI/container builds rather than
+  committing build products. The deterministic manifest and generated-site test
+  validate ten routes, five cultures, 75 resource inputs, CSS sources, and local
+  references.
+- Use path-only language selection with direct links to the equivalent localized
+  page. Do not retain the culture cookie or `/set-culture` endpoint.
+- Fetch the complete preset list once for the browser playground. Do not retain
+  the unused encoded-name preset detail endpoint.
+- Keep generated routes and asset names ASCII-safe and reject percent-encoded
+  request paths until SharpTS has a separately tested strict UTF-8 decoder.
 
 Decisions still required before the migration can ship:
 
-- Choose strict decoded path support versus ASCII slugs. The recommendation is
-  slugs for preset detail routes plus a small, separately tested decoder only if
-  encoded static paths are actually needed.
-- Decide whether generated localized HTML is committed or built only in CI.
-  The recommendation is CI-only generation with a deterministic snapshot test.
-- Preserve the culture cookie or use path-only language selection. The
-  recommendation is path-only routes and ordinary language links.
 - Decide whether Railway's proxy is the sole ingress. Set
   `SHARPTS_WWW_TRUST_RAILWAY_PROXY=true` only in that topology, set the exact
   `SHARPTS_WWW_PUBLIC_ORIGIN`, configure `/health`, and configure a drain window

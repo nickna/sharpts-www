@@ -7,8 +7,10 @@ ARTIFACT_ROOT="$REPO_ROOT/artifacts"
 OUTPUT="$ARTIFACT_ROOT/self-host"
 STAGING="$ARTIFACT_ROOT/self-host-staging"
 SOURCE="$REPO_ROOT/src/SharpTS.Www.SelfHost/server.ts"
+SITE_GENERATOR="$REPO_ROOT/src/SharpTS.Www.SelfHost/generate-site.ts"
 SHARPTS_PROJECT="$REPO_ROOT/lib/SharpTS/SharpTS.csproj"
 WORKER_PROJECT="$REPO_ROOT/src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj"
+PACKAGE_LOCK="$REPO_ROOT/package-lock.json"
 COMPILE_LOG="$STAGING/sharpts-compile.log"
 
 mkdir -p "$ARTIFACT_ROOT"
@@ -44,8 +46,34 @@ dotnet publish "$WORKER_PROJECT" -c "$CONFIGURATION" \
     -o "$STAGING/worker" \
     "-p:SharpTSProjectReference=$SHARPTS_PROJECT"
 
-mkdir -p "$STAGING/public"
-cp -R "$REPO_ROOT/src/SharpTS.Www.SelfHost/public/." "$STAGING/public/"
+BROWSER_OUTPUT="$STAGING/browser-assets"
+if [[ ! -f "$PACKAGE_LOCK" ]]; then
+    echo "Browser dependency lockfile is missing." >&2
+    exit 1
+fi
+npm ci
+SHARPTS_WWW_BROWSER_OUTPUT="$BROWSER_OUTPUT" npm run build:browser
+test -f "$BROWSER_OUTPUT/site.js"
+test -f "$BROWSER_OUTPUT/site.css"
+
+SITE_GENERATION_LOG="$STAGING/site-generation.log"
+set +e
+SHARPTS_WWW_SITE_REPO_ROOT="$REPO_ROOT" \
+SHARPTS_WWW_SITE_OUTPUT="$STAGING/public" \
+SHARPTS_WWW_BROWSER_OUTPUT="$BROWSER_OUTPUT" \
+dotnet run --project "$SHARPTS_PROJECT" -c "$CONFIGURATION" --no-launch-profile -- \
+    "$SITE_GENERATOR" 2>&1 | tee "$SITE_GENERATION_LOG"
+SITE_GENERATION_EXIT=${PIPESTATUS[0]}
+set -e
+
+if [[ $SITE_GENERATION_EXIT -ne 0 ]] ||
+   ! grep -Fq "Generated 10 localized static pages" "$SITE_GENERATION_LOG" ||
+   [[ ! -f "$STAGING/public/site-manifest.json" ]]; then
+    echo "SharpTS static-site generation failed." >&2
+    exit 1
+fi
+rm -f "$SITE_GENERATION_LOG"
+rm -rf "$BROWSER_OUTPUT"
 
 rm -rf "$OUTPUT"
 mv "$STAGING" "$OUTPUT"

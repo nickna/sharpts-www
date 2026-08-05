@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Interactive Playground</value>
+  </data>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Write TypeScript and run it on .NET — right in your browser</value>
+  </data>
+  <data name="SelectPreset" xml:space="preserve">
+    <value>Select a preset...</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Running...</value>
+  </data>
+  <data name="Run" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="RunShortcut" xml:space="preserve">
+    <value>Ctrl+Enter</value>
+  </data>
+  <data name="Output" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="Placeholder" xml:space="preserve">
+    <value>Click Run or press Ctrl+Enter to execute</value>
+  </data>
+  <data name="DefaultCode" xml:space="preserve">
+    <value>// Welcome to the SharpTS Playground!
+// Write TypeScript and click Run (or Ctrl+Enter)
+
+interface Person {
+    name: string;
+    age: number;
+}
+
+function greet(person: Person): string {
+    return `Hello, ${person.name}! You are ${person.age} years old.`;
+}
+
+const developer: Person = { name: &quot;World&quot;, age: 1 };
+console.log(greet(developer));</value>
+  </data>
+  <data name="ModeLabel" xml:space="preserve">
+    <value>Execution mode</value>
+  </data>
+  <data name="ModeInterpret" xml:space="preserve">
+    <value>Interpret</value>
+  </data>
+  <data name="ModeCompile" xml:space="preserve">
+    <value>Compile</value>
+  </data>
+  <data name="TimingCompiled" xml:space="preserve">
+    <value>compiled {0}ms · ran {1}ms</value>
+  </data>
+  <data name="TimingExecuted" xml:space="preserve">
+    <value>{0}ms</value>
+  </data>
+  <data name="RequestFailed" xml:space="preserve">
+    <value>The playground request failed. Please try again.</value>
+  </data>
+  <data name="InvalidResponse" xml:space="preserve">
+    <value>The playground received an invalid server response.</value>
+  </data>
+</root>

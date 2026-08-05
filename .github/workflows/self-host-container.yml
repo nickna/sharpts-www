@@ -9,14 +9,24 @@ on:
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.ts"
+      - "scripts/build-browser.mjs"
       - "scripts/build-self-host.ps1"
       - "scripts/build-self-host.sh"
       - "scripts/run.ps1"
       - "scripts/run.sh"
+      - "scripts/test-apphost-manifest.ps1"
+      - "scripts/test-browser-bundle.mjs"
+      - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Worker/**"
+      - "tests/**"
+      - "tsconfig.json"
+      - "vitest.config.ts"
   push:
     branches:
       - main
@@ -26,14 +36,24 @@ on:
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
+      - "package.json"
+      - "package-lock.json"
+      - "playwright.config.ts"
+      - "scripts/build-browser.mjs"
       - "scripts/build-self-host.ps1"
       - "scripts/build-self-host.sh"
       - "scripts/run.ps1"
       - "scripts/run.sh"
+      - "scripts/test-apphost-manifest.ps1"
+      - "scripts/test-browser-bundle.mjs"
+      - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Worker/**"
+      - "tests/**"
+      - "tsconfig.json"
+      - "vitest.config.ts"
 
 permissions:
   contents: read
@@ -45,7 +65,7 @@ concurrency:
 jobs:
   linux-container:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Check out pinned submodules
@@ -58,6 +78,12 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
 
       - name: Verify immutable SharpTS input
         shell: bash
@@ -73,6 +99,23 @@ jobs:
         run: |
           bash ./scripts/build-self-host.sh Debug
           dotnet build src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj -c Debug
+
+      - name: Verify generated localized pages and CSS
+        shell: pwsh
+        run: ./scripts/test-generated-site.ps1
+
+      - name: Verify Aspire proxy and origin wiring
+        shell: pwsh
+        run: ./scripts/test-apphost-manifest.ps1
+
+      - name: Verify browser controllers
+        run: npm run verify:browser
+
+      - name: Install browser test runtime
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify browser parity against the SharpTS host
+        run: npm run test:e2e
 
       - name: Build and test the Linux self-host image
         shell: pwsh

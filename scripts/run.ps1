@@ -30,8 +30,8 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host 'Aspire dashboard development certificate is ready.'
 
 # Compile the TypeScript HTTP host and publish its isolated worker before Aspire
-# starts. This keeps the dashboard useful during the migration without routing
-# local requests through the legacy ASP.NET/Kestrel projects.
+# starts. This keeps the dashboard useful without introducing an ASP.NET/Kestrel
+# website host into the request path.
 Write-Host ''
 Write-Host 'Building the SharpTS self-host bundle...'
 & $BuildSelfHostScript -Configuration Debug

@@ -24,7 +24,7 @@ fi
 echo "Aspire dashboard development certificate is ready."
 
 # Compile the TypeScript HTTP host and publish its isolated worker before Aspire
-# starts. The legacy ASP.NET/Kestrel projects are not part of this topology.
+# starts. The website request path has no ASP.NET/Kestrel host.
 echo ""
 echo "Building the SharpTS self-host bundle..."
 bash "$BUILD_SELF_HOST_SCRIPT" Debug
