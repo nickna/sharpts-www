@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <SharpTSProjectReference Condition="'$(SharpTSProjectReference)' == ''">..\..\lib\SharpTS\SharpTS.csproj</SharpTSProjectReference>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\lib\SharpTS\SharpTS.csproj" />
+    <ProjectReference Include="$(SharpTSProjectReference)" />
   </ItemGroup>
 
 </Project>

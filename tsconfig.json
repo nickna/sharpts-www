@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "types": []
+  },
+  "exclude": [
+    "node_modules",
+    "src/SharpTS.Www.SelfHost/browser",
+    "tests"
+  ]
+}

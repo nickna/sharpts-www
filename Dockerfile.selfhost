@@ -1,0 +1,90 @@
+# syntax=docker/dockerfile:1
+ARG SHARPTS_VERSION=1.0.9-alpha.0.55
+ARG SHARPTS_SOURCE_REVISION=32f9f4f43e856c9ba9bef5028274142e75241eb1
+
+FROM node:24-bookworm-slim AS browser-build
+WORKDIR /src
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY scripts/build-browser.mjs scripts/build-browser.mjs
+COPY src/SharpTS.Www.SelfHost/browser/ src/SharpTS.Www.SelfHost/browser/
+RUN SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets npm run build:browser
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG SHARPTS_VERSION
+ARG SHARPTS_SOURCE_REVISION
+WORKDIR /src
+
+COPY . .
+COPY --from=browser-build /browser-assets /browser-assets
+
+# Production builds must use the repository's pinned SharpTS submodule. Never
+# fall back to cloning a moving branch when the submodule was not initialized.
+RUN test -f lib/SharpTS/SharpTS.csproj || \
+    (echo "lib/SharpTS is missing; initialize the pinned submodule before building" >&2 && exit 1)
+
+RUN dotnet restore src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj
+RUN set -eu; \
+    mkdir -p /app; \
+    if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
+        -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+        -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
+        -p:EnableSourceLink=false \
+        -p:EnableSourceControlManagerQueries=false \
+        -p:PublishRepositoryUrl=false -- \
+        --compile src/SharpTS.Www.SelfHost/server.ts \
+        --verify \
+        -o /app/SharpTS.Www.SelfHost.dll > /tmp/sharpts-compile.log 2>&1; then \
+      cat /tmp/sharpts-compile.log; \
+      exit 1; \
+    fi; \
+    cat /tmp/sharpts-compile.log; \
+    grep -q "Compiled to" /tmp/sharpts-compile.log; \
+    grep -q "IL verification passed." /tmp/sharpts-compile.log; \
+    test -f /app/SharpTS.Www.SelfHost.dll
+RUN dotnet publish src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj \
+    -c Release -o /app/worker --no-restore \
+    -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+    -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
+    -p:EnableSourceLink=false \
+    -p:EnableSourceControlManagerQueries=false \
+    -p:PublishRepositoryUrl=false
+RUN set -eu; \
+    mkdir -p /app/public; \
+    if ! SHARPTS_WWW_SITE_REPO_ROOT=/src \
+        SHARPTS_WWW_SITE_OUTPUT=/app/public \
+        SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets \
+        dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
+        -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+        -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
+        -p:EnableSourceLink=false \
+        -p:EnableSourceControlManagerQueries=false \
+        -p:PublishRepositoryUrl=false -- \
+        src/SharpTS.Www.SelfHost/generate-site.ts > /tmp/site-generation.log 2>&1; then \
+      cat /tmp/site-generation.log; \
+      exit 1; \
+    fi; \
+    cat /tmp/site-generation.log; \
+    grep -q "Generated 10 localized static pages" /tmp/site-generation.log; \
+    test -f /app/public/site-manifest.json
+
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+ARG SHARPTS_VERSION
+ARG SHARPTS_SOURCE_REVISION
+WORKDIR /app
+
+LABEL io.sharpts.runtime.version="$SHARPTS_VERSION" \
+      io.sharpts.runtime.revision="$SHARPTS_SOURCE_REVISION"
+
+COPY --from=build /app/ ./
+
+ENV SHARPTS_WWW_HOST=0.0.0.0
+ENV SHARPTS_WWW_WORKER_PATH=/app/worker/SharpTS.Www.Worker
+ENV SHARPTS_WWW_REQUIRE_RSS_MONITORING=true
+
+EXPOSE 8080
+
+# Both the host and every untrusted playground worker run without root.
+USER $APP_UID
+
+ENTRYPOINT ["dotnet", "SharpTS.Www.SelfHost.dll"]

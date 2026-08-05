@@ -1,9 +1,6 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/SharpTS.Www.Api/SharpTS.Www.Api.csproj" />
     <Project Path="src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj" />
-    <Project Path="src/SharpTS.Www.ServiceDefaults/SharpTS.Www.ServiceDefaults.csproj" />
-    <Project Path="src/SharpTS.Www.Web/SharpTS.Www.Web.csproj" />
     <Project Path="src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj" />
   </Folder>
   <Folder Name="/lib/">

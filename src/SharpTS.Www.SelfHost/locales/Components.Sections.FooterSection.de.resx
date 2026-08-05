@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Tagline" xml:space="preserve">
+    <value>Ein TypeScript-Interpreter und AOT-Compiler, vollständig in C# für die .NET-Laufzeit entwickelt.</value>
+  </data>
+  <data name="Col_Resources" xml:space="preserve">
+    <value>Ressourcen</value>
+  </data>
+  <data name="Col_Community" xml:space="preserve">
+    <value>Community</value>
+  </data>
+  <data name="Col_OnThisPage" xml:space="preserve">
+    <value>Auf dieser Seite</value>
+  </data>
+  <data name="Link_NuGet" xml:space="preserve">
+    <value>NuGet-Paket</value>
+  </data>
+  <data name="Link_Status" xml:space="preserve">
+    <value>Implementierungsstatus</value>
+  </data>
+  <data name="Link_Architecture" xml:space="preserve">
+    <value>Architektur-Leitfaden</value>
+  </data>
+  <data name="Link_ReportIssue" xml:space="preserve">
+    <value>Problem melden</value>
+  </data>
+  <data name="Link_Contributing" xml:space="preserve">
+    <value>Mitwirken</value>
+  </data>
+  <data name="Link_License" xml:space="preserve">
+    <value>MIT-Lizenz</value>
+  </data>
+  <data name="Link_Features" xml:space="preserve">
+    <value>Funktionen</value>
+  </data>
+  <data name="Link_CodeExamples" xml:space="preserve">
+    <value>Code-Beispiele</value>
+  </data>
+  <data name="Link_UseCases" xml:space="preserve">
+    <value>Einsatzszenarien</value>
+  </data>
+  <data name="Link_Playground" xml:space="preserve">
+    <value>Playground</value>
+  </data>
+  <data name="Link_Faq" xml:space="preserve">
+    <value>FAQ</value>
+  </data>
+  <data name="Link_GetStarted" xml:space="preserve">
+    <value>Erste Schritte</value>
+  </data>
+  <data name="BuiltWith" xml:space="preserve">
+    <value>Erstellt mit SharpTS, TypeScript und viel ☕</value>
+  </data>
+</root>
