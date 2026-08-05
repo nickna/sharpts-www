@@ -3,8 +3,11 @@
 .idea
 .vscode
 .claude
+artifacts
 bin
 obj
+**/bin
+**/obj
 *.user
 *.suo
 *.log

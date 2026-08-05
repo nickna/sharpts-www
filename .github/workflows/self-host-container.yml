@@ -1,0 +1,58 @@
+name: Self-host container
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".dockerignore"
+      - ".github/workflows/self-host-container.yml"
+      - "Dockerfile.selfhost"
+      - "lib/SharpTS"
+      - "scripts/build-self-host.ps1"
+      - "scripts/test-self-host-container.ps1"
+      - "src/SharpTS.Www.SelfHost/**"
+      - "src/SharpTS.Www.Worker/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".dockerignore"
+      - ".github/workflows/self-host-container.yml"
+      - "Dockerfile.selfhost"
+      - "lib/SharpTS"
+      - "scripts/build-self-host.ps1"
+      - "scripts/test-self-host-container.ps1"
+      - "src/SharpTS.Www.SelfHost/**"
+      - "src/SharpTS.Www.Worker/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: self-host-container-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out pinned submodules
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Verify immutable SharpTS input
+        shell: bash
+        run: |
+          set -euo pipefail
+          recorded_commit="$(git ls-tree HEAD lib/SharpTS | awk '{print $3}')"
+          checked_out_commit="$(git -C lib/SharpTS rev-parse HEAD)"
+          test "$recorded_commit" = "$checked_out_commit"
+          test -z "$(git -C lib/SharpTS status --porcelain)"
+
+      - name: Build and test the Linux self-host image
+        shell: pwsh
+        run: ./scripts/test-self-host-container.ps1

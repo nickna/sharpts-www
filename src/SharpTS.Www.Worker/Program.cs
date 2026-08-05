@@ -11,6 +11,12 @@ using SharpTS.TypeSystem;
 
 const int MaxOutputLength = 100 * 1024; // 100KB
 
+// Submitted code can see process.ppid. Without this host-level restriction,
+// process.kill(process.ppid) could terminate the same-UID HTTP supervisor.
+// The switch is honored by both SharpTS execution modes and is not exposed
+// through process.env, so guest TypeScript cannot unset it.
+AppContext.SetSwitch("SharpTS.RestrictProcessControl", true);
+
 // The only network capability reachable from single-source playground code is the
 // global fetch() — the fs/net/http/dns modules all require imports, which this
 // (non-module) execution mode rejects. SharpTS' fetch routes through HttpClient,
