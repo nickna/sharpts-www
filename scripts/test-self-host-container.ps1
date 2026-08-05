@@ -179,7 +179,7 @@ try {
     $browserJavaScript = Invoke-TestRequest -Method Get -Path "/assets/browser/site.js"
     Assert-True ([int]$browserJavaScript.StatusCode -eq 200) `
         "Browser JavaScript bundle did not return HTTP 200."
-    Assert-True ($browserJavaScript.Headers["Content-Type"] -like "application/javascript*") `
+    Assert-True ($browserJavaScript.Headers["Content-Type"] -like "*javascript*") `
         "Browser JavaScript has the wrong content type."
     Assert-True ($browserJavaScript.Headers["Cache-Control"] -like "*max-age=0*") `
         "Browser JavaScript must revalidate because its public URL is not fingerprinted."
@@ -198,6 +198,42 @@ try {
     $malformed = Invoke-TestRequest -Method Post -Path "/api/echo" `
         -ContentType "application/json" -Body "{not-json"
     Assert-True ([int]$malformed.StatusCode -eq 400) "Malformed JSON must return HTTP 400."
+
+    # Drop a request before its declared body completes. The host cannot send a
+    # response to the vanished client, but it must close out its request-log
+    # bookkeeping so repeated aborted uploads cannot leak client identities.
+    $abortedClient = [Net.Sockets.TcpClient]::new()
+    try {
+        $abortedClient.Connect("127.0.0.1", $Port)
+        $abortedStream = $abortedClient.GetStream()
+        $partialRequest = "POST /api/echo HTTP/1.1`r`n" +
+            "Host: 127.0.0.1:$Port`r`n" +
+            "Content-Type: application/json`r`n" +
+            "Content-Length: 128`r`n" +
+            "Connection: close`r`n`r`n" +
+            '{"value":"partial'
+        $partialBytes = [Text.Encoding]::ASCII.GetBytes($partialRequest)
+        $abortedStream.Write($partialBytes, 0, $partialBytes.Length)
+        $abortedStream.Flush()
+    }
+    finally {
+        $abortedClient.Dispose()
+    }
+
+    $bodyAbortLogged = $false
+    for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        $bodyAbortLogs = @(& docker logs --tail 40 $containerName 2>&1 |
+            ForEach-Object { $_.ToString() }) -join "`n"
+        if ($bodyAbortLogs.Contains('"eventDetail":"request_body_aborted"') -and
+            $bodyAbortLogs.Contains('"path":"/api/echo"') -and
+            $bodyAbortLogs.Contains('"status":499')) {
+            $bodyAbortLogged = $true
+            break
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    Assert-True $bodyAbortLogged `
+        "An aborted request body did not close its request log with HTTP 499."
 
     $presets = Invoke-TestRequest -Method Get -Path "/api/presets"
     $presetBody = $presets.Content | ConvertFrom-Json
@@ -345,6 +381,25 @@ try {
         $malformedHealthAfter = Invoke-WebRequest -Uri "$malformedOrigin/health" -TimeoutSec 2
         Assert-True ([int]$malformedHealthAfter.StatusCode -eq 200) `
             "Malformed worker output made the host unhealthy."
+
+        # This container does not opt into trusted-proxy handling. Ten forged
+        # X-Real-IP values must therefore share the direct peer's rate-limit
+        # identity. The malformed-worker request above consumed the first of ten
+        # allowed requests, so nine more pass and the tenth spoof is rejected.
+        $untrustedForwardStatuses = @()
+        for ($requestNumber = 1; $requestNumber -le 10; $requestNumber++) {
+            $spoofedResponse = Invoke-WebRequest -Method Post `
+                -Uri "$malformedOrigin/api/run" -Headers @{
+                    Origin = $malformedOrigin
+                    "X-Real-IP" = "198.51.100.$requestNumber"
+                } -ContentType "application/json" -Body $malformedBody `
+                -SkipHttpErrorCheck -TimeoutSec 10
+            $untrustedForwardStatuses += [int]$spoofedResponse.StatusCode
+        }
+        Assert-True (@($untrustedForwardStatuses | Where-Object { $_ -eq 200 }).Count -eq 9) `
+            "Untrusted forwarded identities bypassed the direct-peer rate limit."
+        Assert-True ($untrustedForwardStatuses[-1] -eq 429) `
+            "The untrusted forwarded-IP spoof probe did not end with HTTP 429."
     }
     finally {
         if ($malformedStarted) {

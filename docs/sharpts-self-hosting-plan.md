@@ -52,9 +52,9 @@ ServiceDefaults, and deployment projects have been removed. The remaining work
 is shipping and operational hardening rather than another application feature
 phase:
 
-1. Close the remaining automated control gaps: a deliberate container hard-limit
-   OOM test, untrusted forwarded-IP spoofing, and request-body disconnect
-   coverage.
+1. Run a deliberate container hard-limit OOM probe in the Railway canary.
+   Untrusted forwarded-IP spoofing and request-body disconnect coverage are now
+   automated; the latter also closes aborted-request log bookkeeping.
 2. Configure and verify Railway's exact public origin, trusted-proxy boundary,
    health check, drain window, memory limit, and outbound-egress policy.
 3. Run production-shaped load testing, deploy a canary, compare logs and failure
@@ -477,10 +477,10 @@ the first release.
     real same-origin playground. Source-level DOM tests and a generated-bundle
     bootstrap test pass, a real-browser suite is wired into Linux CI, and the
     browser assets/API pass local HTTP smoke tests.
-11. **Partial:** traversal containment, MIME, ETag/cache, body streaming, origin,
-     and trusted-IP logic exist. Automated encoded traversal, cache, malformed
-     JSON, origin, and trusted proxy/rate-limit tests pass; untrusted forwarded-IP
-     spoofing and request-body disconnect coverage remain.
+11. **Complete locally:** traversal containment, MIME, ETag/cache, body streaming,
+     origin, and trusted-IP logic exist. Automated encoded traversal, cache,
+     malformed JSON, origin, trusted proxy/rate-limit, untrusted forwarded-IP
+     spoofing, and request-body disconnect tests pass.
 12. **Local and hosted Linux CI pass:** `Dockerfile.selfhost` contains the
      compiled host, static assets, and worker and uses the .NET runtime (not
      ASP.NET) image as a non-root user. The hardened image and container suite pass
@@ -507,9 +507,9 @@ the first release.
   restrictions exist. Railway hard-limit and egress behavior still need canary
   validation.
 - **Local pass:** disconnecting a request terminates its worker and logs 499.
-- **Partial:** static containment, encoded traversal, caching, and opt-in
-  trusted-proxy rate limiting are automated; untrusted forwarding spoof coverage
-  remains.
+- **Local pass:** static containment, encoded traversal, caching, opt-in
+  trusted-proxy rate limiting, and untrusted forwarding spoof coverage are
+  automated.
 - **Local pass:** health endpoints and structured request/worker logs exist.
 - **Linux forced-drain pass / load pending:** graceful termination drains
   responses and the cutoff kills remaining worker trees.

@@ -95,3 +95,7 @@ endpoint. Code-sample comments are localized; literal program output is not.
 site, and Worker into one non-root .NET runtime image. It is the repository's
 only deployment Dockerfile. Clarity is not part of the self-host bundle; adding
 analytics requires an explicit CSP and privacy decision.
+
+Railway build, health, restart, and drain settings live in `railway.json`.
+Environment-specific variables, the one-replica 1 GiB limit, canary checks, and
+cutover procedure are documented in `docs/railway-selfhost-rollout.md`.

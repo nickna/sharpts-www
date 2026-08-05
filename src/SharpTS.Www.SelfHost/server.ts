@@ -245,8 +245,11 @@ function readJsonBody(request: any, response: any, requestId: string,
     }) as any, requestBodyTimeoutMs);
 
     request.on('aborted', () => {
+        if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        logRequest(requestId, method, normalizedPath, 499, startedAt,
+            { eventDetail: 'request_body_aborted' });
     });
     request.on('data', (chunk: any) => {
         if (settled) return;
