@@ -98,7 +98,9 @@ endpoint. Code-sample comments are localized; literal program output is not.
 
 `Dockerfile.selfhost` builds the browser assets, compiled SharpTS host, generated
 site, and Worker into one non-root .NET runtime image. It is the repository's
-only deployment Dockerfile. Clarity is not part of the self-host bundle; adding
+only deployment Dockerfile. If a deployment provider omits git submodule
+contents, the build fetches the exact `SHARPTS_SOURCE_REVISION`; it never follows
+a moving SharpTS branch. Clarity is not part of the self-host bundle; adding
 analytics requires an explicit CSP and privacy decision.
 
 Railway build, health, restart, and drain settings live in `railway.json`.

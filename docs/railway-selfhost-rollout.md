@@ -10,8 +10,9 @@ The repository-owned deployment settings are in `railway.json`. Railway still
 requires the following service settings because they are environment-specific or
 are not represented by deployment config-as-code:
 
-- check out `lib/SharpTS` recursively at the recorded gitlink before the Docker
-  build; `Dockerfile.selfhost` fails closed if the pinned source is absent
+- use the SharpTS revision recorded by the repository gitlink; Railway's GitHub
+  snapshot omits submodule contents, so `Dockerfile.selfhost` fetches that exact
+  revision and verifies it rather than following a moving branch
 - use the Railway-provided `PORT`; the image binds `0.0.0.0:$PORT`
 - set `SHARPTS_WWW_PUBLIC_ORIGIN=https://sharpts.dev`
 - set `SHARPTS_WWW_TRUST_RAILWAY_PROXY=true` only while Railway public

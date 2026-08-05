@@ -4,6 +4,7 @@
 .vscode
 .claude
 artifacts
+lib/SharpTS
 node_modules
 playwright-report
 test-results

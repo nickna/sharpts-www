@@ -18,10 +18,20 @@ WORKDIR /src
 COPY . .
 COPY --from=browser-build /browser-assets /browser-assets
 
-# Production builds must use the repository's pinned SharpTS submodule. Never
-# fall back to cloning a moving branch when the submodule was not initialized.
-RUN test -f lib/SharpTS/SharpTS.csproj || \
-    (echo "lib/SharpTS is missing; initialize the pinned submodule before building" >&2 && exit 1)
+# GitHub source snapshots produced by some deployment providers omit submodule
+# contents. In that case fetch only the immutable revision recorded by this
+# repository; never clone or compile a moving branch.
+RUN set -eu; \
+    if [ ! -f lib/SharpTS/SharpTS.csproj ]; then \
+      rm -rf lib/SharpTS; \
+      git init lib/SharpTS; \
+      git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
+      git -C lib/SharpTS fetch --depth 1 origin "$SHARPTS_SOURCE_REVISION"; \
+      git -C lib/SharpTS checkout --detach FETCH_HEAD; \
+      test "$(git -C lib/SharpTS rev-parse HEAD)" = "$SHARPTS_SOURCE_REVISION"; \
+      rm -rf lib/SharpTS/.git; \
+    fi; \
+    test -f lib/SharpTS/SharpTS.csproj
 
 RUN set -eu; \
     mkdir -p /app; \

@@ -94,7 +94,9 @@ advanced first to `c6e73f0c12bc38484b6000110031ca5f5a8a6fbf` for PR #1348 and th
 `32f9f4f43e856c9ba9bef5028274142e75241eb1` for PR #1349. The TypeScript worker
 bridge was merged by PR #1350, whose merge commit is
 `a7ab353bd5b3c000ed553f1b2a0e855f01724e3e`. Container builds consume this
-immutable gitlink and do not clone a moving `main` branch.
+immutable revision. When a provider's source snapshot omits submodule contents,
+the Docker build fetches and verifies that exact commit rather than following a
+moving `main` branch.
 - The first seven-request Linux concurrency test found a separate compiled
   timer defect: `Date.now()` could re-enter `ProcessPendingTimers()` from a due
   timer callback, remove the same timer twice, and terminate the host with exit
