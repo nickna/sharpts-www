@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj" />
-    <Project Path="src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj" />
   </Folder>
   <Folder Name="/lib/">
     <Project Path="lib/SharpTS/SharpTS.csproj" />

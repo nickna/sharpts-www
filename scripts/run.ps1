@@ -5,8 +5,8 @@ $AppHostProject = Join-Path $RepoRoot 'src/SharpTS.Www.AppHost/SharpTS.Www.AppHo
 $SubmoduleProject = Join-Path $RepoRoot 'lib/SharpTS/SharpTS.csproj'
 $BuildSelfHostScript = Join-Path $PSScriptRoot 'build-self-host.ps1'
 
-# Ensure the SharpTS submodule is checked out. The Worker has a project reference to
-# lib/SharpTS/SharpTS.csproj, so without it the build fails with MSB9008 / CS0246 'SharpTS'.
+# Ensure the SharpTS submodule is checked out. Both the HTTP host and worker are
+# compiled from TypeScript by lib/SharpTS/SharpTS.csproj.
 if (-not (Test-Path $SubmoduleProject)) {
     Write-Host 'SharpTS submodule is missing. Initializing it now...'
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {

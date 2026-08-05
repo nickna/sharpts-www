@@ -8,8 +8,8 @@ OUTPUT="$ARTIFACT_ROOT/self-host"
 STAGING="$ARTIFACT_ROOT/self-host-staging"
 SOURCE="$REPO_ROOT/src/SharpTS.Www.SelfHost/server.ts"
 SITE_GENERATOR="$REPO_ROOT/src/SharpTS.Www.SelfHost/generate-site.ts"
+WORKER_SOURCE="$REPO_ROOT/src/SharpTS.Www.Worker/worker.ts"
 SHARPTS_PROJECT="$REPO_ROOT/lib/SharpTS/SharpTS.csproj"
-WORKER_PROJECT="$REPO_ROOT/src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj"
 PACKAGE_LOCK="$REPO_ROOT/package-lock.json"
 COMPILE_LOG="$STAGING/sharpts-compile.log"
 
@@ -42,9 +42,26 @@ if [[ $COMPILE_EXIT -ne 0 ]] ||
 fi
 rm -f "$COMPILE_LOG"
 
-dotnet publish "$WORKER_PROJECT" -c "$CONFIGURATION" \
-    -o "$STAGING/worker" \
-    "-p:SharpTSProjectReference=$SHARPTS_PROJECT"
+mkdir -p "$STAGING/worker"
+WORKER_LOG="$STAGING/worker-compile.log"
+set +e
+dotnet run --project "$SHARPTS_PROJECT" -c "$CONFIGURATION" --no-launch-profile -- \
+    --compile "$WORKER_SOURCE" \
+    --target exe \
+    --verify \
+    -o "$STAGING/worker/SharpTS.Www.Worker" 2>&1 | tee "$WORKER_LOG"
+WORKER_EXIT=${PIPESTATUS[0]}
+set -e
+
+if [[ $WORKER_EXIT -ne 0 ]] ||
+   ! grep -Fq "Compiled to" "$WORKER_LOG" ||
+   ! grep -Fq "IL verification passed." "$WORKER_LOG" ||
+   [[ ! -f "$STAGING/worker/SharpTS.Www.Worker" ]] ||
+   [[ ! -f "$STAGING/worker/SharpTS.dll" ]]; then
+    echo "SharpTS TypeScript playground worker compilation failed." >&2
+    exit 1
+fi
+rm -f "$WORKER_LOG"
 
 BROWSER_OUTPUT="$STAGING/browser-assets"
 if [[ ! -f "$PACKAGE_LOCK" ]]; then

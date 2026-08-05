@@ -10,9 +10,9 @@ $output = Join-Path $artifactRoot "self-host"
 $staging = Join-Path $artifactRoot "self-host-staging"
 $source = Join-Path $repoRoot "src/SharpTS.Www.SelfHost/server.ts"
 $siteGenerator = Join-Path $repoRoot "src/SharpTS.Www.SelfHost/generate-site.ts"
+$workerSource = Join-Path $repoRoot "src/SharpTS.Www.Worker/worker.ts"
 $packageLock = Join-Path $repoRoot "package-lock.json"
 $project = [IO.Path]::GetFullPath((Join-Path $repoRoot $SharpTSProject))
-$workerProject = Join-Path $repoRoot "src/SharpTS.Www.Worker/SharpTS.Www.Worker.csproj"
 
 New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
 if ((Split-Path -Parent $staging) -ne $artifactRoot) {
@@ -43,10 +43,28 @@ try {
     }
 
     $workerOutput = Join-Path $staging "worker"
-    & dotnet publish $workerProject -c $Configuration -o $workerOutput `
-        "-p:SharpTSProjectReference=$project"
-    if ($LASTEXITCODE -ne 0) {
-        throw "SharpTS playground worker publish failed."
+    New-Item -ItemType Directory -Force -Path $workerOutput | Out-Null
+    $workerName = if ($env:OS -eq "Windows_NT") {
+        "SharpTS.Www.Worker.exe"
+    } else {
+        "SharpTS.Www.Worker"
+    }
+    $workerExecutable = Join-Path $workerOutput $workerName
+    $workerCompileOutput = & dotnet run --project $project -c $Configuration `
+        --no-launch-profile -- `
+        --compile $workerSource `
+        --target exe `
+        --verify `
+        -o $workerExecutable 2>&1
+    $workerCompileExitCode = $LASTEXITCODE
+    $workerCompileOutput | ForEach-Object { Write-Host $_ }
+    $workerCompileText = $workerCompileOutput -join [Environment]::NewLine
+    if ($workerCompileExitCode -ne 0 -or
+        -not $workerCompileText.Contains("Compiled to") -or
+        -not $workerCompileText.Contains("IL verification passed.") -or
+        -not (Test-Path -LiteralPath $workerExecutable) -or
+        -not (Test-Path -LiteralPath (Join-Path $workerOutput "SharpTS.dll"))) {
+        throw "SharpTS TypeScript playground worker compilation failed."
     }
 
     if (-not (Test-Path -LiteralPath $packageLock -PathType Leaf)) {

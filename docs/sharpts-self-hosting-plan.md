@@ -1,6 +1,6 @@
 # SharpTS self-hosting plan
 
-Status: SharpTS host, localized static frontend, browser interactivity, Linux container, Aspire path, and legacy-project retirement complete; production rollout remains
+Status: SharpTS host, localized static frontend, browser interactivity, Linux container, Aspire path, and legacy-project retirement complete; direct Railway rollout remains
 
 Last updated: 2026-08-05
 
@@ -36,7 +36,7 @@ yet completed its production rollout. The Razor frontend now has a deterministic
 SharpTS build-time replacement that emits localized static HTML and CSS, and a
 pinned browser TypeScript bundle replaces the interactive circuit. The ASP.NET
 execution supervisor has also been ported. The legacy source projects have been
-retired; production load testing and canary rollout remain.
+retired; production load testing and the direct Railway rollout remain.
 
 During the migration, `scripts/run.ps1` and `scripts/run.sh` build the current
 SharpTS bundle and start it as a single Aspire executable resource. This gives
@@ -52,14 +52,14 @@ ServiceDefaults, and deployment projects have been removed. The remaining work
 is shipping and operational hardening rather than another application feature
 phase:
 
-1. Run a deliberate container hard-limit OOM probe in the Railway canary.
-   Untrusted forwarded-IP spoofing and request-body disconnect coverage are now
-   automated; the latter also closes aborted-request log bookkeeping.
-2. Configure and verify Railway's exact public origin, trusted-proxy boundary,
-   health check, drain window, memory limit, and outbound-egress policy.
-3. Run production-shaped load testing, deploy a canary, compare logs and failure
-   behavior, then cut traffic over and remove the legacy Railway services.
-4. Separately decide whether the connection probe and restricted process-control
+1. Set and verify Railway's 1 GiB replica memory limit. The exact public origin,
+   trusted-proxy boundary, health check, and drain window are configured, and the
+   initial rollout accepts the documented application-level egress restriction.
+2. Push the shipping commit to `origin/main`, let Railway perform the normal
+   production deployment, run production-shaped smoke and load checks, and
+   observe logs and failure behavior. Roll back manually if needed, then remove
+   the retired Railway services after a stable observation window.
+3. Separately decide whether the connection probe and restricted process-control
    switch become supported SharpTS APIs. They are already pinned and tested for
    this site, so that API-design decision does not block local feature parity.
 
@@ -91,15 +91,18 @@ commit plus the timer follow-up described below.
   `fdbbed41d4d96f535f5d3c754d9d32ca9c53964c`, was too old to build the current
 `SharpTS.Www.Worker` because it lacked `CompilationService`. The submodule was
 advanced first to `c6e73f0c12bc38484b6000110031ca5f5a8a6fbf` for PR #1348 and then to
-`32f9f4f43e856c9ba9bef5028274142e75241eb1` for PR #1349. Container builds
-consume this immutable gitlink and do not clone a moving `main` branch.
+`32f9f4f43e856c9ba9bef5028274142e75241eb1` for PR #1349. The TypeScript worker
+bridge was merged by PR #1350, whose merge commit is
+`a7ab353bd5b3c000ed553f1b2a0e855f01724e3e`. Container builds consume this
+immutable gitlink and do not clone a moving `main` branch.
 - The first seven-request Linux concurrency test found a separate compiled
   timer defect: `Date.now()` could re-enter `ProcessPendingTimers()` from a due
   timer callback, remove the same timer twice, and terminate the host with exit
   code 139. The re-entrancy guard and dual-mode regression test were merged by
-  SharpTS PR #1349. The website now pins its `origin/main` merge commit,
-  `32f9f4f43e856c9ba9bef5028274142e75241eb1`, and the clean pinned container
-  passes the concurrency test.
+  SharpTS PR #1349. The website now pins PR #1350's merge commit,
+  `a7ab353bd5b3c000ed553f1b2a0e855f01724e3e`, which also contains the hardened
+  source-execution bridge and managed-host diagnostics used by the TypeScript
+  worker.
 
 ## Validated spike
 
@@ -108,7 +111,7 @@ deterministic bundle script and `Dockerfile.selfhost`. Local emitted-DLL tests
 have verified:
 
 - static content, `/health`, `/alive`, `/api/presets`, and `/api/run`
-- interpreted and compiled submissions through the unchanged worker protocol
+- interpreted and compiled submissions through the unchanged stdin/stdout worker protocol
 - source, mode, timeout, output, environment, concurrency, and origin controls
 - parent-environment clearing and module-import rejection
 - parent-process signaling rejected with `EPERM` in both worker modes
@@ -131,7 +134,7 @@ malformed worker, verifies the stable error response and host survival, and
 confirms SIGTERM forces and completes a loaded drain after eight seconds. A
 repository Linux CI workflow now builds and exercises the same immutable pin.
 The Git-free Docker context supplies MinVer with the verified SharpTS version
-`1.0.9-alpha.0.55` and revision `32f9f4f4`, stamps that revision on the image,
+`1.0.9-alpha.0.56` and revision `a7ab353b`, stamps that revision on the image,
 and fails the suite if the label ever differs from the checked-out gitlink.
 
 The retired Razor frontend used as parity input comprised approximately:
@@ -152,7 +155,7 @@ The retired Razor frontend used as parity input comprised approximately:
 | ASP.NET static files | SharpTS `fs`-based static handler |
 | Minimal API endpoints | Small TypeScript router |
 | `TypeScriptExecutionService` | TypeScript child-process supervisor or a narrow helper |
-| `SharpTS.Www.Worker` | Keep unchanged initially |
+| C# `SharpTS.Www.Worker` | SharpTS-compiled `worker.ts` using the host-only `sharpts:execution` bridge |
 | Aspire service discovery | Local orchestration only; production uses one container with a direct worker path |
 | ServiceDefaults | Explicit health endpoints and structured logs |
 
@@ -163,7 +166,7 @@ being migrated:
 
 ```text
 scripts/run.ps1 or scripts/run.sh
-  -> compile server.ts and publish SharpTS.Www.Worker
+  -> compile server.ts and worker.ts with SharpTS
   -> start Aspire AppHost
        -> one `sharpts-www` executable resource
             -> dotnet SharpTS.Www.SelfHost.dll
@@ -200,7 +203,7 @@ RSS check; the Linux container suite remains authoritative for that control.
 ### P0: honor the HTTP listen host
 
 Implementation status: complete in SharpTS and pinned by this repository at
-`32f9f4f43e856c9ba9bef5028274142e75241eb1`.
+`a7ab353bd5b3c000ed553f1b2a0e855f01724e3e`.
 
 The compiled HTTP emitter currently builds this prefix:
 
@@ -439,8 +442,9 @@ the first release.
 ## Implementation sequence
 
 1. **Complete:** SharpTS prerequisite changes were merged by PR #1348, the timer
-   re-entrancy regression was merged by PR #1349, and the website submodule is
-   pinned to merge commit `32f9f4f4`.
+   re-entrancy regression was merged by PR #1349, the source-execution bridge and
+   diagnostic hardening were merged by PR #1350, and the website submodule is
+   pinned to merge commit `a7ab353b`.
 2. **Complete and pinned:** fix `server.listen(port, host)` in interpreted and
    compiled SharpTS.
 3. **Complete and pinned:** add non-loopback listener and emitted-host tests;
@@ -450,13 +454,18 @@ the first release.
 5. **Chosen and locally proven:** Linux `/proc` RSS monitoring, a 1 GiB hard
    container limit, and a compiled response probe for post-body disconnect
    cancellation.
-6. **Complete for the spike:** port `TypeScriptExecutionService` behavior while
-   retaining the existing worker and stdin/stdout JSON contract.
-7. **Partial:** timeout, cancellation, environment clearing, origin rejection,
+6. **Complete:** port `TypeScriptExecutionService` behavior and the worker shell
+   to SharpTS-compiled TypeScript while retaining the stdin/stdout JSON contract.
+   A narrow `sharpts:execution` host bridge owns bounded interpretation and
+   compile-and-run so worker code does not couple to SharpTS's internal AST types.
+7. **Complete locally:** timeout, cancellation, environment clearing, origin
+   rejection,
    import rejection, parent-signal blocking, host survival, Linux RSS,
    concurrency saturation, trusted-proxy rate-limit identity, and stack overflow
    are proven. Malformed worker output and shutdown under load also pass in the
-   container suite. A deliberate hard-limit OOM test remains.
+   container suite. The direct production rollout intentionally omits a
+   destructive Railway hard-limit OOM probe and relies on the local container
+   controls plus Railway's retained build and manual rollback.
 8. **Complete for local development:** migrate the Aspire AppHost from the
    legacy `SharpTS.Www.Web` and `SharpTS.Www.Api` Kestrel projects to one
    executable resource running the compiled SharpTS server. The local run scripts
@@ -481,15 +490,17 @@ the first release.
      origin, and trusted-IP logic exist. Automated encoded traversal, cache,
      malformed JSON, origin, trusted proxy/rate-limit, untrusted forwarded-IP
      spoofing, and request-body disconnect tests pass.
-12. **Local and hosted Linux CI pass:** `Dockerfile.selfhost` contains the
+12. **Local Linux pass on the shipping pin / hosted CI rerun pending:**
+     `Dockerfile.selfhost` contains the
      compiled host, static assets, and worker and uses the .NET runtime (not
      ASP.NET) image as a non-root user. The hardened image and container suite pass
-     from the clean `32f9f4f4` pin, and deterministic provenance metadata is
+     from the clean `a7ab353b` pin, and deterministic provenance metadata is
      verified by the repository workflow.
 13. **Complete:** remove the retired Web, API, and ServiceDefaults source
     projects, their solution entries, and their deployment Dockerfiles.
-14. **Not started:** load test and canary before removing the existing Railway
-    web and API services.
+14. **Not started:** push the validated commit to `origin/main`, smoke/load test
+    the normal Railway production deployment, observe it, and then remove the
+    retired Railway web and API services.
 
 ## Acceptance criteria
 
@@ -504,8 +515,8 @@ the first release.
 - **Local pass:** submitted code runs only in an isolated worker process.
 - **Local Linux pass / deployment pending:** source, time, output, concurrency,
   environment, import/network, process-control, RSS, and container-boundary
-  restrictions exist. Railway hard-limit and egress behavior still need canary
-  validation.
+  restrictions exist. Production runtime observation remains; the rollout
+  accepts application-level egress blocking rather than claiming an OS sandbox.
 - **Local pass:** disconnecting a request terminates its worker and logs 499.
 - **Local pass:** static containment, encoded traversal, caching, opt-in
   trusted-proxy rate limiting, and untrusted forwarding spoof coverage are
@@ -525,8 +536,9 @@ Decisions made for the spike:
   the production image or request path.
 - Use compiled managed IL for the first production host. Native AOT remains a
   separate later objective.
-- Use immutable SharpTS gitlinks; `32f9f4f4` is the reviewed shipping pin and
-  contains PR #1348 plus the PR #1349 timer re-entrancy fix.
+- Use immutable SharpTS gitlinks; `a7ab353b` is the shipping pin and contains
+  PR #1348, the PR #1349 timer re-entrancy fix, and PR #1350's hardened
+  source-execution bridge required by the TypeScript worker.
 - Use a Linux-specific `/proc` supervisor for worker RSS and fail readiness when
   required monitoring is unavailable.
 - Start with one replica, structured JSON logs, and the bounded in-memory rate
@@ -534,6 +546,9 @@ Decisions made for the spike:
 - Start with a 1 GiB hard memory limit for the host plus three workers; tune only
   after production-shaped load data.
 - Keep TLS/HSTS at Railway and bind `0.0.0.0:$PORT` in the container.
+- Deploy directly from `origin/main` through the existing Railway integration.
+  Do not create a canary or deliberately OOM the production service; use the last
+  known good build and manual rollback if the new deployment is unhealthy.
 - Generate localized HTML only during local/CI/container builds rather than
   committing build products. The deterministic manifest and generated-site test
   validate ten routes, five cultures, 75 resource inputs, CSS sources, and local
@@ -551,8 +566,8 @@ Decisions still required before the migration can ship:
   `SHARPTS_WWW_TRUST_RAILWAY_PROXY=true` only in that topology, set the exact
   `SHARPTS_WWW_PUBLIC_ORIGIN`, configure `/health`, and configure a drain window
   longer than the host's eight-second forced cutoff.
-- Choose the Railway outbound-egress policy. Application controls are necessary
-  but should not be the only network boundary.
+- Revisit the accepted application-level outbound-network restriction if Railway
+  adds an appropriate service egress boundary or the threat model changes.
 - Decide what replaces automatic OpenTelemetry. The recommendation is to ship
   structured logs first, then add an explicit OTLP exporter only after the
   single-service deployment is stable.

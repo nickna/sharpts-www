@@ -49,7 +49,7 @@ Active production-path components:
 
 - **SelfHost** — SharpTS-compiled HTTP/static/API server and worker supervisor.
 - **Browser bundle** — first-party TypeScript plus pinned CodeMirror, Prism, and fonts.
-- **Worker** — unchanged short-lived process that executes one request.
+- **Worker** — SharpTS-compiled TypeScript process that executes one request.
 - **AppHost** — development-only Aspire orchestration of the compiled SelfHost bundle.
 
 ### Playground execution flow (the security-critical core)
@@ -61,7 +61,12 @@ Browser fetch → SharpTS SelfHost POST /api/run → supervisor.ts
   → spawns Worker child process (stdin/stdout JSON) → SharpTS interpreter/compiler → JSON response
 ```
 
-Inside the Worker, `request.Source` goes through SharpTS' `Lexer → Parser → TypeChecker.CheckWithRecovery → VariableResolver → Interpreter` (decorators disabled). `Console.Out`/`Console.Error` are redirected into a `CappedStringWriter`; the **real** stdout is reserved for the JSON protocol response, so the worker must never write the response to the redirected `Console.Out`.
+Inside the Worker, `request.Source` goes through SharpTS's public
+`SourceExecutionService`: `Lexer → Parser → TypeChecker.CheckWithRecovery →
+VariableResolver → Interpreter` for interpreted mode, or `CompilationService`
+for compiled mode. Decorators are disabled and output is captured through the
+service's bounded writer. The worker's stdout is reserved for its single JSON
+protocol response.
 
 The isolation/limits are the core of the design. `supervisor.ts` owns the
 three-worker concurrency cap, bounded queue, source/timeout/output limits, Linux
@@ -73,7 +78,7 @@ execution.
 
 The worker has no independent timeout; the supervisor is the sole enforcement
 point. When changing the stdin/stdout protocol, update both `supervisor.ts` and
-`SharpTS.Www.Worker/Program.cs` because the contract is deliberately process-local
+`SharpTS.Www.Worker/worker.ts` because the contract is deliberately process-local
 rather than a shared assembly.
 
 ### Localization (i18n)
@@ -97,5 +102,5 @@ only deployment Dockerfile. Clarity is not part of the self-host bundle; adding
 analytics requires an explicit CSP and privacy decision.
 
 Railway build, health, restart, and drain settings live in `railway.json`.
-Environment-specific variables, the one-replica 1 GiB limit, canary checks, and
+Environment-specific variables, the one-replica 1 GiB limit, rollout checks, and
 cutover procedure are documented in `docs/railway-selfhost-rollout.md`.
