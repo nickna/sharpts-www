@@ -2,7 +2,7 @@
 ARG SHARPTS_VERSION
 ARG SHARPTS_SOURCE_REVISION
 
-FROM node:24-bookworm-slim AS browser-build
+FROM node:25-bookworm-slim AS browser-build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci
