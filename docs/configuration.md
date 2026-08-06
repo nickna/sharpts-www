@@ -60,5 +60,6 @@ when invoking one build stage directly.
 | `SHARPTS_WWW_E2E_PORT` | Port reserved for Playwright's compiled test host. |
 
 `sharpts-source.env` is not runtime configuration. It is the reviewed, immutable
-SharpTS version and commit used by local builds, CI, feature-claim validation,
-and Docker build arguments.
+SharpTS commit used by local builds, CI, and feature-claim validation.
+Production Docker builds instead resolve SharpTS `main` and record the fetched
+commit in `/app/sharpts-source.env` for provenance.

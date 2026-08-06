@@ -1,7 +1,4 @@
 # syntax=docker/dockerfile:1
-ARG SHARPTS_VERSION
-ARG SHARPTS_SOURCE_REVISION
-
 FROM node:25-bookworm-slim AS browser-build
 WORKDIR /src
 COPY package.json package-lock.json ./
@@ -12,37 +9,28 @@ COPY src/SharpTS.Www.Shared/ src/SharpTS.Www.Shared/
 RUN SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets npm run build:browser
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-ARG SHARPTS_VERSION
-ARG SHARPTS_SOURCE_REVISION
 WORKDIR /src
 
 COPY . .
 COPY --from=browser-build /browser-assets /browser-assets
 
-# Docker contexts intentionally omit the submodule. Fetch only the immutable
-# revision in sharpts-source.env; never clone or compile a moving branch.
+# Production deployments intentionally track the latest SharpTS main commit.
+# Keeping .git lets us record the exact resolved commit in the generated site.
 RUN set -eu; \
-    requested_version="$SHARPTS_VERSION"; \
-    requested_revision="$SHARPTS_SOURCE_REVISION"; \
-    . ./sharpts-source.env; \
-    if [ -n "$requested_version" ]; then test "$requested_version" = "$SHARPTS_VERSION"; fi; \
-    if [ -n "$requested_revision" ]; then test "$requested_revision" = "$SHARPTS_SOURCE_REVISION"; fi; \
-    if [ ! -f lib/SharpTS/SharpTS.csproj ]; then \
-      rm -rf lib/SharpTS; \
-      git init lib/SharpTS; \
-      git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
-      git -C lib/SharpTS fetch --depth 1 origin "$SHARPTS_SOURCE_REVISION"; \
-      git -C lib/SharpTS checkout --detach FETCH_HEAD; \
-      test "$(git -C lib/SharpTS rev-parse HEAD)" = "$SHARPTS_SOURCE_REVISION"; \
-      rm -rf lib/SharpTS/.git; \
-    fi; \
-    test -f lib/SharpTS/SharpTS.csproj
+    rm -rf lib/SharpTS; \
+    git init lib/SharpTS; \
+    git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
+    git -C lib/SharpTS fetch --depth 1 origin main; \
+    git -C lib/SharpTS checkout --detach FETCH_HEAD; \
+    sharp_ts_revision="$(git -C lib/SharpTS rev-parse HEAD)"; \
+    test -f lib/SharpTS/SharpTS.csproj; \
+    printf 'SHARPTS_SOURCE_REVISION=%s\n' "$sharp_ts_revision" > sharpts-source.env
 
 RUN set -eu; \
     . ./sharpts-source.env; \
     mkdir -p /app; \
     if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
-        -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+        -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
         -p:EnableSourceLink=false \
         -p:EnableSourceControlManagerQueries=false \
@@ -61,7 +49,7 @@ RUN set -eu; \
     . ./sharpts-source.env; \
     mkdir -p /app/worker; \
     if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
-        -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+        -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
         -p:EnableSourceLink=false \
         -p:EnableSourceControlManagerQueries=false \
@@ -85,7 +73,7 @@ RUN set -eu; \
         SHARPTS_WWW_SITE_OUTPUT=/app/public \
         SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets \
         dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
-        -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
+        -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
         -p:EnableSourceLink=false \
         -p:EnableSourceControlManagerQueries=false \
@@ -97,18 +85,15 @@ RUN set -eu; \
     cat /tmp/site-generation.log; \
     grep -q "Generated localized static site with 15 pages" /tmp/site-generation.log; \
     test -f /app/public/conformance.json; \
-    test -f /app/public/site-manifest.json
+    test -f /app/public/site-manifest.json; \
+    cp sharpts-source.env /app/sharpts-source.env
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
-ARG SHARPTS_VERSION
-ARG SHARPTS_SOURCE_REVISION
 WORKDIR /app
 
 LABEL org.opencontainers.image.source="https://github.com/nickna/sharpts-www" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.version="$SHARPTS_VERSION" \
-      org.opencontainers.image.revision="$SHARPTS_SOURCE_REVISION" \
-      io.sharpts.runtime.revision="$SHARPTS_SOURCE_REVISION"
+      io.sharpts.runtime.source="https://github.com/nickna/SharpTS/tree/main"
 
 COPY --from=build /app/ ./
 
