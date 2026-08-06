@@ -3,11 +3,11 @@
   "files": [
     {
       "path": "index.html",
-      "sha256": "d6bf8981867bc1eb268dd9a4cf46d7fea68853ea1bd347cff65f51371df209ad"
+      "sha256": "e86ffae1ec9cd7c9e3510d1be2b71a6edfbbb915f64b1368587e95bc0b74c280"
     },
     {
       "path": "how-it-works/index.html",
-      "sha256": "08235d46f521a12cb82efb0e4970e338b982747d23e7c2b1fb3c4569440924ef"
+      "sha256": "76f5a4113b441f5846ac08662473ee02e36729e593a48f73b9096b7901ef777e"
     },
     {
       "path": "conformance/index.html",
@@ -15,11 +15,11 @@
     },
     {
       "path": "zh-Hans/index.html",
-      "sha256": "3a4807ad5f3f96c00f315858a203453f0b8382c27d45360c811ab9d2ec76f3d0"
+      "sha256": "77970081151a2b7473f373b463e433e6bf2803c9c0caff8eb12b7dd43c28b039"
     },
     {
       "path": "zh-Hans/how-it-works/index.html",
-      "sha256": "7499b56c1294a66918af06c46549008f5a1e6be40ec5f2c0a41a21e5628c248d"
+      "sha256": "831e2ee9323fbd6f3c62155315561cc79b899664586fe4337e35f295a4663ee7"
     },
     {
       "path": "zh-Hans/conformance/index.html",
@@ -27,11 +27,11 @@
     },
     {
       "path": "fr/index.html",
-      "sha256": "f884b4381bc6f0e35ca6dea4531a86085defd7da9137d7de80dc9c9917c6ce60"
+      "sha256": "c8e6a3c838c8eae3fdc8cafeb552c9cd1e50d385b2762be2bf067d52e4e6e907"
     },
     {
       "path": "fr/how-it-works/index.html",
-      "sha256": "366ecc36b1539751256cd30e0622d4812a907e6bee641355a62362d5e2f77f4f"
+      "sha256": "1657feb0039ce0110088d62856a832b95753c35b3ea11dcc2ba286af62cd6db1"
     },
     {
       "path": "fr/conformance/index.html",
@@ -39,11 +39,11 @@
     },
     {
       "path": "es/index.html",
-      "sha256": "e477d9e8c933b3a9080a454358bb34f9048f889771b42b2cc45891cc44ec3552"
+      "sha256": "8e3ad36e9c2e1f5cf617960bdfcfcb6736a746c00426106dc9d7290328ad3faf"
     },
     {
       "path": "es/how-it-works/index.html",
-      "sha256": "9a8ec74b65799b30f4dd0786e642df4a463d5d02bfd9722d23a6967afe0690e7"
+      "sha256": "df405364988c5ebedf26b891b04491a17e314ffb2a3c14e2d046ffef3906b997"
     },
     {
       "path": "es/conformance/index.html",
@@ -51,11 +51,11 @@
     },
     {
       "path": "de/index.html",
-      "sha256": "8c016bf32b184ad149740e3ae0b118af12bba4348863107cea171bae0a409f19"
+      "sha256": "e86d1ff88d35931c356cddf27e72057bafeb4c13033d36bba69a932b0a63d885"
     },
     {
       "path": "de/how-it-works/index.html",
-      "sha256": "3242ce711a70f5f7652a2d13e836a14d2e15270fdc8ea240e3da60574baa8949"
+      "sha256": "59ba5b4959d07bc8b039e46478e1d9f9506ea0676a49a08abb4638aad371ba89"
     },
     {
       "path": "de/conformance/index.html",
@@ -70,7 +70,7 @@
       "sha256": "bd13d00aee414db37ce3729eb66dc1233a1af9398e3738227b028698585bee68"
     },
     {
-      "path": "assets/browser/chunks/playground-IJ6LF43U.js",
+      "path": "assets/browser/chunks/playground-TENA6UIC.js",
       "sha256": "11d9f706d50de9e6386be28a42dceefb30043a4bba84178f10c1779fdbf5e8b5"
     },
     {
@@ -82,8 +82,8 @@
       "sha256": "36d0ab95ca02e40a4196f45209b7646dff66172eee4a89158434ca18ba8c4fd9"
     },
     {
-      "path": "assets/browser/site-JIQTSKSR.js",
-      "sha256": "4735eaac7dd221df557332e8722d1c6c7a8ce50c9910aecbeb70cc3638085639"
+      "path": "assets/browser/site-OJXY6TOG.js",
+      "sha256": "1bc51aa4d1d50fcdb6d17212233e9b9d6e653c492c461a6d79d38ccca0bca56c"
     }
   ]
 }

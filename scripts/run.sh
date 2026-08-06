@@ -6,11 +6,11 @@ APPHOST_PROJECT="$REPO_ROOT/src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj"
 SUBMODULE_PROJECT="$REPO_ROOT/lib/SharpTS/SharpTS.csproj"
 BUILD_SELF_HOST_SCRIPT="$REPO_ROOT/scripts/build-self-host.sh"
 
-# Ensure the SharpTS submodule is checked out. The Worker has a project reference to
-# Both the HTTP host and worker are compiled from TypeScript by this project.
+# Ensure the SharpTS submodule is checked out. The nested conformance corpora
+# are not website build inputs, so do not initialize them here.
 if [ ! -f "$SUBMODULE_PROJECT" ]; then
     echo "SharpTS submodule is missing. Initializing it now..."
-    git -C "$REPO_ROOT" submodule update --init --recursive
+    git -C "$REPO_ROOT" submodule update --init lib/SharpTS
 fi
 echo "SharpTS submodule is present."
 

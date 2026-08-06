@@ -85,6 +85,7 @@ function assertShowcaseOutput(example, mode, output) {
 
 const configuration = option('--configuration', 'Release');
 if (!/^[A-Za-z0-9._-]+$/.test(configuration)) throw new Error(`Invalid build configuration: ${configuration}`);
+const skipWorkerShowcaseVerification = process.env.SHARPTS_WWW_SKIP_WORKER_SHOWCASE_VERIFICATION === 'true';
 
 const project = path.resolve(repoRoot, option('--sharpts-project', 'lib/SharpTS/SharpTS.csproj'));
 if (!project.startsWith(`${repoRoot}${path.sep}`) || !fs.existsSync(project))
@@ -99,16 +100,17 @@ const buildProperties = [
     '-p:EnableSourceControlManagerQueries=false',
     '-p:PublishRepositoryUrl=false'
 ];
-const dotnetPrefix = [
-    'run',
-    '--project',
-    project,
-    '-c',
-    configuration,
-    '--no-launch-profile',
-    ...buildProperties,
-    '--'
-];
+const compilerAssembly = path.join(path.dirname(project), 'bin', configuration, 'net10.0', 'SharpTS.dll');
+
+// Build SharpTS exactly once. Every remaining operation invokes that assembly
+// directly so MSBuild does not repeatedly evaluate the large compiler tree.
+requireSuccessful(
+    run('dotnet', ['build', project, '-c', configuration, '--nologo', ...buildProperties]),
+    'SharpTS compiler build',
+    [],
+    [compilerAssembly]
+);
+const sharpTsPrefix = [compilerAssembly];
 
 fs.mkdirSync(artifactRoot, { recursive: true });
 removeBuildDirectory(stagingRoot);
@@ -119,7 +121,7 @@ try {
     const serverOutput = path.join(stagingRoot, 'SharpTS.Www.SelfHost.dll');
     requireSuccessful(
         run('dotnet', [
-            ...dotnetPrefix,
+            ...sharpTsPrefix,
             '--compile',
             path.join(repoRoot, 'src/SharpTS.Www.SelfHost/server.ts'),
             '--verify',
@@ -137,7 +139,7 @@ try {
     const workerOutput = path.join(workerRoot, workerName);
     requireSuccessful(
         run('dotnet', [
-            ...dotnetPrefix,
+            ...sharpTsPrefix,
             '--compile',
             path.join(repoRoot, 'src/SharpTS.Www.Worker/worker.ts'),
             '--target',
@@ -172,7 +174,7 @@ try {
 
     const publicRoot = path.join(stagingRoot, 'public');
     requireSuccessful(
-        run('dotnet', [...dotnetPrefix, path.join(repoRoot, 'src/SharpTS.Www.SelfHost/generate-site.ts')], {
+        run('dotnet', [...sharpTsPrefix, path.join(repoRoot, 'src/SharpTS.Www.SelfHost/generate-site.ts')], {
             SHARPTS_WWW_SITE_REPO_ROOT: repoRoot,
             SHARPTS_WWW_SITE_OUTPUT: publicRoot,
             SHARPTS_WWW_BROWSER_OUTPUT: browserRoot
@@ -188,6 +190,10 @@ try {
     fs.mkdirSync(showcaseRoot, { recursive: true });
     const examples = JSON.parse(fs.readFileSync(showcaseManifestPath, 'utf8'));
     for (const example of examples) {
+        if (skipWorkerShowcaseVerification && example.executionSurface === 'worker') {
+            console.log(`Deferred ${example.key} worker verification to the browser parity suite.`);
+            continue;
+        }
         const sourcePath = path.join(showcaseRoot, `${example.key}.ts`);
         fs.writeFileSync(sourcePath, example.source, 'utf8');
         for (const mode of ['interpret', 'compile']) {
@@ -208,23 +214,13 @@ try {
                     throw new Error(`${example.key} failed in ${mode}: ${JSON.stringify(payload.Errors)}`);
                 assertShowcaseOutput(example, mode, payload.Output);
             } else if (mode === 'interpret') {
-                const result = run('dotnet', [
-                    'run',
-                    '--project',
-                    project,
-                    '-c',
-                    configuration,
-                    '--no-launch-profile',
-                    '--no-build',
-                    '--',
-                    sourcePath
-                ]);
+                const result = run('dotnet', [...sharpTsPrefix, sourcePath]);
                 requireSuccessful(result, `${example.key} CLI interpretation`);
                 assertShowcaseOutput(example, mode, result.stdout);
             } else {
                 const compiledExample = path.join(showcaseRoot, `${example.key}.dll`);
                 requireSuccessful(
-                    run('dotnet', [...dotnetPrefix, '--compile', sourcePath, '--verify', '-o', compiledExample]),
+                    run('dotnet', [...sharpTsPrefix, '--compile', sourcePath, '--verify', '-o', compiledExample]),
                     `${example.key} CLI compilation`,
                     ['Compiled to', 'IL verification passed.'],
                     [compiledExample]

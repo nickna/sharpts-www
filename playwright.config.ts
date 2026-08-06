@@ -11,8 +11,8 @@ const workerName = process.platform === 'win32' ? 'SharpTS.Www.Worker.exe' : 'Sh
 export default defineConfig({
     testDir: 'tests/e2e',
     timeout: 45_000,
-    fullyParallel: false,
-    workers: 1,
+    fullyParallel: true,
+    workers: 2,
     reporter: 'line',
     use: {
         baseURL: origin,

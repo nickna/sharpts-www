@@ -82,11 +82,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Check out pinned submodules
+      - name: Check out pinned SharpTS source
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-          submodules: recursive
+          submodules: true
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
@@ -104,6 +104,10 @@ jobs:
 
       - name: Build the local Aspire topology
         shell: bash
+        env:
+          # E2E executes every worker showcase in both modes; keep the CLI-only
+          # showcase here without running the worker matrix twice.
+          SHARPTS_WWW_SKIP_WORKER_SHOWCASE_VERIFICATION: "true"
         run: |
           bash ./scripts/build-self-host.sh Debug
           dotnet build src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj -c Debug
@@ -120,10 +124,22 @@ jobs:
         run: npm run verify
 
       - name: Install browser test runtime
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps --only-shell chromium
 
       - name: Verify browser parity against the SharpTS host
         run: npm run test:e2e
+
+  container-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # The production Dockerfile resolves SharpTS main itself, and lib/SharpTS
+      # is excluded from its build context. Avoid downloading any submodules.
+      - name: Check out website source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Build and test the Linux self-host image
         shell: pwsh

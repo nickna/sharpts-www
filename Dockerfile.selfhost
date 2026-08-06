@@ -28,13 +28,21 @@ RUN set -eu; \
 
 RUN set -eu; \
     . ./sharpts-source.env; \
-    mkdir -p /app; \
-    if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
+    if ! dotnet build lib/SharpTS/SharpTS.csproj -c Release --nologo \
         -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
         -p:EnableSourceLink=false \
         -p:EnableSourceControlManagerQueries=false \
-        -p:PublishRepositoryUrl=false -- \
+        -p:PublishRepositoryUrl=false > /tmp/sharpts-build.log 2>&1; then \
+      cat /tmp/sharpts-build.log; \
+      exit 1; \
+    fi; \
+    cat /tmp/sharpts-build.log; \
+    test -f lib/SharpTS/bin/Release/net10.0/SharpTS.dll
+
+RUN set -eu; \
+    mkdir -p /app; \
+    if ! dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
         --compile src/SharpTS.Www.SelfHost/server.ts \
         --verify \
         -o /app/SharpTS.Www.SelfHost.dll > /tmp/sharpts-compile.log 2>&1; then \
@@ -46,14 +54,8 @@ RUN set -eu; \
     grep -q "IL verification passed." /tmp/sharpts-compile.log; \
     test -f /app/SharpTS.Www.SelfHost.dll
 RUN set -eu; \
-    . ./sharpts-source.env; \
     mkdir -p /app/worker; \
-    if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
-        -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
-        -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
-        -p:EnableSourceLink=false \
-        -p:EnableSourceControlManagerQueries=false \
-        -p:PublishRepositoryUrl=false -- \
+    if ! dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
         --compile src/SharpTS.Www.Worker/worker.ts \
         --target exe \
         --verify \
@@ -67,17 +69,11 @@ RUN set -eu; \
     test -f /app/worker/SharpTS.Www.Worker; \
     test -f /app/worker/SharpTS.dll
 RUN set -eu; \
-    . ./sharpts-source.env; \
     mkdir -p /app/public; \
     if ! SHARPTS_WWW_SITE_REPO_ROOT=/src \
         SHARPTS_WWW_SITE_OUTPUT=/app/public \
         SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets \
-        dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
-        -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
-        -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
-        -p:EnableSourceLink=false \
-        -p:EnableSourceControlManagerQueries=false \
-        -p:PublishRepositoryUrl=false -- \
+        dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
         src/SharpTS.Www.SelfHost/generate-site.ts > /tmp/site-generation.log 2>&1; then \
       cat /tmp/site-generation.log; \
       exit 1; \

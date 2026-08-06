@@ -12,7 +12,7 @@ if (-not (Test-Path $SubmoduleProject)) {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         throw 'git is not on PATH, so the SharpTS submodule cannot be initialized. Install Git and re-run.'
     }
-    git -C $RepoRoot submodule update --init --recursive
+    git -C $RepoRoot submodule update --init lib/SharpTS
     if ($LASTEXITCODE -ne 0) { throw 'Failed to initialize the SharpTS submodule.' }
     if (-not (Test-Path $SubmoduleProject)) { throw "Submodule initialized but $SubmoduleProject still missing." }
 }
