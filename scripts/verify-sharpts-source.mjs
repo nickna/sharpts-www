@@ -19,10 +19,7 @@ const values = Object.fromEntries(
         })
 );
 
-const version = values.SHARPTS_VERSION;
 const revision = values.SHARPTS_SOURCE_REVISION;
-if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version || ''))
-    throw new Error('SHARPTS_VERSION is missing or malformed.');
 if (!/^[0-9a-f]{40}$/.test(revision || ''))
     throw new Error('SHARPTS_SOURCE_REVISION must be a lowercase 40-character commit SHA.');
 
@@ -55,4 +52,4 @@ if (matrixRevision !== revision)
         `The feature matrix was reviewed against ${matrixRevision || 'no recorded revision'}; expected ${revision}.`
     );
 
-console.log(`Verified SharpTS ${version} at ${revision}.`);
+console.log(`Verified SharpTS at ${revision}.`);

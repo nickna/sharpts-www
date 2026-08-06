@@ -86,7 +86,7 @@ if (!project.startsWith(`${repoRoot}${path.sep}`) || !fs.existsSync(project))
 requireSuccessful(run('node', ['scripts/verify-sharpts-source.mjs']), 'SharpTS source verification');
 const settings = loadSourceSettings();
 const buildProperties = [
-    `-p:MinVerVersionOverride=${settings.SHARPTS_VERSION}+${settings.SHARPTS_SOURCE_REVISION}`,
+    `-p:MinVerVersionOverride=0.0.0-local+${settings.SHARPTS_SOURCE_REVISION}`,
     `-p:SourceRevisionId=${settings.SHARPTS_SOURCE_REVISION}`,
     '-p:EnableSourceLink=false',
     '-p:EnableSourceControlManagerQueries=false',

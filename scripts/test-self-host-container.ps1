@@ -11,14 +11,6 @@ Set-StrictMode -Version Latest
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $origin = "http://127.0.0.1:$Port"
 $containerName = "sharpts-www-selfhost-test-$([Guid]::NewGuid().ToString('N').Substring(0, 12))"
-$sharpTsCommit = @(& git -C (Join-Path $repoRoot "lib/SharpTS") rev-parse HEAD)[0].Trim()
-$sourceSettings = @{}
-foreach ($line in Get-Content -LiteralPath (Join-Path $repoRoot 'sharpts-source.env')) {
-    if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
-    $name, $value = $line.Split('=', 2)
-    $sourceSettings[$name] = $value
-}
-$sharpTsVersion = $sourceSettings.SHARPTS_VERSION
 
 function Assert-True {
     param(
@@ -82,21 +74,16 @@ function Invoke-Execution {
 }
 
 if (-not $SkipBuild) {
-    & node (Join-Path $repoRoot 'scripts/verify-sharpts-source.mjs')
-    if ($LASTEXITCODE -ne 0) { throw 'SharpTS source verification failed.' }
     & docker build --progress=plain -f (Join-Path $repoRoot "Dockerfile.selfhost") `
-        --build-arg "SHARPTS_VERSION=$sharpTsVersion" `
-        --build-arg "SHARPTS_SOURCE_REVISION=$sharpTsCommit" `
         -t $Image $repoRoot
     if ($LASTEXITCODE -ne 0) {
         throw "Docker image build failed."
     }
 }
 
-$imageSharpTsCommit = @(& docker image inspect -f `
-    '{{ index .Config.Labels "io.sharpts.runtime.revision" }}' $Image)[0].Trim()
-Assert-True ($imageSharpTsCommit -eq $sharpTsCommit) `
-    "Image SharpTS revision '$imageSharpTsCommit' does not match submodule '$sharpTsCommit'."
+$imageSharpTsSource = @(& docker run --rm --entrypoint cat $Image /app/sharpts-source.env)[0].Trim()
+Assert-True ($imageSharpTsSource -match '^SHARPTS_SOURCE_REVISION=[0-9a-f]{40}$') `
+    "Image does not record the resolved SharpTS main commit: '$imageSharpTsSource'."
 
 $containerStarted = $false
 try {
