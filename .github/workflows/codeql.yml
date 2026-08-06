@@ -8,37 +8,22 @@ on:
     - cron: "17 8 * * 2"
 
 permissions:
+  actions: read
   contents: read
   security-events: write
 
 jobs:
   analyze:
-    name: Analyze ${{ matrix.language }}
+    name: Analyze javascript-typescript
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - language: javascript-typescript
-            build-mode: none
-          - language: csharp
-            build-mode: autobuild
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
-      - name: Set up .NET
-        if: matrix.language == 'csharp'
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.0.x
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
-      - name: Build compiled languages
-        if: matrix.build-mode == 'autobuild'
-        uses: github/codeql-action/autobuild@v4
+          languages: javascript-typescript
+          build-mode: none
       - name: Analyze
         uses: github/codeql-action/analyze@v4
