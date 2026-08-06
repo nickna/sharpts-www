@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible problem with the website or playground.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not report security vulnerabilities here; follow SECURITY.md instead.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest source sample and exact steps that reproduce the issue.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Static website
+        - Playground interpreter
+        - Playground compiler
+        - Build or contributor tooling
+        - Deployment or container
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Repository revision
+      placeholder: Commit SHA or deployed version
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, .NET version, and Node version where relevant.
+  - type: checkboxes
+    id: conduct
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and did not include private credentials or vulnerability details.
+          required: true

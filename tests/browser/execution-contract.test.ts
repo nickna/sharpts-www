@@ -15,11 +15,13 @@ describe('playground execution contract', () => {
     });
 
     it('preserves valid request fields without coercing untrusted values', () => {
-        expect(parseRunRequest({
-            source: 'console.log("safe");',
-            timeoutMs: 2_500,
-            mode: 'compile'
-        })).toEqual({
+        expect(
+            parseRunRequest({
+                source: 'console.log("safe");',
+                timeoutMs: 2_500,
+                mode: 'compile'
+            })
+        ).toEqual({
             source: 'console.log("safe");',
             timeoutMs: 2_500,
             mode: 'compile'

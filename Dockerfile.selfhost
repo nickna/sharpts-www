@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG SHARPTS_VERSION=1.0.9-alpha.0.56
-ARG SHARPTS_SOURCE_REVISION=a7ab353bd5b3c000ed553f1b2a0e855f01724e3e
+ARG SHARPTS_VERSION
+ARG SHARPTS_SOURCE_REVISION
 
 FROM node:24-bookworm-slim AS browser-build
 WORKDIR /src
@@ -8,6 +8,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY scripts/build-browser.mjs scripts/build-browser.mjs
 COPY src/SharpTS.Www.SelfHost/browser/ src/SharpTS.Www.SelfHost/browser/
+COPY src/SharpTS.Www.Shared/ src/SharpTS.Www.Shared/
 RUN SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets npm run build:browser
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
@@ -18,10 +19,14 @@ WORKDIR /src
 COPY . .
 COPY --from=browser-build /browser-assets /browser-assets
 
-# GitHub source snapshots produced by some deployment providers omit submodule
-# contents. In that case fetch only the immutable revision recorded by this
-# repository; never clone or compile a moving branch.
+# Docker contexts intentionally omit the submodule. Fetch only the immutable
+# revision in sharpts-source.env; never clone or compile a moving branch.
 RUN set -eu; \
+    requested_version="$SHARPTS_VERSION"; \
+    requested_revision="$SHARPTS_SOURCE_REVISION"; \
+    . ./sharpts-source.env; \
+    if [ -n "$requested_version" ]; then test "$requested_version" = "$SHARPTS_VERSION"; fi; \
+    if [ -n "$requested_revision" ]; then test "$requested_revision" = "$SHARPTS_SOURCE_REVISION"; fi; \
     if [ ! -f lib/SharpTS/SharpTS.csproj ]; then \
       rm -rf lib/SharpTS; \
       git init lib/SharpTS; \
@@ -34,6 +39,7 @@ RUN set -eu; \
     test -f lib/SharpTS/SharpTS.csproj
 
 RUN set -eu; \
+    . ./sharpts-source.env; \
     mkdir -p /app; \
     if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
         -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
@@ -52,6 +58,7 @@ RUN set -eu; \
     grep -q "IL verification passed." /tmp/sharpts-compile.log; \
     test -f /app/SharpTS.Www.SelfHost.dll
 RUN set -eu; \
+    . ./sharpts-source.env; \
     mkdir -p /app/worker; \
     if ! dotnet run --project lib/SharpTS/SharpTS.csproj -c Release --no-launch-profile \
         -p:MinVerVersionOverride="$SHARPTS_VERSION+$SHARPTS_SOURCE_REVISION" \
@@ -72,6 +79,7 @@ RUN set -eu; \
     test -f /app/worker/SharpTS.Www.Worker; \
     test -f /app/worker/SharpTS.dll
 RUN set -eu; \
+    . ./sharpts-source.env; \
     mkdir -p /app/public; \
     if ! SHARPTS_WWW_SITE_REPO_ROOT=/src \
         SHARPTS_WWW_SITE_OUTPUT=/app/public \
@@ -87,7 +95,7 @@ RUN set -eu; \
       exit 1; \
     fi; \
     cat /tmp/site-generation.log; \
-    grep -q "Generated 10 localized static pages" /tmp/site-generation.log; \
+    grep -q "Generated localized static site with 10 pages" /tmp/site-generation.log; \
     test -f /app/public/site-manifest.json
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
@@ -95,7 +103,10 @@ ARG SHARPTS_VERSION
 ARG SHARPTS_SOURCE_REVISION
 WORKDIR /app
 
-LABEL io.sharpts.runtime.version="$SHARPTS_VERSION" \
+LABEL org.opencontainers.image.source="https://github.com/nickna/sharpts-www" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="$SHARPTS_VERSION" \
+      org.opencontainers.image.revision="$SHARPTS_SOURCE_REVISION" \
       io.sharpts.runtime.revision="$SHARPTS_SOURCE_REVISION"
 
 COPY --from=build /app/ ./

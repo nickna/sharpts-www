@@ -12,6 +12,13 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $origin = "http://127.0.0.1:$Port"
 $containerName = "sharpts-www-selfhost-test-$([Guid]::NewGuid().ToString('N').Substring(0, 12))"
 $sharpTsCommit = @(& git -C (Join-Path $repoRoot "lib/SharpTS") rev-parse HEAD)[0].Trim()
+$sourceSettings = @{}
+foreach ($line in Get-Content -LiteralPath (Join-Path $repoRoot 'sharpts-source.env')) {
+    if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
+    $name, $value = $line.Split('=', 2)
+    $sourceSettings[$name] = $value
+}
+$sharpTsVersion = $sourceSettings.SHARPTS_VERSION
 
 function Assert-True {
     param(
@@ -75,7 +82,12 @@ function Invoke-Execution {
 }
 
 if (-not $SkipBuild) {
-    & docker build --progress=plain -f (Join-Path $repoRoot "Dockerfile.selfhost") -t $Image $repoRoot
+    & node (Join-Path $repoRoot 'scripts/verify-sharpts-source.mjs')
+    if ($LASTEXITCODE -ne 0) { throw 'SharpTS source verification failed.' }
+    & docker build --progress=plain -f (Join-Path $repoRoot "Dockerfile.selfhost") `
+        --build-arg "SHARPTS_VERSION=$sharpTsVersion" `
+        --build-arg "SHARPTS_SOURCE_REVISION=$sharpTsCommit" `
+        -t $Image $repoRoot
     if ($LASTEXITCODE -ne 0) {
         throw "Docker image build failed."
     }
@@ -176,26 +188,39 @@ try {
     Assert-True ([int]$siteCss.StatusCode -eq 200) "Generated CSS bundle did not return HTTP 200."
     Assert-True (-not $siteCss.Content.Contains("::deep")) "Generated CSS still contains ::deep."
 
-    $browserJavaScript = Invoke-TestRequest -Method Get -Path "/assets/browser/site.js"
+    $siteManifest = (Invoke-TestRequest -Method Get -Path '/site-manifest.json').Content | ConvertFrom-Json
+    Assert-True (@($siteManifest.browserBundle).Count -ge 2) 'Browser manifest must list split assets.'
+    $browserJavaScriptPath = "/$($siteManifest.browserEntry.script)"
+    $browserCssPath = "/$($siteManifest.browserEntry.style)"
+    $browserJavaScript = Invoke-TestRequest -Method Get -Path $browserJavaScriptPath
     Assert-True ([int]$browserJavaScript.StatusCode -eq 200) `
         "Browser JavaScript bundle did not return HTTP 200."
     Assert-True ($browserJavaScript.Headers["Content-Type"] -like "*javascript*") `
         "Browser JavaScript has the wrong content type."
-    Assert-True ($browserJavaScript.Headers["Cache-Control"] -like "*max-age=0*") `
-        "Browser JavaScript must revalidate because its public URL is not fingerprinted."
+    Assert-True ($browserJavaScript.Headers["Cache-Control"] -like "*immutable*") `
+        "Fingerprint-named browser JavaScript must use immutable caching."
     Assert-True (-not $browserJavaScript.Content.Contains("esm.sh")) `
         "Browser JavaScript still loads remote CodeMirror assets."
 
-    $browserCss = Invoke-TestRequest -Method Get -Path "/assets/browser/site.css"
+    $browserCss = Invoke-TestRequest -Method Get -Path $browserCssPath
     Assert-True ([int]$browserCss.StatusCode -eq 200) `
         "Browser vendor CSS bundle did not return HTTP 200."
+
+    $curlCommand = if ($IsWindows) { 'curl.exe' } else { 'curl' }
+    $compressedHeaders = @(& $curlCommand --silent --show-error --head `
+        --header 'Accept-Encoding: br' "$origin$browserJavaScriptPath") -join "`n"
+    Assert-True ($LASTEXITCODE -eq 0) 'Compressed browser asset probe failed.'
+    Assert-True ($compressedHeaders -match '(?im)^Content-Encoding:\s*br\s*$') `
+        'Fingerprint-named JavaScript was not served from its Brotli asset.'
+    Assert-True ($compressedHeaders -match '(?im)^Vary:\s*Accept-Encoding\s*$') `
+        'Compressed browser asset is missing Vary: Accept-Encoding.'
 
     $encodedPath = Invoke-TestRequest -Method Get -Path "/%2e%2e/Dockerfile.selfhost"
     Assert-True (@(400, 404) -contains [int]$encodedPath.StatusCode) `
         "Encoded traversal must be rejected or remain outside the static root."
     Assert-True ($encodedPath.Content -notlike "*mcr.microsoft.com*") "Traversal exposed a repository file."
 
-    $malformed = Invoke-TestRequest -Method Post -Path "/api/echo" `
+    $malformed = Invoke-TestRequest -Method Post -Path "/api/run" `
         -ContentType "application/json" -Body "{not-json"
     Assert-True ([int]$malformed.StatusCode -eq 400) "Malformed JSON must return HTTP 400."
 
@@ -206,7 +231,7 @@ try {
     try {
         $abortedClient.Connect("127.0.0.1", $Port)
         $abortedStream = $abortedClient.GetStream()
-        $partialRequest = "POST /api/echo HTTP/1.1`r`n" +
+        $partialRequest = "POST /api/run HTTP/1.1`r`n" +
             "Host: 127.0.0.1:$Port`r`n" +
             "Content-Type: application/json`r`n" +
             "Content-Length: 128`r`n" +
@@ -225,7 +250,7 @@ try {
         $bodyAbortLogs = @(& docker logs --tail 40 $containerName 2>&1 |
             ForEach-Object { $_.ToString() }) -join "`n"
         if ($bodyAbortLogs.Contains('"eventDetail":"request_body_aborted"') -and
-            $bodyAbortLogs.Contains('"path":"/api/echo"') -and
+            $bodyAbortLogs.Contains('"path":"/api/run"') -and
             $bodyAbortLogs.Contains('"status":499')) {
             $bodyAbortLogged = $true
             break

@@ -37,6 +37,7 @@ export function createEditor(container: HTMLElement): EditorAdapter {
                 basicSetup,
                 javascript({ typescript: true }),
                 oneDark,
+                EditorView.contentAttributes.of({ 'aria-label': 'TypeScript source editor' }),
                 EditorView.theme({
                     '&': { height: '100%', fontSize: '14px' },
                     '.cm-scroller': {
@@ -50,6 +51,8 @@ export function createEditor(container: HTMLElement): EditorAdapter {
             ]
         });
         const view = new EditorView({ state, parent: host });
+        view.scrollDOM.tabIndex = 0;
+        view.scrollDOM.setAttribute('aria-label', 'TypeScript source editor scroll area');
         textarea.hidden = true;
         container.dataset.editorKind = 'codemirror';
         return {

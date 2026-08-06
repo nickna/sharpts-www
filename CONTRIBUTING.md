@@ -27,8 +27,8 @@ boundaries in more detail.
 
 Three different TypeScript environments intentionally coexist:
 
-1. `server.ts`, `supervisor.ts`, and `generate-site.ts` compile to .NET through
-   the pinned SharpTS submodule.
+1. The server, supervisor, configuration, queue, and static-generator modules
+   compile to .NET through the pinned SharpTS submodule.
 2. `worker.ts` compiles to a separate executable so untrusted playground code
    cannot run in the HTTP process.
 3. Files under `browser/` compile with TypeScript and bundle with esbuild.
@@ -42,11 +42,14 @@ and should reach this repository by updating the submodule commit.
 - Preserve the process boundary between the HTTP server and playground worker.
 - Keep worker limits and request cancellation enforced by `supervisor.ts`.
 - Treat worker stdin/stdout as a private JSON protocol; update both sides when
-  its shape changes.
+  its shape changes. Boundary values belong in `SharpTS.Www.Shared` and must be
+  validated before use.
 - Avoid remote browser assets. The Content Security Policy permits first-party
   scripts, styles, fonts, and images only.
 - Prefer small modules with explicit boundary types over unchecked data
   coercion.
+- Keep displayed examples in `showcase-data.ts`; the build must execute them and
+  match their advertised output in both modes.
 
 ## Localization
 
@@ -59,24 +62,33 @@ and run the generated-site test.
 
 ## Run checks
 
-For browser or shared contract changes:
+For the ordinary contributor gate:
 
 ```bash
-npm test
+npm run verify
 ```
 
 For server, generator, localization, CSS, or worker changes, build first and run
 the generated-site checks:
 
-```powershell
-./scripts/build-self-host.ps1 -Configuration Debug
-./scripts/test-generated-site.ps1
+```bash
+npm run build:self-host -- --configuration Debug
+npm run test:generated
 npm run test:e2e
 ```
 
-On Linux or macOS, use `./scripts/build-self-host.sh Debug`. Changes to worker
-isolation, resource limits, shutdown, proxy trust, or request validation should
-also pass `scripts/test-self-host-container.ps1`.
+The platform scripts call this same build orchestrator. Changes to worker
+isolation, resource limits, shutdown, proxy trust, compression, or request
+validation should also pass `npm run test:isolation`.
+
+Biome owns formatting and linting for TypeScript, JavaScript, and project JSON.
+Use `npm run check:write` for safe automatic fixes, then inspect the diff.
+SharpTS-specific source keeps a few documented adapter casts required by its
+Node compatibility declarations.
+
+Generated output is protected by reviewed SHA-256 hashes. After inspecting an
+intentional site or asset change, run `npm run snapshot:update`; the command
+requires the explicit acceptance flag embedded in the npm script.
 
 Before opening a pull request, keep the scope focused, explain externally visible
 behavior, and call out security-sensitive changes explicitly.

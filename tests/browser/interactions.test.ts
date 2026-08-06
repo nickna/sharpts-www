@@ -63,7 +63,9 @@ describe('static site interactions', () => {
         expect(document.querySelector<HTMLElement>('[data-example-panel="1"]')!.hidden).toBe(true);
         expect(document.querySelector<HTMLElement>('[data-example-panel="2"]')!.hidden).toBe(false);
         secondTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-        expect(document.querySelector<HTMLButtonElement>('[data-example-tab="1"]')!.getAttribute('aria-selected')).toBe('true');
+        expect(document.querySelector<HTMLButtonElement>('[data-example-tab="1"]')!.getAttribute('aria-selected')).toBe(
+            'true'
+        );
 
         const lexer = document.querySelector<HTMLButtonElement>('[data-architecture-stage="Lexer"]')!;
         lexer.click();

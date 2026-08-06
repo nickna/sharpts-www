@@ -1,4 +1,6 @@
-export const presets = [
+import type { Preset } from '../SharpTS.Www.Shared/execution-contract';
+
+export const presets: Preset[] = [
     {
         name: 'Hello World',
         description: 'Basic console output and variables',

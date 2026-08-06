@@ -43,7 +43,9 @@ function initializeNavigation(doc: Document, win: Window): void {
         if (event.key === 'Escape') {
             closeNavigation(nav, links, toggle);
             doc.querySelectorAll<HTMLDetailsElement>('details.lang-selector[open]')
-                .forEach(selector => selector.removeAttribute('open'));
+                .forEach(selector => {
+                    selector.removeAttribute('open');
+                });
         }
     });
 
@@ -170,20 +172,22 @@ function initializeArchitecture(doc: Document): void {
         const hint = diagram.querySelector<HTMLElement>('[data-architecture-hint]');
         let selected: string | null = null;
 
-        buttons.forEach(button => button.addEventListener('click', () => {
-            const stage = button.dataset.architectureStage || null;
-            selected = selected === stage ? null : stage;
-            buttons.forEach(candidate => {
-                const active = candidate.dataset.architectureStage === selected;
-                candidate.classList.toggle('pipeline__box--selected', active);
-                candidate.setAttribute('aria-pressed', String(active));
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const stage = button.dataset.architectureStage || null;
+                selected = selected === stage ? null : stage;
+                buttons.forEach(candidate => {
+                    const active = candidate.dataset.architectureStage === selected;
+                    candidate.classList.toggle('pipeline__box--selected', active);
+                    candidate.setAttribute('aria-pressed', String(active));
+                });
+                details.forEach(detail => {
+                    detail.hidden = detail.dataset.architectureDetail !== selected;
+                });
+                if (hint)
+                    hint.hidden = selected !== null;
             });
-            details.forEach(detail => {
-                detail.hidden = detail.dataset.architectureDetail !== selected;
-            });
-            if (hint)
-                hint.hidden = selected !== null;
-        }));
+        });
     });
 }
 

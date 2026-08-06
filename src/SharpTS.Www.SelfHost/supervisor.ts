@@ -1,38 +1,73 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadSupervisorConfig } from './config';
 import {
+    acquireExecutionSlot,
+    cancelExecutionSlot,
+    createExecutionQueue,
+    releaseExecutionSlot,
+    shutdownExecutionQueue
+} from './execution-queue';
+import {
+    isWorkerResponsePayload,
+    normalizeExecutionMode,
+    normalizeExecutionTimeout
+} from './execution-contract';
+import type {
     ExecutionError,
     ExecutionResponse,
     ExecutionResponseBody,
     RunRequest,
     WorkerErrorPayload,
-    WorkerResponsePayload,
-    normalizeExecutionMode,
-    normalizeExecutionTimeout
+    WorkerResponsePayload
 } from './execution-contract';
 
-const maxSourceBytes = 10 * 1024;
-const maxWorkerRssBytes = 150 * 1024 * 1024;
-const maxWorkerOutputBytes = 256 * 1024;
-const memoryPollIntervalMs = 500;
-const workerTimeoutBufferMs = 1_000;
-const maxConcurrentWorkers = 3;
-const concurrencyWaitMs = 2_000;
+type LogField = string | number | boolean | null | undefined;
+
+interface DataChunk {
+    length: number;
+    toString(): string;
+}
+
+interface ReadablePipe {
+    on(event: 'data', listener: (chunk: DataChunk) => void): void;
+}
+
+interface WritablePipe {
+    write(value: string): void;
+    end(): void;
+}
+
+interface ChildProcessLike {
+    pid?: number;
+    stdin: WritablePipe;
+    stdout: ReadablePipe;
+    stderr: ReadablePipe;
+    kill(signal: 'SIGKILL'): boolean | undefined;
+    on(event: 'error', listener: () => void): void;
+    on(event: 'close', listener: (code: number | null) => void): void;
+}
+
+const config = loadSupervisorConfig();
+const maxSourceBytes = config.maximumSourceBytes;
+const maxWorkerRssBytes = config.maximumWorkerRssBytes;
+const maxWorkerOutputBytes = config.maximumWorkerOutputBytes;
+const memoryPollIntervalMs = config.memoryPollIntervalMs;
+const workerTimeoutBufferMs = config.workerTimeoutBufferMs;
 const networkBlockSentinel = 'sharpts-network-blocked.invalid';
 const utf8Encoder = new TextEncoder();
 
-const workerPath = path.resolve(process.env.SHARPTS_WWW_WORKER_PATH ||
-    path.join(process.cwd(), 'worker', process.platform === 'win32'
-        ? 'SharpTS.Www.Worker.exe'
-        : 'SharpTS.Www.Worker'));
+const workerPath = config.workerPath;
 const workerDirectory = path.dirname(workerPath);
-const requireRssMonitoring = process.env.SHARPTS_WWW_REQUIRE_RSS_MONITORING !== 'false';
+const requireRssMonitoring = config.requireRssMonitoring;
+const executionQueue = createExecutionQueue({
+    maximumConcurrent: config.maximumConcurrentWorkers,
+    maximumQueued: config.maximumQueuedExecutions,
+    waitMs: config.concurrencyWaitMs
+});
 
-let activeWorkerCount = 0;
-let acceptingWork = true;
-let queueSequence = 0;
-const activeChildren: any[] = [];
+const activeChildren: unknown[] = [];
 
 export interface RunResult {
     status: number;
@@ -43,19 +78,11 @@ export interface ExecutionHandle {
     cancel(): void;
 }
 
-interface QueueEntry {
-    id: number;
-    settled: boolean;
-    completed: (acquired: boolean) => void;
-    timer: any;
-}
-
 interface ExecutionControl {
     cancelled: boolean;
-    child: any;
+    cancelWorker: (() => void) | null;
+    queueRequestId: number;
 }
-
-const waiting: QueueEntry[] = [];
 
 function errorResponse(message: string, executionTimeMs: number = 0): ExecutionResponse {
     return {
@@ -73,14 +100,12 @@ function sanitizeNetworkBlock(text: string): string {
     return 'Network access is disabled in the SharpTS playground. fetch() and other outbound requests are blocked.';
 }
 
-function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: number): ExecutionResponse {
-    if (!value || typeof value !== 'object')
+export function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: number): ExecutionResponse {
+    if (!isWorkerResponsePayload(value))
         return errorResponse('Internal error: invalid worker response.', fallbackElapsedMs);
 
     const worker = value as WorkerResponsePayload;
-    const rawErrors: WorkerErrorPayload[] = Array.isArray(worker.Errors)
-        ? worker.Errors
-        : [];
+    const rawErrors: WorkerErrorPayload[] = worker.Errors;
     const errors: ExecutionError[] = [];
     for (const error of rawErrors) {
         errors.push({
@@ -93,10 +118,8 @@ function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: number): Exe
         success: worker.Success === true,
         output: sanitizeNetworkBlock(String(worker.Output || '')),
         errors,
-        executionTimeMs: Number(worker.ExecutionTimeMs || fallbackElapsedMs),
-        compileTimeMs: worker.CompileTimeMs === null || worker.CompileTimeMs === undefined
-            ? null
-            : Number(worker.CompileTimeMs)
+        executionTimeMs: worker.ExecutionTimeMs,
+        compileTimeMs: worker.CompileTimeMs
     };
 }
 
@@ -104,49 +127,6 @@ function removeFromArray<T>(values: T[], value: T): void {
     const index = values.indexOf(value);
     if (index >= 0)
         values.splice(index, 1);
-}
-
-function releaseSlot(): void {
-    if (activeWorkerCount > 0)
-        activeWorkerCount--;
-
-    while (acceptingWork && waiting.length > 0) {
-        const entry = waiting.shift();
-        if (entry.settled)
-            continue;
-        entry.settled = true;
-        clearTimeout(entry.timer);
-        activeWorkerCount++;
-        entry.completed(true);
-        break;
-    }
-}
-
-function acquireSlot(completed: (acquired: boolean) => void): void {
-    if (!acceptingWork) {
-        completed(false);
-        return;
-    }
-
-    if (activeWorkerCount < maxConcurrentWorkers) {
-        activeWorkerCount++;
-        completed(true);
-        return;
-    }
-
-    const entry: QueueEntry = {
-        id: ++queueSequence,
-        settled: false,
-        completed,
-        timer: undefined
-    };
-    entry.timer = setTimeout((() => {
-        if (entry.settled) return;
-        entry.settled = true;
-        removeFromArray(waiting, entry);
-        completed(false);
-    }) as any, concurrencyWaitMs);
-    waiting.push(entry);
 }
 
 function readWorkerRssBytes(pid: number): number | null {
@@ -167,7 +147,8 @@ function readWorkerRssBytes(pid: number): number | null {
     return null;
 }
 
-function killChild(child: any): void {
+function killChild(value: unknown): void {
+    const child = value as ChildProcessLike;
     try {
         child.kill('SIGKILL');
     } catch {
@@ -175,8 +156,8 @@ function killChild(child: any): void {
     }
 }
 
-function logWorker(event: string, executionId: string, extra?: { [key: string]: any }): void {
-    const entry: { [key: string]: any } = { event, executionId };
+function logWorker(event: string, executionId: string, extra?: { [key: string]: LogField }): void {
+    const entry: { [key: string]: LogField } = { event, executionId };
     if (extra) {
         for (const key of Object.keys(extra))
             entry[key] = extra[key];
@@ -192,14 +173,17 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
     const mode = normalizeExecutionMode(request.mode) || 'interpret';
     // SharpTS reports spawn failures through the child's asynchronous `error`
     // event, matching Node's normal spawn contract.
-    const child: any = spawn(workerPath, [], {
+    const child: ChildProcessLike = spawn(workerPath, [], {
         cwd: workerDirectory,
         env: { DOTNET_ENVIRONMENT: process.env.DOTNET_ENVIRONMENT || 'Production' },
         stdio: 'pipe'
     });
 
     activeChildren.push(child);
-    control.child = child;
+    control.cancelWorker = () => {
+        logWorker('worker_client_disconnected', executionId, { pid: child.pid });
+        killChild(child);
+    };
     logWorker('worker_started', executionId, { pid: child.pid, mode, timeoutMs });
     started();
 
@@ -211,6 +195,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
     let killedForMemory = false;
     let killedForOutput = false;
 
+    // SharpTS's timer declaration requires a localized Node callback adapter cast.
     const timeout = setTimeout((() => {
         if (settled) return;
         killedForTimeout = true;
@@ -218,6 +203,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         killChild(child);
     }) as any, timeoutMs + workerTimeoutBufferMs);
 
+    // SharpTS's timer declaration requires a localized Node callback adapter cast.
     const memoryPoll = setInterval((() => {
         if (settled) return;
         const rss = readWorkerRssBytes(Number(child.pid));
@@ -234,7 +220,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         clearTimeout(timeout);
         clearInterval(memoryPoll);
         removeFromArray(activeChildren, child);
-        releaseSlot();
+        releaseExecutionSlot(executionQueue);
         logWorker('worker_finished', executionId, {
             pid: child.pid,
             exitCode: exitCode === undefined ? null : exitCode,
@@ -243,7 +229,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         completed({ status, body });
     };
 
-    child.stdout.on('data', (chunk: any) => {
+    child.stdout.on('data', (chunk: DataChunk) => {
         if (settled) return;
         outputBytes += Number(chunk.length || 0);
         stdout += chunk.toString();
@@ -253,7 +239,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
             killChild(child);
         }
     });
-    child.stderr.on('data', (chunk: any) => {
+    child.stderr.on('data', (chunk: DataChunk) => {
         if (settled) return;
         outputBytes += Number(chunk.length || 0);
         stderr += chunk.toString();
@@ -268,7 +254,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         finish(200, errorResponse('Internal server error: failed to start worker.'));
     });
 
-    child.on('close', (code: any) => {
+    child.on('close', (code: number | null) => {
         const elapsedMs = Date.now() - startedAt;
         if (control.cancelled) {
             finish(499, { error: 'Execution cancelled because the client disconnected.' }, Number(code));
@@ -319,7 +305,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
 }
 
 export function isSupervisorReady(): boolean {
-    if (!acceptingWork)
+    if (!executionQueue.accepting)
         return false;
     if (!fs.existsSync(workerPath))
         return false;
@@ -329,15 +315,15 @@ export function isSupervisorReady(): boolean {
 
 export function execute(request: RunRequest, executionId: string,
     started: () => void, completed: (result: RunResult) => void): ExecutionHandle {
-    const control: ExecutionControl = { cancelled: false, child: null };
+    const control: ExecutionControl = { cancelled: false, cancelWorker: null, queueRequestId: 0 };
     const handle: ExecutionHandle = {
         cancel: () => {
             if (control.cancelled) return;
             control.cancelled = true;
-            if (control.child) {
-                logWorker('worker_client_disconnected', executionId, { pid: control.child.pid });
-                killChild(control.child);
-            }
+            cancelExecutionSlot(executionQueue, control.queueRequestId);
+            const cancelWorker = control.cancelWorker;
+            if (cancelWorker)
+                cancelWorker();
         }
     };
 
@@ -362,9 +348,10 @@ export function execute(request: RunRequest, executionId: string,
         return handle;
     }
 
-    acquireSlot(acquired => {
+    const admissionCompleted = (acquired: boolean): void => {
+        control.queueRequestId = 0;
         if (control.cancelled) {
-            if (acquired) releaseSlot();
+            if (acquired) releaseExecutionSlot(executionQueue);
             return;
         }
         if (!acquired) {
@@ -374,20 +361,13 @@ export function execute(request: RunRequest, executionId: string,
         }
         runWorker({ source: request.source, timeoutMs: request.timeoutMs, mode },
             executionId, control, started, completed);
-    });
+    };
+    control.queueRequestId = acquireExecutionSlot(executionQueue, admissionCompleted);
     return handle;
 }
 
 export function beginSupervisorShutdown(): void {
-    acceptingWork = false;
-    while (waiting.length > 0) {
-        const entry = waiting.shift();
-        if (entry.settled)
-            continue;
-        entry.settled = true;
-        clearTimeout(entry.timer);
-        entry.completed(false);
-    }
+    shutdownExecutionQueue(executionQueue);
 }
 
 export function killAllWorkers(): void {

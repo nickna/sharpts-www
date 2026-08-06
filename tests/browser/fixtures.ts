@@ -10,7 +10,9 @@ export function createFakeEditor(initialValue: string = 'initial'): FakeEditor {
         kind: 'textarea',
         value: initialValue,
         getValue: () => editor.value,
-        setValue: value => { editor.value = value; },
+        setValue: (value) => {
+            editor.value = value;
+        },
         focus: vi.fn(),
         destroy: vi.fn()
     };

@@ -20,52 +20,69 @@ it('wires playground controls before optional enhancements and preset loading co
 
     Object.defineProperty(window, 'requestAnimationFrame', {
         configurable: true,
-        value: (callback: FrameRequestCallback) => { callback(0); return 1; }
+        value: (callback: FrameRequestCallback) => {
+            callback(0);
+            return 1;
+        }
     });
     Object.defineProperty(window, 'matchMedia', {
         configurable: true,
-        value: () => { throw new Error('optional canvas setup failed'); }
+        value: () => {
+            throw new Error('optional canvas setup failed');
+        }
     });
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     let resolvePresets!: (response: Response) => void;
-    const pendingPresets = new Promise<Response>(resolve => { resolvePresets = resolve; });
-    const fetchMock = vi.fn()
+    const pendingPresets = new Promise<Response>((resolve) => {
+        resolvePresets = resolve;
+    });
+    const fetchMock = vi
+        .fn()
         .mockImplementationOnce(() => pendingPresets)
-        .mockResolvedValueOnce(new Response(JSON.stringify({
-            success: true,
-            output: 'whole page works\n',
-            errors: [],
-            executionTimeMs: 12,
-            compileTimeMs: 7
-        }), { status: 200 }));
+        .mockResolvedValueOnce(
+            new Response(
+                JSON.stringify({
+                    success: true,
+                    output: 'whole page works\n',
+                    errors: [],
+                    executionTimeMs: 12,
+                    compileTimeMs: 7
+                }),
+                { status: 200 }
+            )
+        );
     const editor = createFakeEditor();
 
-    initializeSite(document, window, { fetch: fetchMock, createEditor: () => editor });
+    await initializeSite(document, window, { fetch: fetchMock, createEditor: () => editor });
 
     const preset = document.querySelector<HTMLSelectElement>('[data-playground-preset]')!;
     const compile = document.querySelector<HTMLButtonElement>('[data-playground-mode="compile"]')!;
     const run = document.querySelector<HTMLButtonElement>('[data-playground-run]')!;
-    expect(preset.disabled).toBe(false);
+    expect(preset.disabled).toBe(true);
     expect(preset.getAttribute('aria-busy')).toBe('true');
 
     compile.click();
     expect(compile.getAttribute('aria-pressed')).toBe('true');
     run.click();
-    await vi.waitFor(() => expect(document.querySelector('.playground__stdout')?.textContent)
-        .toBe('whole page works\n'));
+    await vi.waitFor(() =>
+        expect(document.querySelector('.playground__stdout')?.textContent).toBe('whole page works\n')
+    );
 
-    resolvePresets(new Response(JSON.stringify([
-        { name: 'Hello', description: 'Example', source: 'console.log("hello");' }
-    ]), { status: 200 }));
-    await vi.waitFor(() => expect(preset.hasAttribute('aria-busy')).toBe(false));
+    resolvePresets(
+        new Response(JSON.stringify([{ name: 'Hello', description: 'Example', source: 'console.log("hello");' }]), {
+            status: 200
+        })
+    );
+    await vi.waitFor(() => {
+        expect(preset.hasAttribute('aria-busy')).toBe(false);
+        expect(preset.disabled).toBe(false);
+    });
     preset.value = 'Hello';
     preset.dispatchEvent(new Event('change', { bubbles: true }));
     expect(editor.value).toBe('console.log("hello");');
 
     document.querySelector<HTMLButtonElement>('[data-playground-clear]')!.click();
     expect(document.querySelector('.playground__placeholder')?.textContent).toBe('Run something');
-    expect(warning).toHaveBeenCalledWith(
-        "SharpTS site enhancement 'hero particles' was skipped.",
-        expect.any(Error));
+    expect(warning).toHaveBeenCalledWith("SharpTS site enhancement 'hero particles' was skipped.", expect.any(Error));
 });

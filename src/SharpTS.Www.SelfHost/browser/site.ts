@@ -14,6 +14,6 @@ import { initializeSite } from './bootstrap';
 export { initializeSite } from './bootstrap';
 
 if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', () => initializeSite(), { once: true });
+    document.addEventListener('DOMContentLoaded', () => { void initializeSite(); }, { once: true });
 else
-    initializeSite();
+    void initializeSite();

@@ -1,14 +1,11 @@
 import { initializeInteractions } from './interactions';
-import {
-    initializePlayground,
-    type PlaygroundDependencies
-} from './playground';
+import type { PlaygroundDependencies } from './playground';
 
-export function initializeSite(
+export async function initializeSite(
     doc: Document = document,
     win: Window = window,
     playgroundDependencies: PlaygroundDependencies = {}
-): void {
+): Promise<void> {
     win.requestAnimationFrame(() => win.requestAnimationFrame(() => {
         doc.documentElement.classList.remove('preload');
     }));
@@ -17,8 +14,10 @@ export function initializeSite(
     // optional visual enhancements so a canvas, Prism, or navigation failure
     // cannot leave its controls inert.
     const playground = doc.querySelector<HTMLElement>('[data-playground]');
-    if (playground)
-        void initializePlayground(playground, playgroundDependencies);
+    if (playground) {
+        const module = await import('./playground');
+        void module.initializePlayground(playground, playgroundDependencies);
+    }
 
     initializeInteractions(doc, win);
 }

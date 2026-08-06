@@ -28,7 +28,11 @@ Assert-True ($manifest.stylesheetSources -eq $expectedStylesheetSources) `
     "Manifest stylesheet count does not match the source directory."
 Assert-True ($manifest.resourceFiles -eq $expectedResourceFiles) `
     "Manifest resource count does not match the locale directory."
-Assert-True (@($manifest.browserBundle).Count -eq 2) "Expected browser JavaScript and CSS bundles."
+Assert-True (@($manifest.browserBundle).Count -ge 2) "Expected browser JavaScript and CSS bundles."
+Assert-True (-not [string]::IsNullOrWhiteSpace($manifest.browserEntry.script)) `
+    "Browser script entry is missing from the manifest."
+Assert-True (-not [string]::IsNullOrWhiteSpace($manifest.browserEntry.style)) `
+    "Browser style entry is missing from the manifest."
 
 $allowedRoot = $resolvedRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 
@@ -98,8 +102,8 @@ foreach ($selector in @('.hero', '.features-grid', '.pipeline', '.playground', '
     Assert-True ($css.Contains($selector)) "CSS bundle is missing $selector."
 }
 
-$browserJavaScriptPath = Join-Path $resolvedRoot "assets/browser/site.js"
-$browserCssPath = Join-Path $resolvedRoot "assets/browser/site.css"
+$browserJavaScriptPath = Join-Path $resolvedRoot $manifest.browserEntry.script
+$browserCssPath = Join-Path $resolvedRoot $manifest.browserEntry.style
 Assert-True (Test-Path -LiteralPath $browserJavaScriptPath -PathType Leaf) `
     "Browser JavaScript bundle is missing."
 Assert-True (Test-Path -LiteralPath $browserCssPath -PathType Leaf) `
@@ -126,8 +130,8 @@ $snapshotPath = Join-Path $repoRoot "src/SharpTS.Www.SelfHost/site.snapshot.json
 Assert-True (Test-Path -LiteralPath $snapshotPath -PathType Leaf) "Generated-site snapshot is missing."
 $snapshot = Get-Content -Raw -LiteralPath $snapshotPath | ConvertFrom-Json
 Assert-True ($snapshot.version -eq 2) "Unsupported generated-site snapshot version."
-Assert-True (@($snapshot.files).Count -eq 13) `
-    "Expected ten HTML snapshots, the site CSS, and two browser bundle snapshots."
+Assert-True (@($snapshot.files).Count -ge 13) `
+    "Expected HTML, site CSS, and browser bundle snapshots."
 foreach ($entry in $snapshot.files) {
     $snapshotFile = [IO.Path]::GetFullPath((Join-Path $resolvedRoot $entry.path))
     Assert-True ($snapshotFile.StartsWith($allowedRoot, [StringComparison]::OrdinalIgnoreCase)) `

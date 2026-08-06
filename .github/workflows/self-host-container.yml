@@ -6,6 +6,7 @@ on:
     paths:
       - ".dockerignore"
       - ".gitattributes"
+      - "biome.json"
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
@@ -13,7 +14,11 @@ on:
       - "package-lock.json"
       - "playwright.config.ts"
       - "railway.json"
+      - "sharpts-source.env"
       - "scripts/build-browser.mjs"
+      - "scripts/build-self-host.mjs"
+      - "scripts/check-browser-budget.mjs"
+      - "scripts/scan-secrets.mjs"
       - "scripts/build-self-host.ps1"
       - "scripts/build-self-host.sh"
       - "scripts/run.ps1"
@@ -24,6 +29,7 @@ on:
       - "scripts/test-self-host-container.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
+      - "src/SharpTS.Www.Shared/**"
       - "src/SharpTS.Www.Worker/**"
       - "tests/**"
       - "tsconfig.json"
@@ -34,6 +40,7 @@ on:
     paths:
       - ".dockerignore"
       - ".gitattributes"
+      - "biome.json"
       - ".github/workflows/self-host-container.yml"
       - "Dockerfile.selfhost"
       - "lib/SharpTS"
@@ -41,7 +48,11 @@ on:
       - "package-lock.json"
       - "playwright.config.ts"
       - "railway.json"
+      - "sharpts-source.env"
       - "scripts/build-browser.mjs"
+      - "scripts/build-self-host.mjs"
+      - "scripts/check-browser-budget.mjs"
+      - "scripts/scan-secrets.mjs"
       - "scripts/build-self-host.ps1"
       - "scripts/build-self-host.sh"
       - "scripts/run.ps1"
@@ -52,6 +63,7 @@ on:
       - "scripts/test-self-host-container.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
+      - "src/SharpTS.Www.Shared/**"
       - "src/SharpTS.Www.Worker/**"
       - "tests/**"
       - "tsconfig.json"
@@ -88,13 +100,7 @@ jobs:
           cache: npm
 
       - name: Verify immutable SharpTS input
-        shell: bash
-        run: |
-          set -euo pipefail
-          recorded_commit="$(git ls-tree HEAD lib/SharpTS | awk '{print $3}')"
-          checked_out_commit="$(git -C lib/SharpTS rev-parse HEAD)"
-          test "$recorded_commit" = "$checked_out_commit"
-          test -z "$(git -C lib/SharpTS status --porcelain)"
+        run: npm run verify:source
 
       - name: Build the local Aspire topology
         shell: bash
@@ -110,8 +116,8 @@ jobs:
         shell: pwsh
         run: ./scripts/test-apphost-manifest.ps1
 
-      - name: Verify browser controllers
-        run: npm run verify:browser
+      - name: Verify source, secrets, formatting, types, tests, and browser budgets
+        run: npm run verify
 
       - name: Install browser test runtime
         run: npx playwright install --with-deps chromium

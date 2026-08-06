@@ -1,45 +1,13 @@
 import { createEditor, type EditorAdapter } from './editor';
-
-interface Preset {
-    name: string;
-    description: string;
-    source: string;
-}
-
-interface RunError {
-    message: string;
-    line: number | null;
-    column: number | null;
-}
-
-interface RunResponse {
-    success: boolean;
-    output: string;
-    errors: RunError[];
-    executionTimeMs: number;
-    compileTimeMs: number | null;
-}
+import {
+    isExecutionResponse,
+    isPresetArray,
+    type Preset
+} from '../../SharpTS.Www.Shared/execution-contract';
 
 export interface PlaygroundDependencies {
     fetch?: typeof fetch;
     createEditor?: (container: HTMLElement) => EditorAdapter;
-}
-
-function isPresetArray(value: unknown): value is Preset[] {
-    return Array.isArray(value) && value.every(preset =>
-        typeof preset?.name === 'string' && typeof preset?.source === 'string');
-}
-
-function isRunResponse(value: unknown): value is RunResponse {
-    if (!value || typeof value !== 'object')
-        return false;
-    const response = value as Partial<RunResponse>;
-    return typeof response.success === 'boolean' &&
-        typeof response.output === 'string' &&
-        Array.isArray(response.errors) &&
-        response.errors.every(error => typeof error?.message === 'string') &&
-        typeof response.executionTimeMs === 'number' &&
-        (response.compileTimeMs === null || typeof response.compileTimeMs === 'number');
 }
 
 function replaceTiming(template: string, first: number, second?: number): string {
@@ -98,6 +66,7 @@ export async function initializePlayground(
     let mode = 'interpret';
     let running = false;
     let activeRequest: AbortController | null = null;
+    presetSelect.disabled = true;
     presetSelect.setAttribute('aria-busy', 'true');
 
     const setMode = (nextMode: string): void => {
@@ -126,9 +95,11 @@ export async function initializePlayground(
         runButton.setAttribute('aria-busy', String(value));
     };
 
-    modeButtons.forEach(button => button.addEventListener('click', () => {
-        setMode(button.dataset.playgroundMode || 'interpret');
-    }));
+    modeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setMode(button.dataset.playgroundMode || 'interpret');
+        });
+    });
     setMode('interpret');
 
     clearButton.addEventListener('click', renderPlaceholder);
@@ -158,7 +129,7 @@ export async function initializePlayground(
             if (!response.ok)
                 throw await responseError(response, requestFailed);
             const body: unknown = await response.json();
-            if (!isRunResponse(body))
+            if (!isExecutionResponse(body))
                 throw new Error(invalidResponse);
 
             if (body.output.length > 0) {
@@ -167,7 +138,9 @@ export async function initializePlayground(
                 stdout.textContent = body.output;
                 output.appendChild(stdout);
             }
-            body.errors.forEach(error => appendError(doc, output, error.message));
+            body.errors.forEach(error => {
+                appendError(doc, output, error.message);
+            });
             if (body.output.length === 0 && body.errors.length === 0)
                 renderPlaceholder();
 

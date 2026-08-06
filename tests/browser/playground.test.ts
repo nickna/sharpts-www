@@ -30,17 +30,26 @@ describe('playground controller', () => {
     it('loads presets and executes the selected mode', async () => {
         const root = playgroundMarkup();
         const editor = createFakeEditor();
-        const fetchMock = vi.fn()
-            .mockResolvedValueOnce(new Response(JSON.stringify([
-                { name: 'Hello', description: 'Example', source: 'console.log("hello");' }
-            ]), { status: 200, headers: { 'Content-Type': 'application/json' } }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                success: true,
-                output: 'hello\n',
-                errors: [],
-                executionTimeMs: 12,
-                compileTimeMs: 7
-            }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify([{ name: 'Hello', description: 'Example', source: 'console.log("hello");' }]),
+                    { status: 200, headers: { 'Content-Type': 'application/json' } }
+                )
+            )
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        success: true,
+                        output: 'hello\n',
+                        errors: [],
+                        executionTimeMs: 12,
+                        compileTimeMs: 7
+                    }),
+                    { status: 200, headers: { 'Content-Type': 'application/json' } }
+                )
+            );
 
         await initializePlayground(root, { fetch: fetchMock, createEditor: () => editor });
         const select = root.querySelector<HTMLSelectElement>('[data-playground-preset]')!;
@@ -62,15 +71,21 @@ describe('playground controller', () => {
 
     it('renders server errors as text rather than markup', async () => {
         const root = playgroundMarkup();
-        const fetchMock = vi.fn()
+        const fetchMock = vi
+            .fn()
             .mockResolvedValueOnce(new Response('[]', { status: 200 }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                success: false,
-                output: '',
-                errors: [{ message: '<img src=x onerror=alert(1)>', line: null, column: null }],
-                executionTimeMs: 1,
-                compileTimeMs: null
-            }), { status: 200 }));
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        success: false,
+                        output: '',
+                        errors: [{ message: '<img src=x onerror=alert(1)>', line: null, column: null }],
+                        executionTimeMs: 1,
+                        compileTimeMs: null
+                    }),
+                    { status: 200 }
+                )
+            );
 
         await initializePlayground(root, { fetch: fetchMock, createEditor: () => createFakeEditor() });
         root.querySelector<HTMLButtonElement>('[data-playground-run]')!.click();
@@ -82,12 +97,15 @@ describe('playground controller', () => {
 
     it('shows stable errors for unavailable and invalid API responses', async () => {
         const root = playgroundMarkup();
-        const fetchMock = vi.fn()
+        const fetchMock = vi
+            .fn()
             .mockResolvedValueOnce(new Response('[]', { status: 200 }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({ error: 'Execution service is busy.' }), {
-                status: 503,
-                headers: { 'Content-Type': 'application/json' }
-            }))
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ error: 'Execution service is busy.' }), {
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            )
             .mockResolvedValueOnce(new Response(JSON.stringify({ unexpected: true }), { status: 200 }));
 
         await initializePlayground(root, { fetch: fetchMock, createEditor: () => createFakeEditor() });

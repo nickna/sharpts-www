@@ -2,25 +2,77 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseRunRequest } from './execution-contract';
+import { loadServerConfig } from './config';
+import {
+    clientIdentity,
+    normalizeRequestPath,
+    originAllowed,
+    staticFilePath
+} from './http-policy';
 import { presets } from './presets';
+import { RateLimiter } from './rate-limiter';
 import {
     beginSupervisorShutdown,
     execute,
+    type ExecutionHandle,
     isSupervisorReady,
     killAllWorkers
 } from './supervisor';
 
-const maxBodyBytes = 64 * 1024;
-const requestBodyTimeoutMs = 15_000;
-const executionProbeIntervalMs = 500;
-const maxRateLimitIdentities = 4096;
-const shutdownCutoffMs = 8_000;
-const port = Number(process.env.PORT || '8080');
-const host = process.env.SHARPTS_WWW_HOST || '0.0.0.0';
-const publicOrigin = String(process.env.SHARPTS_WWW_PUBLIC_ORIGIN || '').replace(/\/$/, '');
-const trustRailwayProxy = process.env.SHARPTS_WWW_TRUST_RAILWAY_PROXY === 'true';
-const contentRoot = path.resolve(process.env.SHARPTS_WWW_CONTENT_ROOT || path.join(process.cwd(), 'public'));
-const contentRootPrefix = contentRoot.endsWith(path.sep) ? contentRoot : contentRoot + path.sep;
+type LogField = string | number | boolean | null;
+type TimerHandle = ReturnType<typeof setTimeout>;
+
+interface DataChunk {
+    length: number;
+    toString(): string;
+}
+
+interface FileStat {
+    size: number;
+    mtimeMs: number;
+    mtime: Date;
+    isFile(): boolean;
+}
+
+interface HttpRequest {
+    headers: { [name: string]: unknown };
+    method?: string;
+    url?: string;
+    socket: { remoteAddress?: string };
+    destroy(): void;
+    on(event: 'data', listener: (chunk: DataChunk) => void): void;
+    on(event: string, listener: () => void): void;
+}
+
+interface HttpResponse {
+    statusCode: number;
+    headersSent: boolean;
+    setHeader(name: string, value: string): void;
+    end(body?: unknown): void;
+    probeConnection(): boolean;
+}
+
+interface HttpServer {
+    address(): { address: string; port: number };
+    close(completed: () => void): void;
+    closeAllConnections(): void;
+    listen(port: number, host: string, listening: () => void): void;
+}
+
+const config = loadServerConfig();
+const maxBodyBytes = config.maximumBodyBytes;
+const requestBodyTimeoutMs = config.requestBodyTimeoutMs;
+const executionProbeIntervalMs = config.executionProbeIntervalMs;
+const shutdownCutoffMs = config.shutdownCutoffMs;
+const port = config.port;
+const host = config.host;
+const publicOrigin = config.publicOrigin;
+const contentRoot = config.contentRoot;
+const executionRateLimiter = new RateLimiter({
+    maximumIdentities: config.maximumRateLimitIdentities,
+    requestsPerWindow: config.executionRequestsPerMinute,
+    windowMs: 60_000
+});
 
 const mimeTypes: { [extension: string]: string } = {
     '.css': 'text/css; charset=utf-8',
@@ -42,10 +94,8 @@ const mimeTypes: { [extension: string]: string } = {
 let shuttingDown = false;
 let requestSequence = 0;
 const requestClients: { [requestId: string]: string } = {};
-const rateLimitEntries: { [client: string]: number[] } = {};
-const rateLimitLastSeen: { [client: string]: number } = {};
 
-function setSecurityHeaders(response: any, requestId: string): void {
+function setSecurityHeaders(response: HttpResponse, requestId: string): void {
     response.setHeader('X-Request-Id', requestId);
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -56,8 +106,8 @@ function setSecurityHeaders(response: any, requestId: string): void {
 }
 
 function logRequest(requestId: string, method: string, normalizedPath: string,
-    status: number, startedAt: number, extra?: { [key: string]: any }): void {
-    const entry: { [key: string]: any } = {
+    status: number, startedAt: number, extra?: { [key: string]: LogField }): void {
+    const entry: { [key: string]: LogField } = {
         event: 'http_request',
         requestId,
         client: requestClients[requestId] || 'unknown',
@@ -74,128 +124,71 @@ function logRequest(requestId: string, method: string, normalizedPath: string,
     delete requestClients[requestId];
 }
 
-function clientIdentity(request: any): string {
-    const remote = String(request.socket.remoteAddress || 'unknown');
-    if (!trustRailwayProxy)
-        return remote;
-
-    const forwarded = String(request.headers['x-real-ip'] || '').trim();
-    if (!forwarded || forwarded.length > 64 || !/^[0-9a-fA-F:.]+$/.test(forwarded))
-        return remote;
-    return forwarded;
-}
-
-function originAllowed(request: any): boolean {
-    const origin = String(request.headers.origin || '').replace(/\/$/, '');
-    if (!origin)
-        return true;
-    if (publicOrigin)
-        return origin === publicOrigin;
-
-    const requestHost = String(request.headers.host || '').toLowerCase();
-    const normalizedOrigin = origin.toLowerCase();
-    return normalizedOrigin === 'https://' + requestHost ||
-        normalizedOrigin === 'http://' + requestHost;
-}
-
 function allowExecution(client: string): boolean {
-    const now = Date.now();
-    const cutoff = now - 60_000;
-
-    if (rateLimitEntries[client] === undefined &&
-        Object.keys(rateLimitEntries).length >= maxRateLimitIdentities) {
-        let oldestClient = '';
-        let oldestTimestamp = 9_007_199_254_740_991;
-        for (const candidate of Object.keys(rateLimitLastSeen)) {
-            if (rateLimitLastSeen[candidate] < oldestTimestamp) {
-                oldestTimestamp = rateLimitLastSeen[candidate];
-                oldestClient = candidate;
-            }
-        }
-        if (oldestClient) {
-            delete rateLimitEntries[oldestClient];
-            delete rateLimitLastSeen[oldestClient];
-        }
-    }
-
-    const recent = (rateLimitEntries[client] || []).filter(timestamp => timestamp > cutoff);
-    rateLimitLastSeen[client] = now;
-    if (recent.length >= 10) {
-        rateLimitEntries[client] = recent;
-        return false;
-    }
-    recent.push(now);
-    rateLimitEntries[client] = recent;
-    return true;
+    return executionRateLimiter.allow(client);
 }
 
-function send(response: any, requestId: string, method: string, normalizedPath: string,
-    startedAt: number, status: number, contentType: string, body: any,
-    extra?: { [key: string]: any }): void {
+function send(response: HttpResponse, requestId: string, method: string, normalizedPath: string,
+    startedAt: number, status: number, contentType: string, body: unknown,
+    extra?: { [key: string]: LogField }): void {
     response.statusCode = status;
     response.setHeader('Content-Type', contentType);
     response.end(body);
     logRequest(requestId, method, normalizedPath, status, startedAt, extra);
 }
 
-function sendJson(response: any, requestId: string, method: string, normalizedPath: string,
-    startedAt: number, status: number, value: any, extra?: { [key: string]: any }): void {
+function sendJson(response: HttpResponse, requestId: string, method: string, normalizedPath: string,
+    startedAt: number, status: number, value: unknown, extra?: { [key: string]: LogField }): void {
     send(response, requestId, method, normalizedPath, startedAt, status,
         'application/json; charset=utf-8', JSON.stringify(value), extra);
 }
 
-function normalizePath(rawUrl: string): string | null {
-    const queryIndex = rawUrl.indexOf('?');
-    const rawPath = queryIndex >= 0 ? rawUrl.slice(0, queryIndex) : rawUrl;
-    const normalized = rawPath || '/';
-    // Until percent decoding is performed by a fully parity-tested URL helper,
-    // reject encoded paths instead of risking double-decoding traversal bugs.
-    if (normalized.indexOf('%') >= 0 || normalized.indexOf('\\') >= 0)
-        return null;
-    return normalized.startsWith('/') ? normalized : '/' + normalized;
-}
-
-function staticFileFor(normalizedPath: string): string | null {
-    let relativePath = normalizedPath === '/' ? 'index.html' : normalizedPath.slice(1);
-    if (relativePath.endsWith('/'))
-        relativePath += 'index.html';
-    else if (path.extname(relativePath) === '')
-        relativePath = path.join(relativePath, 'index.html');
-
-    const candidate = path.resolve(contentRoot, relativePath);
-    if (candidate !== contentRoot && !candidate.startsWith(contentRootPrefix))
-        return null;
-    return candidate;
-}
-
-function serveStatic(request: any, response: any, requestId: string,
+function serveStatic(requestValue: unknown, response: HttpResponse, requestId: string,
     method: string, normalizedPath: string, startedAt: number): boolean {
+    const request = requestValue as HttpRequest;
     if (method !== 'GET' && method !== 'HEAD')
         return false;
 
-    const filePath = staticFileFor(normalizedPath);
+    const filePath = staticFilePath(contentRoot, normalizedPath);
     if (!filePath)
         return false;
 
     try {
-        const stat: any = fs.statSync(filePath);
+        const extension = path.extname(filePath).toLowerCase();
+        const acceptedEncodings = String(request.headers['accept-encoding'] || '').toLowerCase();
+        let servedFilePath = filePath;
+        let contentEncoding = '';
+        if ((extension === '.js' || extension === '.css') &&
+            acceptedEncodings.indexOf('br') >= 0 && fs.existsSync(filePath + '.br')) {
+            servedFilePath = filePath + '.br';
+            contentEncoding = 'br';
+        } else if ((extension === '.js' || extension === '.css') &&
+            acceptedEncodings.indexOf('gzip') >= 0 && fs.existsSync(filePath + '.gz')) {
+            servedFilePath = filePath + '.gz';
+            contentEncoding = 'gzip';
+        }
+
+        const stat: FileStat = fs.statSync(servedFilePath);
         if (!stat.isFile())
             return false;
 
-        const extension = path.extname(filePath).toLowerCase();
         const contentType = mimeTypes[extension] || 'application/octet-stream';
         const etag = 'W/"' + stat.size + '-' + Math.floor(stat.mtimeMs) + '"';
         response.setHeader('Content-Type', contentType);
         response.setHeader('ETag', etag);
         response.setHeader('Last-Modified', stat.mtime.toUTCString());
-        // Generated HTML, CSS, and JavaScript use stable URLs. Revalidate them
-        // so a deployment cannot leave clients running an older controller;
-        // fingerprinted fonts and media can retain the short freshness window.
+        if (contentEncoding) {
+            response.setHeader('Content-Encoding', contentEncoding);
+            response.setHeader('Vary', 'Accept-Encoding');
+        }
+        const fingerprinted = /-[0-9A-Z]{8,}\./i.test(path.basename(filePath));
         const requiresRevalidation = extension === '.html' ||
-            extension === '.css' || extension === '.js';
-        response.setHeader('Cache-Control', requiresRevalidation
-            ? 'public, max-age=0, must-revalidate'
-            : 'public, max-age=3600');
+            ((!fingerprinted) && (extension === '.css' || extension === '.js'));
+        response.setHeader('Cache-Control', fingerprinted
+            ? 'public, max-age=31536000, immutable'
+            : (requiresRevalidation
+                ? 'public, max-age=0, must-revalidate'
+                : 'public, max-age=3600'));
 
         if (request.headers['if-none-match'] === etag) {
             response.statusCode = 304;
@@ -204,7 +197,7 @@ function serveStatic(request: any, response: any, requestId: string,
             return true;
         }
 
-        const bytes = fs.readFileSync(filePath);
+        const bytes = fs.readFileSync(servedFilePath);
         response.statusCode = 200;
         response.setHeader('Content-Length', String(bytes.length));
         response.end(method === 'HEAD' ? undefined : bytes);
@@ -216,9 +209,10 @@ function serveStatic(request: any, response: any, requestId: string,
     }
 }
 
-function readJsonBody(request: any, response: any, requestId: string,
+function readJsonBody(requestValue: unknown, response: HttpResponse, requestId: string,
     method: string, normalizedPath: string, startedAt: number,
     completed: (value: unknown) => void): void {
+    const request = requestValue as HttpRequest;
     const contentType = String(request.headers['content-type'] || '').toLowerCase();
     if (!contentType.startsWith('application/json')) {
         sendJson(response, requestId, method, normalizedPath, startedAt, 415,
@@ -237,6 +231,7 @@ function readJsonBody(request: any, response: any, requestId: string,
     let body = '';
     let receivedBytes = 0;
     let settled = false;
+    // SharpTS's timer declaration requires a localized Node callback adapter cast.
     const timeout = setTimeout((() => {
         if (settled) return;
         settled = true;
@@ -252,7 +247,7 @@ function readJsonBody(request: any, response: any, requestId: string,
         logRequest(requestId, method, normalizedPath, 499, startedAt,
             { eventDetail: 'request_body_aborted' });
     });
-    request.on('data', (chunk: any) => {
+    request.on('data', (chunk: DataChunk) => {
         if (settled) return;
         receivedBytes += chunk.length;
         if (receivedBytes > maxBodyBytes) {
@@ -278,13 +273,17 @@ function readJsonBody(request: any, response: any, requestId: string,
     });
 }
 
-const server: any = http.createServer((request: any, response: any) => {
+// The SharpTS http module is untyped; raw values are narrowed immediately below.
+const server: HttpServer = http.createServer(((rawRequest: any, rawResponse: any): void => {
+    const request = rawRequest as HttpRequest;
+    const response = rawResponse as HttpResponse;
     const startedAt = Date.now();
     const requestId = Date.now().toString(36) + '-' + (++requestSequence).toString(36);
-    const client = clientIdentity(request);
+    const client = clientIdentity(String(request.socket.remoteAddress || 'unknown'),
+        request.headers, config);
     requestClients[requestId] = client;
     const method = String(request.method || 'GET').toUpperCase();
-    const normalizedPath = normalizePath(String(request.url || '/'));
+    const normalizedPath = normalizeRequestPath(String(request.url || '/'));
     setSecurityHeaders(response, requestId);
 
     if (!normalizedPath) {
@@ -314,20 +313,13 @@ const server: any = http.createServer((request: any, response: any) => {
         return;
     }
 
-    if (method === 'POST' && normalizedPath === '/api/echo') {
-        readJsonBody(request, response, requestId, method, normalizedPath, startedAt,
-            value => sendJson(response, requestId, method, normalizedPath, startedAt, 200,
-                { value }));
-        return;
-    }
-
     if (method === 'GET' && normalizedPath === '/api/presets') {
         sendJson(response, requestId, method, normalizedPath, startedAt, 200, presets);
         return;
     }
 
     if (method === 'POST' && normalizedPath === '/api/run') {
-        if (!originAllowed(request)) {
+        if (!originAllowed(request.headers, publicOrigin)) {
             sendJson(response, requestId, method, normalizedPath, startedAt, 403,
                 { error: 'Cross-origin execution requests are not allowed.' });
             return;
@@ -340,21 +332,23 @@ const server: any = http.createServer((request: any, response: any) => {
         }
 
         readJsonBody(request, response, requestId, method, normalizedPath, startedAt,
-            value => {
+            (value: unknown): void => {
                 const runRequest = parseRunRequest(value);
                 let disconnected = false;
-                let probeTimer: any = undefined;
-                let executionHandle: any = undefined;
+                let probeTimer: TimerHandle | undefined;
+                let executionHandle: ExecutionHandle | null = null;
 
                 const executionStarted = (): void => {
                     response.statusCode = 200;
                     response.setHeader('Content-Type', 'application/json; charset=utf-8');
+                    // SharpTS's timer declaration requires a localized Node callback adapter cast.
                     probeTimer = setInterval((() => {
                         if (disconnected) return;
                         if (response.probeConnection() === false) {
                             disconnected = true;
                             clearInterval(probeTimer);
-                            executionHandle.cancel();
+                            if (executionHandle)
+                                executionHandle.cancel();
                             response.end();
                             logRequest(requestId, method, normalizedPath, 499, startedAt,
                                 { eventDetail: 'client_disconnected' });
@@ -384,7 +378,7 @@ const server: any = http.createServer((request: any, response: any) => {
 
     sendJson(response, requestId, method, normalizedPath, startedAt, 404,
         { error: 'Not found.' });
-});
+}) as any);
 
 function beginShutdown(signal: string): void {
     if (shuttingDown) return;
@@ -392,6 +386,7 @@ function beginShutdown(signal: string): void {
     beginSupervisorShutdown();
     console.log(JSON.stringify({ event: 'shutdown_started', signal }));
 
+    // SharpTS's timer declaration requires a localized Node callback adapter cast.
     const cutoff = setTimeout((() => {
         console.log(JSON.stringify({ event: 'shutdown_forced' }));
         killAllWorkers();

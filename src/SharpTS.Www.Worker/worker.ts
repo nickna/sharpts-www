@@ -1,30 +1,13 @@
-import { configureUntrustedProcess, runSourceJson } from 'sharpts:execution';
 import { Console } from 'dotnet:System.Console';
+import { configureUntrustedProcess, runSourceJson } from 'sharpts:execution';
+import type { WorkerRequestPayload, WorkerResponsePayload } from '../SharpTS.Www.Shared/execution-contract';
 
 const maxOutputLength = 100 * 1024;
-
-interface WorkerRequest {
-    Source: string;
-    TimeoutMs: number;
-    Mode?: string;
-}
 
 interface SourceExecutionResult {
     Success: boolean;
     Output: string;
     Errors: string[];
-    ExecutionTimeMs: number;
-    CompileTimeMs: number | null;
-}
-
-interface WorkerError {
-    Message: string;
-}
-
-interface WorkerResponse {
-    Success: boolean;
-    Output: string;
-    Errors: WorkerError[];
     ExecutionTimeMs: number;
     CompileTimeMs: number | null;
 }
@@ -41,11 +24,11 @@ function exitInvalidRequest(): never {
     throw new Error('process.exit returned unexpectedly');
 }
 
-function writeResponse(response: WorkerResponse): void {
+function writeResponse(response: WorkerResponsePayload): void {
     process.stdout.write(JSON.stringify(response) + '\n');
 }
 
-function failure(message: string): WorkerResponse {
+function failure(message: string): WorkerResponsePayload {
     return {
         Success: false,
         Output: '',
@@ -60,26 +43,23 @@ function errorMessage(error: unknown): string {
 }
 
 const inputLine = Console.ReadLine();
-if (inputLine === null || !String(inputLine).trim())
-    exitInvalidRequest();
+if (inputLine === null || !String(inputLine).trim()) exitInvalidRequest();
 
-let request: WorkerRequest;
+let request: WorkerRequestPayload;
 try {
-    request = JSON.parse(String(inputLine)) as WorkerRequest;
+    request = JSON.parse(String(inputLine)) as WorkerRequestPayload;
 } catch {
     exitInvalidRequest();
 }
 
-if (!request || typeof request.Source !== 'string' || !request.Source.trim())
-    exitInvalidRequest();
+if (!request || typeof request.Source !== 'string' || !request.Source.trim()) exitInvalidRequest();
 
 const mode = String(request.Mode || 'interpret').toLowerCase();
 
 try {
-    const execution = JSON.parse(
-        runSourceJson(request.Source, mode, maxOutputLength)) as SourceExecutionResult;
+    const execution = JSON.parse(runSourceJson(request.Source, mode, maxOutputLength)) as SourceExecutionResult;
     const errors = Array.isArray(execution.Errors)
-        ? execution.Errors.map(message => ({ Message: String(message) }))
+        ? execution.Errors.map((message) => ({ Message: String(message) }))
         : [{ Message: 'Invalid source execution response.' }];
 
     writeResponse({
@@ -87,9 +67,10 @@ try {
         Output: String(execution.Output || ''),
         Errors: errors,
         ExecutionTimeMs: Number(execution.ExecutionTimeMs || 0),
-        CompileTimeMs: execution.CompileTimeMs === null || execution.CompileTimeMs === undefined
-            ? null
-            : Number(execution.CompileTimeMs)
+        CompileTimeMs:
+            execution.CompileTimeMs === null || execution.CompileTimeMs === undefined
+                ? null
+                : Number(execution.CompileTimeMs)
     });
 } catch (error: unknown) {
     writeResponse(failure(errorMessage(error)));
