@@ -27,7 +27,9 @@ echo "Aspire dashboard development certificate is ready."
 # starts. The website request path has no ASP.NET/Kestrel host.
 echo ""
 echo "Building the SharpTS self-host bundle..."
-bash "$BUILD_SELF_HOST_SCRIPT" Debug
+# Local development commonly includes edits inside the SharpTS submodule. The
+# standalone build and CI paths remain strict unless this opt-in is explicit.
+SHARPTS_WWW_ALLOW_DIRTY_SHARPTS=true bash "$BUILD_SELF_HOST_SCRIPT" Debug
 
 # Build
 echo ""

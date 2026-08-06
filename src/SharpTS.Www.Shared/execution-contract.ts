@@ -18,12 +18,27 @@ export interface ExecutionError {
     column: number | null;
 }
 
+export type ExecutionPhaseStatus = 'completed' | 'failed';
+
+export interface ExecutionPhaseTiming {
+    name: string;
+    durationMs: number;
+    status: ExecutionPhaseStatus;
+}
+
+export interface ExecutionTimings {
+    phases: ExecutionPhaseTiming[];
+    serverDurationMs: number;
+}
+
 export interface ExecutionResponse {
     success: boolean;
     output: string;
     errors: ExecutionError[];
     executionTimeMs: number;
     compileTimeMs: number | null;
+    /** Optional while older website replicas can still answer during a rolling deployment. */
+    timings?: ExecutionTimings;
 }
 
 export interface ApiErrorResponse {
@@ -49,6 +64,11 @@ export interface WorkerResponsePayload {
     Errors: WorkerErrorPayload[];
     ExecutionTimeMs: number;
     CompileTimeMs: number | null;
+    Timings: Array<{
+        Name: string;
+        DurationMs: number;
+        Status: ExecutionPhaseStatus;
+    }>;
 }
 
 /**
@@ -117,6 +137,9 @@ export function isExecutionResponse(value: unknown): value is ExecutionResponse 
     if (!value || typeof value !== 'object') return false;
     const response = value as Partial<ExecutionResponse>;
     const errors = response.errors;
+    const executionTimeMs = response.executionTimeMs;
+    const compileTimeMs = response.compileTimeMs;
+    const timings = response.timings;
     return (
         typeof response.success === 'boolean' &&
         typeof response.output === 'string' &&
@@ -127,10 +150,39 @@ export function isExecutionResponse(value: unknown): value is ExecutionResponse 
                 (error.line === null || typeof error.line === 'number') &&
                 (error.column === null || typeof error.column === 'number')
         ) &&
-        typeof response.executionTimeMs === 'number' &&
-        Number.isFinite(response.executionTimeMs) &&
-        (response.compileTimeMs === null ||
-            (typeof response.compileTimeMs === 'number' && Number.isFinite(response.compileTimeMs)))
+        typeof executionTimeMs === 'number' &&
+        Number.isFinite(executionTimeMs) && executionTimeMs >= 0 &&
+        (compileTimeMs === null ||
+            (typeof compileTimeMs === 'number' &&
+                Number.isFinite(compileTimeMs) && compileTimeMs >= 0)) &&
+        (timings === undefined || isExecutionTimings(timings))
+    );
+}
+
+function isPhaseTiming(value: unknown, pascalCase: boolean): boolean {
+    if (!value || typeof value !== 'object') return false;
+    const timing = value as { [key: string]: unknown };
+    const name = timing[pascalCase ? 'Name' : 'name'];
+    const durationMs = timing[pascalCase ? 'DurationMs' : 'durationMs'];
+    const status = timing[pascalCase ? 'Status' : 'status'];
+    return (
+        typeof name === 'string' && name.length > 0 &&
+        typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0 &&
+        (status === 'completed' || status === 'failed')
+    );
+}
+
+function isExecutionTimings(value: unknown): value is ExecutionTimings {
+    if (!value || typeof value !== 'object') return false;
+    const timings = value as Partial<ExecutionTimings>;
+    const phases = timings.phases;
+    const serverDurationMs = timings.serverDurationMs;
+    return (
+        Array.isArray(phases) &&
+        phases.every(phase => isPhaseTiming(phase, false)) &&
+        typeof serverDurationMs === 'number' &&
+        Number.isFinite(serverDurationMs) &&
+        serverDurationMs >= 0
     );
 }
 
@@ -138,14 +190,20 @@ export function isWorkerResponsePayload(value: unknown): value is WorkerResponse
     if (!value || typeof value !== 'object') return false;
     const response = value as Partial<WorkerResponsePayload>;
     const errors = response.Errors;
+    const executionTimeMs = response.ExecutionTimeMs;
+    const compileTimeMs = response.CompileTimeMs;
+    const timings = response.Timings;
     return (
         typeof response.Success === 'boolean' &&
         typeof response.Output === 'string' &&
         Array.isArray(errors) &&
         errors.every((error) => typeof error?.Message === 'string') &&
-        typeof response.ExecutionTimeMs === 'number' &&
-        Number.isFinite(response.ExecutionTimeMs) &&
-        (response.CompileTimeMs === null ||
-            (typeof response.CompileTimeMs === 'number' && Number.isFinite(response.CompileTimeMs)))
+        typeof executionTimeMs === 'number' &&
+        Number.isFinite(executionTimeMs) && executionTimeMs >= 0 &&
+        (compileTimeMs === null ||
+            (typeof compileTimeMs === 'number' &&
+                Number.isFinite(compileTimeMs) && compileTimeMs >= 0)) &&
+        Array.isArray(timings) &&
+        timings.every(timing => isPhaseTiming(timing, true))
     );
 }

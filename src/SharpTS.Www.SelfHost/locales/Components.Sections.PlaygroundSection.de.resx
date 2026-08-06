@@ -76,4 +76,25 @@ console.log(greet(developer));</value>
   <data name="InvalidResponse" xml:space="preserve">
     <value>Der Playground hat eine ungültige Serverantwort erhalten.</value>
   </data>
+  <data name="TimingHeadline" xml:space="preserve"><value>Ausgeführt in {0}</value></data>
+  <data name="TimingFailedHeadline" xml:space="preserve"><value>{0} fehlgeschlagen</value></data>
+  <data name="TimingJourneyLabel" xml:space="preserve"><value>Ausführungsphasen</value></data>
+  <data name="TimingSharpTSPipeline" xml:space="preserve"><value>SharpTS-Pipeline: {0}</value></data>
+  <data name="TimingEndToEnd" xml:space="preserve"><value>Ende-zu-Ende: {0}</value></data>
+  <data name="TimingStatusCompleted" xml:space="preserve"><value>abgeschlossen</value></data>
+  <data name="TimingStatusFailed" xml:space="preserve"><value>fehlgeschlagen</value></data>
+  <data name="TimingPhaseTokenizeName" xml:space="preserve"><value>Tokenisierung</value></data>
+  <data name="TimingPhaseTokenizeDescription" xml:space="preserve"><value>Wandelt den Quelltext in Token um.</value></data>
+  <data name="TimingPhaseParseName" xml:space="preserve"><value>Syntaxanalyse</value></data>
+  <data name="TimingPhaseParseDescription" xml:space="preserve"><value>Erstellt aus den Token die Programmstruktur.</value></data>
+  <data name="TimingPhaseTypeCheckName" xml:space="preserve"><value>Typprüfung</value></data>
+  <data name="TimingPhaseTypeCheckDescription" xml:space="preserve"><value>Prüft TypeScript-Typen und meldet statische Fehler.</value></data>
+  <data name="TimingPhasePrepareInterpreterName" xml:space="preserve"><value>Interpreter vorbereiten</value></data>
+  <data name="TimingPhasePrepareInterpreterDescription" xml:space="preserve"><value>Erstellt die Laufzeitumgebung und löst Variablen auf.</value></data>
+  <data name="TimingPhaseCompileName" xml:space="preserve"><value>Kompilieren</value></data>
+  <data name="TimingPhaseCompileDescription" xml:space="preserve"><value>Erzeugt nach der Analyse die .NET-Assembly im Speicher.</value></data>
+  <data name="TimingPhaseLoadName" xml:space="preserve"><value>Laden</value></data>
+  <data name="TimingPhaseLoadDescription" xml:space="preserve"><value>Lädt die erzeugte Assembly und findet ihren Einstiegspunkt.</value></data>
+  <data name="TimingPhaseExecuteName" xml:space="preserve"><value>Ausführen</value></data>
+  <data name="TimingPhaseExecuteDescription" xml:space="preserve"><value>Ruft das Programm auf. Kompilierte Läufe können verzögerte JIT-Arbeit beim ersten Aufruf enthalten.</value></data>
 </root>

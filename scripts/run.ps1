@@ -34,7 +34,9 @@ Write-Host 'Aspire dashboard development certificate is ready.'
 # website host into the request path.
 Write-Host ''
 Write-Host 'Building the SharpTS self-host bundle...'
-& $BuildSelfHostScript -Configuration Debug
+# Local development commonly includes edits inside the SharpTS submodule. The
+# standalone build and CI paths remain strict unless this switch is explicit.
+& $BuildSelfHostScript -Configuration Debug -AllowDirtySharpTS
 
 # Build
 Write-Host ''

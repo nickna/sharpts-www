@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { performance } from 'perf_hooks';
 import { loadSupervisorConfig } from './config';
 import {
     acquireExecutionSlot,
@@ -17,8 +18,10 @@ import {
 } from './execution-contract';
 import type {
     ExecutionError,
+    ExecutionPhaseTiming,
     ExecutionResponse,
     ExecutionResponseBody,
+    ExecutionTimings,
     RunRequest,
     WorkerErrorPayload,
     WorkerResponsePayload
@@ -85,13 +88,49 @@ interface ExecutionControl {
     queueRequestId: number;
 }
 
-function errorResponse(message: string, executionTimeMs: number = 0): ExecutionResponse {
+function errorResponse(message: string, timings?: ExecutionTimings): ExecutionResponse {
     return {
         success: false,
         output: '',
         errors: [{ message, line: null, column: null }],
-        executionTimeMs,
-        compileTimeMs: null
+        executionTimeMs: 0,
+        compileTimeMs: null,
+        timings: timings || { phases: [], serverDurationMs: 0 }
+    };
+}
+
+function finiteDuration(value: number): number {
+    return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+/**
+ * Combine exclusive website-host overhead with the worker's additive pipeline phases.
+ * The isolated-worker phase is process startup, IPC, serialization, and shutdown time,
+ * excluding the SharpTS phases reported by the worker itself.
+ */
+export function aggregateTimings(
+    workerPhases: ExecutionPhaseTiming[],
+    queueDurationMs: number,
+    isolatedWorkerDurationMs: number,
+    isolatedWorkerStatus: 'completed' | 'failed' = 'completed'
+): ExecutionTimings {
+    const queueDuration = finiteDuration(queueDurationMs);
+    const isolatedDuration = finiteDuration(isolatedWorkerDurationMs);
+    let measuredWorkerDuration = 0;
+    for (const phase of workerPhases)
+        measuredWorkerDuration += finiteDuration(phase.durationMs);
+
+    return {
+        phases: [
+            { name: 'queue', durationMs: queueDuration, status: 'completed' },
+            {
+                name: 'isolatedWorker',
+                durationMs: Math.max(0, isolatedDuration - measuredWorkerDuration),
+                status: isolatedWorkerStatus
+            },
+            ...workerPhases
+        ],
+        serverDurationMs: queueDuration + isolatedDuration
     };
 }
 
@@ -101,9 +140,16 @@ function sanitizeNetworkBlock(text: string): string {
     return 'Network access is disabled in the SharpTS playground. fetch() and other outbound requests are blocked.';
 }
 
-export function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: number): ExecutionResponse {
-    if (!isWorkerResponsePayload(value))
-        return errorResponse('Internal error: invalid worker response.', fallbackElapsedMs);
+export function normalizeWorkerResponse(
+    value: unknown,
+    isolatedWorkerDurationMs: number,
+    queueDurationMs: number = 0
+): ExecutionResponse {
+    if (!isWorkerResponsePayload(value)) {
+        return errorResponse(
+            'Internal error: invalid worker response.',
+            aggregateTimings([], queueDurationMs, isolatedWorkerDurationMs, 'failed'));
+    }
 
     const worker = value as WorkerResponsePayload;
     const rawErrors: WorkerErrorPayload[] = worker.Errors;
@@ -115,12 +161,21 @@ export function normalizeWorkerResponse(value: unknown, fallbackElapsedMs: numbe
             column: null
         });
     }
+    const workerPhases: ExecutionPhaseTiming[] = worker.Timings.map(timing => ({
+        name: timing.Name,
+        durationMs: timing.DurationMs,
+        status: timing.Status
+    }));
     return {
         success: worker.Success === true,
         output: sanitizeNetworkBlock(String(worker.Output || '')),
         errors,
         executionTimeMs: worker.ExecutionTimeMs,
-        compileTimeMs: worker.CompileTimeMs
+        compileTimeMs: worker.CompileTimeMs,
+        timings: aggregateTimings(
+            workerPhases,
+            queueDurationMs,
+            isolatedWorkerDurationMs)
     };
 }
 
@@ -167,9 +222,10 @@ function logWorker(event: string, executionId: string, extra?: { [key: string]: 
 }
 
 function runWorker(request: RunRequest, executionId: string, control: ExecutionControl,
+    queueDurationMs: number,
     started: () => void,
     completed: (result: RunResult) => void): void {
-    const startedAt = Date.now();
+    const startedAt = performance.now();
     const timeoutMs = normalizeExecutionTimeout(request.timeoutMs);
     const mode = normalizeExecutionMode(request.mode) || 'interpret';
     // SharpTS reports spawn failures through the child's asynchronous `error`
@@ -225,7 +281,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         logWorker('worker_finished', executionId, {
             pid: child.pid,
             exitCode: exitCode === undefined ? null : exitCode,
-            elapsedMs: Date.now() - startedAt
+            elapsedMs: performance.now() - startedAt
         });
         completed({ status, body });
     };
@@ -252,25 +308,33 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
     });
 
     child.on('error', () => {
-        finish(200, errorResponse('Internal server error: failed to start worker.'));
+        finish(200, errorResponse(
+            'Internal server error: failed to start worker.',
+            aggregateTimings([], queueDurationMs, performance.now() - startedAt, 'failed')));
     });
 
     child.on('close', (code: number | null) => {
-        const elapsedMs = Date.now() - startedAt;
+        const elapsedMs = performance.now() - startedAt;
         if (control.cancelled) {
             finish(499, { error: 'Execution cancelled because the client disconnected.' }, Number(code));
             return;
         }
         if (killedForMemory) {
-            finish(200, errorResponse('Execution terminated: memory limit exceeded (150MB).', elapsedMs), Number(code));
+            finish(200, errorResponse(
+                'Execution terminated: memory limit exceeded (150MB).',
+                aggregateTimings([], queueDurationMs, elapsedMs, 'failed')), Number(code));
             return;
         }
         if (killedForTimeout) {
-            finish(200, errorResponse('Execution timed out after ' + timeoutMs + 'ms.', elapsedMs), Number(code));
+            finish(200, errorResponse(
+                'Execution timed out after ' + timeoutMs + 'ms.',
+                aggregateTimings([], queueDurationMs, elapsedMs, 'failed')), Number(code));
             return;
         }
         if (killedForOutput) {
-            finish(200, errorResponse('Execution terminated: worker output limit exceeded.', elapsedMs), Number(code));
+            finish(200, errorResponse(
+                'Execution terminated: worker output limit exceeded.',
+                aggregateTimings([], queueDurationMs, elapsedMs, 'failed')), Number(code));
             return;
         }
 
@@ -286,14 +350,19 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
                 message = 'Program terminated the process (exit code ' + code + '), e.g. via process.exit().';
             else
                 message = 'Execution terminated unexpectedly (exit code ' + code + ').';
-            finish(200, errorResponse(sanitizeNetworkBlock(message), elapsedMs), Number(code));
+            finish(200, errorResponse(
+                sanitizeNetworkBlock(message),
+                aggregateTimings([], queueDurationMs, elapsedMs, 'failed')), Number(code));
             return;
         }
 
         try {
-            finish(200, normalizeWorkerResponse(JSON.parse(stdout.trim()), elapsedMs), Number(code));
+            finish(200, normalizeWorkerResponse(
+                JSON.parse(stdout.trim()), elapsedMs, queueDurationMs), Number(code));
         } catch {
-            finish(200, errorResponse('Internal error: invalid worker response.', elapsedMs), Number(code));
+            finish(200, errorResponse(
+                'Internal error: invalid worker response.',
+                aggregateTimings([], queueDurationMs, elapsedMs, 'failed')), Number(code));
         }
     });
 
@@ -316,6 +385,7 @@ export function isSupervisorReady(): boolean {
 
 export function execute(request: RunRequest, executionId: string,
     started: () => void, completed: (result: RunResult) => void): ExecutionHandle {
+    const queuedAt = performance.now();
     const control: ExecutionControl = { cancelled: false, cancelWorker: null, queueRequestId: 0 };
     const handle: ExecutionHandle = {
         cancel: () => {
@@ -360,8 +430,9 @@ export function execute(request: RunRequest, executionId: string,
             completed({ status: 503, body: { error: 'Execution service is busy.' } });
             return;
         }
+        const queueDurationMs = performance.now() - queuedAt;
         runWorker({ source: request.source, timeoutMs: request.timeoutMs, mode },
-            executionId, control, started, completed);
+            executionId, control, queueDurationMs, started, completed);
     };
     control.queueRequestId = acquireExecutionSlot(executionQueue, admissionCompleted);
     return handle;

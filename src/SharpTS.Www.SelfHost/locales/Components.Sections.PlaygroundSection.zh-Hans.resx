@@ -76,4 +76,25 @@ console.log(greet(developer));</value>
   <data name="InvalidResponse" xml:space="preserve">
     <value>运行环境收到了无效的服务器响应。</value>
   </data>
+  <data name="TimingHeadline" xml:space="preserve"><value>执行用时 {0}</value></data>
+  <data name="TimingFailedHeadline" xml:space="preserve"><value>{0}失败</value></data>
+  <data name="TimingJourneyLabel" xml:space="preserve"><value>执行阶段</value></data>
+  <data name="TimingSharpTSPipeline" xml:space="preserve"><value>SharpTS 流程：{0}</value></data>
+  <data name="TimingEndToEnd" xml:space="preserve"><value>端到端：{0}</value></data>
+  <data name="TimingStatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="TimingStatusFailed" xml:space="preserve"><value>失败</value></data>
+  <data name="TimingPhaseTokenizeName" xml:space="preserve"><value>词法分析</value></data>
+  <data name="TimingPhaseTokenizeDescription" xml:space="preserve"><value>将源代码文本转换为词法标记。</value></data>
+  <data name="TimingPhaseParseName" xml:space="preserve"><value>语法分析</value></data>
+  <data name="TimingPhaseParseDescription" xml:space="preserve"><value>根据词法标记构建程序结构。</value></data>
+  <data name="TimingPhaseTypeCheckName" xml:space="preserve"><value>类型检查</value></data>
+  <data name="TimingPhaseTypeCheckDescription" xml:space="preserve"><value>检查 TypeScript 类型并报告静态错误。</value></data>
+  <data name="TimingPhasePrepareInterpreterName" xml:space="preserve"><value>准备解释器</value></data>
+  <data name="TimingPhasePrepareInterpreterDescription" xml:space="preserve"><value>创建运行时环境并解析变量。</value></data>
+  <data name="TimingPhaseCompileName" xml:space="preserve"><value>编译</value></data>
+  <data name="TimingPhaseCompileDescription" xml:space="preserve"><value>分析后在内存中生成 .NET 程序集。</value></data>
+  <data name="TimingPhaseLoadName" xml:space="preserve"><value>加载</value></data>
+  <data name="TimingPhaseLoadDescription" xml:space="preserve"><value>加载生成的程序集并查找入口点。</value></data>
+  <data name="TimingPhaseExecuteName" xml:space="preserve"><value>执行</value></data>
+  <data name="TimingPhaseExecuteDescription" xml:space="preserve"><value>调用程序。编译模式可能包含首次使用时的延迟 JIT 工作。</value></data>
 </root>

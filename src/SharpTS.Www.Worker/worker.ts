@@ -14,6 +14,11 @@ interface SourceExecutionResult {
     Errors: string[];
     ExecutionTimeMs: number;
     CompileTimeMs: number | null;
+    Timings: Array<{
+        Name: string;
+        DurationMs: number;
+        Status: 'completed' | 'failed';
+    }>;
 }
 
 // Guest TypeScript may observe process.ppid, but cannot signal the same-UID HTTP
@@ -38,7 +43,8 @@ function failure(message: string): WorkerResponsePayload {
         Output: '',
         Errors: [{ Message: message }],
         ExecutionTimeMs: 0,
-        CompileTimeMs: null
+        CompileTimeMs: null,
+        Timings: []
     };
 }
 
@@ -76,7 +82,14 @@ try {
         CompileTimeMs:
             execution.CompileTimeMs === null || execution.CompileTimeMs === undefined
                 ? null
-                : Number(execution.CompileTimeMs)
+                : Number(execution.CompileTimeMs),
+        Timings: Array.isArray(execution.Timings)
+            ? execution.Timings.map(timing => ({
+                Name: String(timing.Name),
+                DurationMs: Number(timing.DurationMs),
+                Status: timing.Status === 'failed' ? 'failed' : 'completed'
+            }))
+            : []
     });
 } catch (error: unknown) {
     writeResponse(failure(errorMessage(error)));

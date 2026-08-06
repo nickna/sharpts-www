@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { serializeWorkerMessage } from '../../src/SharpTS.Www.Shared/execution-contract';
-import { normalizeWorkerResponse } from '../../src/SharpTS.Www.SelfHost/supervisor';
+import { aggregateTimings, normalizeWorkerResponse } from '../../src/SharpTS.Www.SelfHost/supervisor';
 
 describe('worker protocol serialization', () => {
     it('round-trips Unicode through an ASCII-only wire message', () => {
@@ -27,16 +27,32 @@ describe('worker response normalization', () => {
                     Output: 'hello\n',
                     Errors: [],
                     ExecutionTimeMs: 0,
-                    CompileTimeMs: 4
+                    CompileTimeMs: 4,
+                    Timings: [
+                        { Name: 'tokenize', DurationMs: 1.25, Status: 'completed' },
+                        { Name: 'compile', DurationMs: 4.5, Status: 'completed' },
+                        { Name: 'execute', DurationMs: 0.25, Status: 'completed' }
+                    ]
                 },
-                99
+                10,
+                2
             )
         ).toEqual({
             success: true,
             output: 'hello\n',
             errors: [],
             executionTimeMs: 0,
-            compileTimeMs: 4
+            compileTimeMs: 4,
+            timings: {
+                serverDurationMs: 12,
+                phases: [
+                    { name: 'queue', durationMs: 2, status: 'completed' },
+                    { name: 'isolatedWorker', durationMs: 4, status: 'completed' },
+                    { name: 'tokenize', durationMs: 1.25, status: 'completed' },
+                    { name: 'compile', durationMs: 4.5, status: 'completed' },
+                    { name: 'execute', durationMs: 0.25, status: 'completed' }
+                ]
+            }
         });
     });
 
@@ -47,14 +63,36 @@ describe('worker response normalization', () => {
                 Output: 'unsafe',
                 Errors: [],
                 ExecutionTimeMs: Number.NaN,
-                CompileTimeMs: null
+                CompileTimeMs: null,
+                Timings: []
             },
             17
         );
 
         expect(response.success).toBe(false);
-        expect(response.executionTimeMs).toBe(17);
+        expect(response.executionTimeMs).toBe(0);
         expect(response.errors[0].message).toMatch(/invalid worker response/);
+        expect(response.timings?.phases).toEqual([
+            { name: 'queue', durationMs: 0, status: 'completed' },
+            { name: 'isolatedWorker', durationMs: 17, status: 'failed' }
+        ]);
+    });
+
+    it('rejects non-finite phase values', () => {
+        const response = normalizeWorkerResponse(
+            {
+                Success: true,
+                Output: '',
+                Errors: [],
+                ExecutionTimeMs: 1,
+                CompileTimeMs: null,
+                Timings: [{ Name: 'execute', DurationMs: Number.POSITIVE_INFINITY, Status: 'completed' }]
+            },
+            8
+        );
+
+        expect(response.success).toBe(false);
+        expect(response.timings?.phases[1]).toMatchObject({ name: 'isolatedWorker', status: 'failed' });
     });
 
     it('replaces network sentinel details with a stable message', () => {
@@ -64,12 +102,34 @@ describe('worker response normalization', () => {
                 Output: '',
                 Errors: [{ Message: 'fetch sharpts-network-blocked.invalid failed' }],
                 ExecutionTimeMs: 3,
-                CompileTimeMs: null
+                CompileTimeMs: null,
+                Timings: [{ Name: 'execute', DurationMs: 3, Status: 'failed' }]
             },
             17
         );
 
         expect(response.errors[0].message).toMatch(/Network access is disabled/);
         expect(response.errors[0].message).not.toContain('invalid');
+    });
+
+    it('keeps aggregate server time additive when worker phases consume the lifecycle', () => {
+        expect(
+            aggregateTimings(
+                [
+                    { name: 'tokenize', durationMs: 4, status: 'completed' },
+                    { name: 'execute', durationMs: 9, status: 'completed' }
+                ],
+                3,
+                20
+            )
+        ).toEqual({
+            serverDurationMs: 23,
+            phases: [
+                { name: 'queue', durationMs: 3, status: 'completed' },
+                { name: 'isolatedWorker', durationMs: 7, status: 'completed' },
+                { name: 'tokenize', durationMs: 4, status: 'completed' },
+                { name: 'execute', durationMs: 9, status: 'completed' }
+            ]
+        });
     });
 });

@@ -87,16 +87,110 @@ test('playground presets execute in both modes and localized assets stay local',
     await page.locator('[data-playground-run]').click();
     await expect(page.locator('.playground__stdout')).toContainText('Hello from SharpTS');
     await expect(page.locator('[data-playground-run]')).toHaveAttribute('aria-busy', 'false');
+    await expect(page.locator('[data-playground-timing-headline]')).toContainText('Exécuté');
+    await page.locator('[data-playground-timing]').click();
+    await expect(page.locator('[data-playground-timing-details]')).toBeVisible();
+    await expect(page.locator('[data-playground-timing-phase="tokenize"]')).toBeVisible();
+    await expect(page.locator('[data-playground-timing-phase="execute"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-playground-timing-phase="queue"]')).toHaveCount(0);
+    await expect(page.locator('[data-playground-timing-phase="isolatedWorker"]')).toHaveCount(0);
+    await expect(page.locator('[data-playground-timing-description]')).not.toBeEmpty();
+    await expect(page.locator('[data-playground-timing-pipeline]')).toContainText('SharpTS');
 
     await page.locator('[data-playground-mode="compile"]').click();
     await expect(page.locator('[data-playground-mode="compile"]')).toHaveAttribute('aria-pressed', 'true');
     await page.locator('[data-playground-run]').click();
     await expect(page.locator('.playground__stdout')).toContainText('Hello from SharpTS');
-    await expect(page.locator('[data-playground-timing]')).toContainText('compilé');
+    await expect(page.locator('[data-playground-timing-headline]')).toContainText('Exécuté');
+    await page.locator('[data-playground-timing]').click();
+    await expect(page.locator('[data-playground-timing-phase="compile"]')).toBeVisible();
+    await expect(page.locator('[data-playground-timing-phase="prepareInterpreter"]')).toHaveCount(0);
+
+    await page.locator('[data-playground-timing-phase="execute"]').focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('[data-playground-timing-phase="load"]')).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+        await page.locator('[data-playground-timing-details]').evaluate((element) => {
+            const details = element as HTMLElement;
+            const bounds = details.getBoundingClientRect();
+            return bounds.left >= 0 && bounds.right <= window.innerWidth && details.scrollWidth <= details.clientWidth;
+        })
+    ).toBe(true);
+
+    const accessibility = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+    expect(accessibility.violations).toEqual([]);
 
     await page.locator('[data-playground-clear]').click();
     await expect(page.locator('.playground__placeholder')).toBeVisible();
     expect(consoleErrors).toEqual([]);
+});
+
+test('execution timing contract reports mode-specific and partial phase sequences', async ({ request }) => {
+    const run = async (source: string, mode: ExecutionMode): Promise<ExecutionResponse> => {
+        const response = await request.post('/api/run', { data: { source, mode } });
+        expect(response.status()).toBe(200);
+        return (await response.json()) as ExecutionResponse;
+    };
+
+    const interpreted = await run('console.log(42);', 'interpret');
+    expect(interpreted.timings?.phases.map((phase) => phase.name)).toEqual([
+        'queue',
+        'isolatedWorker',
+        'tokenize',
+        'parse',
+        'typeCheck',
+        'prepareInterpreter',
+        'execute'
+    ]);
+
+    const compiled = await run('console.log(42);', 'compile');
+    expect(compiled.timings?.phases.map((phase) => phase.name)).toEqual([
+        'queue',
+        'isolatedWorker',
+        'tokenize',
+        'parse',
+        'typeCheck',
+        'compile',
+        'load',
+        'execute'
+    ]);
+
+    const failed = await run("let value: number = 'wrong';", 'interpret');
+    expect(failed.success).toBe(false);
+    expect(failed.timings?.phases.map((phase) => phase.name)).toEqual([
+        'queue',
+        'isolatedWorker',
+        'tokenize',
+        'parse',
+        'typeCheck'
+    ]);
+    expect(failed.timings?.phases.at(-1)?.status).toBe('failed');
+});
+
+test('execution journey labels are available in every locale and reduced motion is honored', async ({ page }) => {
+    const locales = [
+        ['/', 'Execute', 'SharpTS pipeline: {0}'],
+        ['/de', 'Ausführen', 'SharpTS-Pipeline: {0}'],
+        ['/es', 'Ejecución', 'Proceso de SharpTS: {0}'],
+        ['/fr', 'Exécution', 'Pipeline SharpTS : {0}'],
+        ['/zh-Hans', '执行', 'SharpTS 流程：{0}']
+    ];
+    for (const [route, executeLabel, pipelineLabel] of locales) {
+        await page.goto(route);
+        await expect(page.locator('[data-playground]')).toHaveAttribute('data-phase-execute-name', executeLabel);
+        await expect(page.locator('[data-playground]')).toHaveAttribute('data-timing-sharp-ts-pipeline', pipelineLabel);
+    }
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.locator('[data-playground-run]').click();
+    await expect(page.locator('[data-playground-run]')).toHaveAttribute('aria-busy', 'false');
+    await page.locator('[data-playground-timing]').click();
+    await expect(page.locator('[data-playground-timing-phase]').first()).toHaveCSS('animation-name', 'none');
 });
 
 test('every advertised example and playground preset executes in both modes', async ({ page, request }) => {

@@ -76,4 +76,25 @@ console.log(greet(developer));</value>
   <data name="InvalidResponse" xml:space="preserve">
     <value>El área de pruebas recibió una respuesta no válida del servidor.</value>
   </data>
+  <data name="TimingHeadline" xml:space="preserve"><value>Ejecutado en {0}</value></data>
+  <data name="TimingFailedHeadline" xml:space="preserve"><value>{0}: error</value></data>
+  <data name="TimingJourneyLabel" xml:space="preserve"><value>Fases de ejecución</value></data>
+  <data name="TimingSharpTSPipeline" xml:space="preserve"><value>Proceso de SharpTS: {0}</value></data>
+  <data name="TimingEndToEnd" xml:space="preserve"><value>De extremo a extremo: {0}</value></data>
+  <data name="TimingStatusCompleted" xml:space="preserve"><value>completada</value></data>
+  <data name="TimingStatusFailed" xml:space="preserve"><value>fallida</value></data>
+  <data name="TimingPhaseTokenizeName" xml:space="preserve"><value>Tokenización</value></data>
+  <data name="TimingPhaseTokenizeDescription" xml:space="preserve"><value>Convierte el código fuente en tokens.</value></data>
+  <data name="TimingPhaseParseName" xml:space="preserve"><value>Análisis sintáctico</value></data>
+  <data name="TimingPhaseParseDescription" xml:space="preserve"><value>Construye la estructura del programa a partir de los tokens.</value></data>
+  <data name="TimingPhaseTypeCheckName" xml:space="preserve"><value>Comprobación de tipos</value></data>
+  <data name="TimingPhaseTypeCheckDescription" xml:space="preserve"><value>Comprueba los tipos de TypeScript e informa de errores estáticos.</value></data>
+  <data name="TimingPhasePrepareInterpreterName" xml:space="preserve"><value>Preparar intérprete</value></data>
+  <data name="TimingPhasePrepareInterpreterDescription" xml:space="preserve"><value>Crea el entorno de ejecución y resuelve las variables.</value></data>
+  <data name="TimingPhaseCompileName" xml:space="preserve"><value>Compilación</value></data>
+  <data name="TimingPhaseCompileDescription" xml:space="preserve"><value>Emite el ensamblado .NET en memoria después del análisis.</value></data>
+  <data name="TimingPhaseLoadName" xml:space="preserve"><value>Carga</value></data>
+  <data name="TimingPhaseLoadDescription" xml:space="preserve"><value>Carga el ensamblado generado y busca su punto de entrada.</value></data>
+  <data name="TimingPhaseExecuteName" xml:space="preserve"><value>Ejecución</value></data>
+  <data name="TimingPhaseExecuteDescription" xml:space="preserve"><value>Invoca el programa. Las ejecuciones compiladas pueden incluir trabajo JIT diferido del primer uso.</value></data>
 </root>

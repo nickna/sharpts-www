@@ -86,12 +86,15 @@ function assertShowcaseOutput(example, mode, output) {
 const configuration = option('--configuration', 'Release');
 if (!/^[A-Za-z0-9._-]+$/.test(configuration)) throw new Error(`Invalid build configuration: ${configuration}`);
 const skipWorkerShowcaseVerification = process.env.SHARPTS_WWW_SKIP_WORKER_SHOWCASE_VERIFICATION === 'true';
+const allowDirtySharpTS = process.argv.includes('--allow-dirty-sharpts');
 
 const project = path.resolve(repoRoot, option('--sharpts-project', 'lib/SharpTS/SharpTS.csproj'));
 if (!project.startsWith(`${repoRoot}${path.sep}`) || !fs.existsSync(project))
     throw new Error(`SharpTS project must be an existing file inside the repository: ${project}`);
 
-requireSuccessful(run('node', ['scripts/verify-sharpts-source.mjs']), 'SharpTS source verification');
+const sourceVerificationArguments = ['scripts/verify-sharpts-source.mjs'];
+if (allowDirtySharpTS) sourceVerificationArguments.push('--allow-dirty-sharpts');
+requireSuccessful(run('node', sourceVerificationArguments), 'SharpTS source verification');
 const settings = loadSourceSettings();
 const buildProperties = [
     `-p:MinVerVersionOverride=0.0.0-local+${settings.SHARPTS_SOURCE_REVISION}`,

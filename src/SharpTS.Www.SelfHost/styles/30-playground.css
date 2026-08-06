@@ -125,12 +125,152 @@
 }
 
 .playground__timing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--accent-green);
     background: rgba(63, 185, 80, 0.08);
+    border: 1px solid rgba(63, 185, 80, 0.22);
     padding: 0.125rem 0.5rem;
     border-radius: 999px;
+    cursor: pointer;
+}
+
+.playground__timing:hover,
+.playground__timing:focus-visible {
+    background: rgba(63, 185, 80, 0.14);
+    border-color: rgba(63, 185, 80, 0.5);
+}
+
+.playground__timing:focus-visible,
+.playground__timing-phase:focus-visible {
+    outline: 2px solid var(--accent-neon);
+    outline-offset: 2px;
+}
+
+.playground__timing--legacy {
+    cursor: default;
+}
+
+.playground__timing--legacy:disabled {
+    color: var(--accent-green);
+    opacity: 1;
+}
+
+.playground__timing-chevron {
+    transition: transform var(--transition-fast);
+}
+
+.playground__timing[aria-expanded="true"] .playground__timing-chevron {
+    transform: rotate(180deg);
+}
+
+.playground__timing-details {
+    padding: 0.875rem 1rem 0.75rem;
+    background: rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--border-default);
+}
+
+.playground__timing-phases {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+}
+
+.playground__timing-phase {
+    position: relative;
+    min-width: 0;
+    min-height: 3.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.4rem 0.2rem;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    opacity: 0;
+    animation: playground-phase-reveal 180ms ease-out forwards;
+    animation-delay: calc(var(--phase-index) * 55ms);
+}
+
+.playground__timing-phase:hover {
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
+}
+
+.playground__timing-phase:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: -0.3rem;
+    width: 0.3rem;
+    height: 1px;
+    background: var(--border-default);
+    pointer-events: none;
+}
+
+.playground__timing-phase[aria-pressed="true"] {
+    color: var(--accent-green);
+    background: rgba(63, 185, 80, 0.09);
+    border-color: rgba(63, 185, 80, 0.55);
+}
+
+.playground__timing-phase[data-phase-status="failed"] {
+    color: var(--accent-red);
+    background: rgba(248, 81, 73, 0.06);
+    border-color: rgba(248, 81, 73, 0.45);
+}
+
+.playground__timing-phase-name {
+    max-width: 100%;
+    font-size: 0.625rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.playground__timing-phase-duration {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: inherit;
+    white-space: nowrap;
+}
+
+.playground__timing-description {
+    min-height: 2.5em;
+    margin: 0.65rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.playground__timing-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.8rem;
+    margin: 0.45rem 0 0;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+}
+
+@keyframes playground-phase-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .playground__output-body {
@@ -196,5 +336,43 @@
 
     .playground__cm-container {
         min-height: 300px;
+    }
+
+    .playground__timing-phases {
+        grid-auto-flow: row;
+        grid-auto-rows: minmax(2.75rem, auto);
+        grid-auto-columns: unset;
+    }
+
+    .playground__timing-phase {
+        min-height: 2.75rem;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0.45rem 0.65rem;
+    }
+
+    .playground__timing-phase-name {
+        font-size: 0.6875rem;
+        overflow-wrap: normal;
+    }
+
+    .playground__timing-phase:not(:last-child)::after {
+        top: auto;
+        right: auto;
+        bottom: -0.3rem;
+        left: 50%;
+        width: 1px;
+        height: 0.3rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .playground__timing-phase {
+        opacity: 1;
+        animation: none;
+    }
+
+    .playground__timing-chevron {
+        transition: none;
     }
 }
