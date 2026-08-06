@@ -137,9 +137,20 @@ test('every advertised example and playground preset executes in both modes', as
 });
 
 test('representative localized pages meet automated WCAG checks', async ({ page }) => {
-    for (const route of ['/', '/how-it-works', '/fr', '/fr/how-it-works']) {
+    for (const route of ['/', '/how-it-works', '/conformance', '/fr', '/fr/how-it-works', '/fr/conformance']) {
         await page.goto(route);
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(results.violations, `${route}: ${JSON.stringify(results.violations, null, 2)}`).toEqual([]);
     }
+});
+
+test('conformance explorer is static, localized, and natively collapsible', async ({ page }) => {
+    await page.goto('/de/conformance');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+    await expect(page.locator('script')).toHaveCount(0);
+    const root = page.locator('.conformance__node--depth-0').first();
+    await expect(root).toHaveAttribute('open', '');
+    await root.locator(':scope > summary').click();
+    await expect(root).not.toHaveAttribute('open', '');
+    await expect(page.locator('.conformance__bar').first()).toHaveAttribute('role', 'img');
 });

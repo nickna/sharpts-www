@@ -13,6 +13,7 @@ import {
 import type { BrowserAssets, GeneratedRoute, Locale, PageKind } from './site-model';
 import { outputPath, routePath } from './site-paths';
 import { showcaseExamples } from './showcase-data';
+import type { ConformanceData } from './conformance-data';
 
 function fail(message: string): never {
     throw new Error('Static site generation failed: ' + message);
@@ -68,9 +69,10 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
         `<link rel="canonical" href="${siteOrigin}${routePath(locale.culture, page)}">`,
         'href="/css/site.css"',
         'src="/img/sharpts-logo.png"',
-        `src="/assets/browser/${browserAssets.script}"`,
         `href="/assets/browser/${browserAssets.style}"`
     ];
+    if (page !== 'conformance')
+        required.push(`src="/assets/browser/${browserAssets.script}"`);
     for (const marker of required) {
         if (html.indexOf(marker) < 0)
             fail('missing ' + marker + ' from ' + locale.culture.code + ' ' + page);
@@ -84,10 +86,12 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
         if (html.indexOf(marker) >= 0)
             fail('forbidden legacy marker ' + marker + ' in ' + locale.culture.code + ' ' + page);
     }
+    if (page === 'conformance' && html.indexOf('<script') >= 0)
+        fail('conformance page must not contain JavaScript');
 }
 
 export function buildSite(renderDocument: (locale: Locale, page: PageKind,
-    browserAssets: BrowserAssets) => string): void {
+    browserAssets: BrowserAssets) => string, conformance: ConformanceData): void {
     const paths = loadSitePaths();
     const browserAssets = loadBrowserAssets(paths.browserRoot);
     ensureDirectory(paths.outputRoot);
@@ -126,6 +130,8 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     }, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'showcase-manifest.json'),
         JSON.stringify(showcaseExamples, null, 2) + '\n');
+    writeText(path.join(paths.outputRoot, 'conformance.json'),
+        JSON.stringify(conformance, null, 2) + '\n');
 
     console.log('Generated localized static site with ' + routes.length +
         ' pages and ' + stylesheetSources + ' CSS sources at ' + paths.outputRoot);
