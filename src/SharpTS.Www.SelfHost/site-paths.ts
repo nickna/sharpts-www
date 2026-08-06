@@ -3,7 +3,8 @@ import type { CultureInfo, PageKind } from './site-model';
 
 export function routePath(culture: CultureInfo, page: PageKind): string {
     const prefix = culture.code === 'en' ? '' : '/' + culture.code;
-    return page === 'home' ? (prefix || '/') : prefix + '/how-it-works';
+    if (page === 'home') return prefix || '/';
+    return prefix + (page === 'guide' ? '/how-it-works' : '/conformance');
 }
 
 export function outputPath(outputRoot: string, culture: CultureInfo, page: PageKind): string {
@@ -12,6 +13,8 @@ export function outputPath(outputRoot: string, culture: CultureInfo, page: PageK
         segments.push(culture.code);
     if (page === 'guide')
         segments.push('how-it-works');
+    else if (page === 'conformance')
+        segments.push('conformance');
     segments.push('index.html');
     return path.join(outputRoot, ...segments);
 }

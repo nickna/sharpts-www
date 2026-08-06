@@ -237,4 +237,7 @@
   <data name="Feat_SharedArrayBufferAtomics" xml:space="preserve">
     <value>SharedArrayBuffer/Atomics</value>
   </data>
+  <data name="Link_Conformance" xml:space="preserve">
+    <value>Live-Spezifikationskonformität ansehen →</value>
+  </data>
 </root>

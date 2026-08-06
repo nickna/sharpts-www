@@ -21,6 +21,9 @@
   <data name="Nav_HowItWorks" xml:space="preserve">
     <value>工作原理</value>
   </data>
+  <data name="Nav_Conformance" xml:space="preserve">
+    <value>规范一致性</value>
+  </data>
   <data name="Nav_Playground" xml:space="preserve">
     <value>演练场</value>
   </data>

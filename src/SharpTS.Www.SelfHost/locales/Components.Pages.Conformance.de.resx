@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Meta_Title"><value>Spezifikationskonformität — SharpTS</value></data>
+  <data name="Meta_Description"><value>Erkunden Sie SharpTS-Ergebnisse aus den fixierten Test262- und TypeScript-Korpora.</value></data>
+  <data name="Eyebrow"><value>Empirische Kompatibilität</value></data>
+  <data name="Title"><value>Spezifikationskonformität</value></data>
+  <data name="Subtitle"><value>Durchsuchen Sie echte Ergebnisse genau der SharpTS-Version dieser Website – von breiten Sprachbereichen bis zu einzelnen integrierten Funktionen.</value></data>
+  <data name="Feature"><value>Funktion</value></data>
+  <data name="Interpreted"><value>Interpretiert</value></data>
+  <data name="Compiled"><value>Kompiliert</value></data>
+  <data name="NotAvailable"><value>Nicht verfügbar</value></data>
+  <data name="BarAria"><value>{0} von {1} berücksichtigten Tests bestanden ({2} Prozent).</value></data>
+  <data name="Skipped"><value>übersprungen</value></data>
+  <data name="PercentageFootnote"><value>Prozentwerte zählen Pass-Ergebnisse unter allen nicht übersprungenen Ergebnissen. Jedes andere nicht übersprungene Ergebnis gilt als nicht bestanden; übersprungene Ergebnisse werden separat gezeigt.</value></data>
+  <data name="HonestyFootnote"><value>Test262 prüft Spezifikationsrandfälle weit über typische Programme hinaus. Diese Summen werden unverändert dargestellt.</value></data>
+  <data name="Provenance"><value>Erzeugt aus</value></data>
+  <data name="Test262Suite"><value>Test262-Suite</value></data>
+  <data name="TypeScriptSuite"><value>TypeScript-Suite</value></data>
+  <data name="Category_BuiltIns"><value>Integrierte Objekte</value></data>
+  <data name="Category_Language"><value>Sprache</value></data>
+  <data name="Category_TypeSystem"><value>Typsystem</value></data>
+  <data name="Category_General"><value>Allgemein</value></data>
+</root>

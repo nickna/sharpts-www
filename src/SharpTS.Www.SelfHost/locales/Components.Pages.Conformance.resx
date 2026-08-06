@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Meta_Title"><value>Spec Conformance — SharpTS</value></data>
+  <data name="Meta_Description"><value>Explore SharpTS results from the pinned Test262 and TypeScript conformance corpora.</value></data>
+  <data name="Eyebrow"><value>Empirical compatibility</value></data>
+  <data name="Title"><value>Spec conformance</value></data>
+  <data name="Subtitle"><value>Browse real results from the exact SharpTS revision running this site, from broad language areas down to individual built-ins and features.</value></data>
+  <data name="Feature"><value>Feature</value></data>
+  <data name="Interpreted"><value>Interpreted</value></data>
+  <data name="Compiled"><value>Compiled</value></data>
+  <data name="NotAvailable"><value>Not available</value></data>
+  <data name="BarAria"><value>{0} of {1} eligible tests pass ({2} percent).</value></data>
+  <data name="Skipped"><value>skipped</value></data>
+  <data name="PercentageFootnote"><value>Percentages count Pass results over all non-skipped results. Every other non-skipped bucket counts as not passing; skipped results are shown separately.</value></data>
+  <data name="HonestyFootnote"><value>Test262 exercises specification edge cases far beyond what typical programs encounter. These totals are presented without adjustment.</value></data>
+  <data name="Provenance"><value>Generated from</value></data>
+  <data name="Test262Suite"><value>Test262 suite</value></data>
+  <data name="TypeScriptSuite"><value>TypeScript suite</value></data>
+  <data name="Category_BuiltIns"><value>Built-ins</value></data>
+  <data name="Category_Language"><value>Language</value></data>
+  <data name="Category_TypeSystem"><value>Type system</value></data>
+  <data name="Category_General"><value>General</value></data>
+</root>

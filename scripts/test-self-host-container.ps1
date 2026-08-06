@@ -164,14 +164,19 @@ try {
     $localizedRoutes = @{
         "/" = "en"
         "/how-it-works" = "en"
+        "/conformance" = "en"
         "/zh-Hans" = "zh-Hans"
         "/zh-Hans/how-it-works" = "zh-Hans"
+        "/zh-Hans/conformance" = "zh-Hans"
         "/fr" = "fr"
         "/fr/how-it-works" = "fr"
+        "/fr/conformance" = "fr"
         "/es" = "es"
         "/es/how-it-works" = "es"
+        "/es/conformance" = "es"
         "/de" = "de"
         "/de/how-it-works" = "de"
+        "/de/conformance" = "de"
     }
     foreach ($route in $localizedRoutes.GetEnumerator()) {
         $page = Invoke-TestRequest -Method Get -Path $route.Key
@@ -182,6 +187,10 @@ try {
             "Localized route $($route.Key) is missing its canonical URL."
         Assert-True (-not $page.Content.Contains("_framework/blazor")) `
             "Localized route $($route.Key) still references Blazor."
+        if ($route.Key.EndsWith("/conformance") -or $route.Key -eq "/conformance") {
+            Assert-True (-not $page.Content.Contains("<script")) `
+                "Conformance route $($route.Key) must remain JavaScript-free."
+        }
     }
 
     $siteCss = Invoke-TestRequest -Method Get -Path "/css/site.css"

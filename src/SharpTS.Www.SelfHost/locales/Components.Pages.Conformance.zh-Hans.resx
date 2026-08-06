@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Meta_Title"><value>规范一致性 — SharpTS</value></data>
+  <data name="Meta_Description"><value>查看 SharpTS 在固定版本 Test262 和 TypeScript 一致性语料库中的结果。</value></data>
+  <data name="Eyebrow"><value>实证兼容性</value></data>
+  <data name="Title"><value>规范一致性</value></data>
+  <data name="Subtitle"><value>浏览本站所运行的确切 SharpTS 修订版的真实结果，从语言大类深入到各个内置对象和功能。</value></data>
+  <data name="Feature"><value>功能</value></data>
+  <data name="Interpreted"><value>解释模式</value></data>
+  <data name="Compiled"><value>编译模式</value></data>
+  <data name="NotAvailable"><value>不可用</value></data>
+  <data name="BarAria"><value>{1} 个有效测试中有 {0} 个通过（{2}%）。</value></data>
+  <data name="Skipped"><value>已跳过</value></data>
+  <data name="PercentageFootnote"><value>百分比以所有未跳过结果为分母，仅 Pass 计入分子。其他未跳过结果均视为未通过；跳过数量单独显示。</value></data>
+  <data name="HonestyFootnote"><value>Test262 涵盖了远超一般程序所遇情况的规范边界案例。此处总数未经调整。</value></data>
+  <data name="Provenance"><value>生成来源</value></data>
+  <data name="Test262Suite"><value>Test262 测试套件</value></data>
+  <data name="TypeScriptSuite"><value>TypeScript 测试套件</value></data>
+  <data name="Category_BuiltIns"><value>内置对象</value></data>
+  <data name="Category_Language"><value>语言</value></data>
+  <data name="Category_TypeSystem"><value>类型系统</value></data>
+  <data name="Category_General"><value>常规</value></data>
+</root>

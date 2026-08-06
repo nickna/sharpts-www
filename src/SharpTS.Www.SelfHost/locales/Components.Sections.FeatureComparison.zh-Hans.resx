@@ -237,4 +237,7 @@
   <data name="Feat_SharedArrayBufferAtomics" xml:space="preserve">
     <value>SharedArrayBuffer/Atomics</value>
   </data>
+  <data name="Link_Conformance" xml:space="preserve">
+    <value>查看实时规范一致性 →</value>
+  </data>
 </root>

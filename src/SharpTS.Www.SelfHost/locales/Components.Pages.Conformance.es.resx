@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Meta_Title"><value>Conformidad con la especificación — SharpTS</value></data>
+  <data name="Meta_Description"><value>Explora los resultados de SharpTS de los corpus fijados de Test262 y TypeScript.</value></data>
+  <data name="Eyebrow"><value>Compatibilidad empírica</value></data>
+  <data name="Title"><value>Conformidad con la especificación</value></data>
+  <data name="Subtitle"><value>Explora resultados reales de la revisión exacta de SharpTS que ejecuta este sitio, desde áreas generales del lenguaje hasta funciones y características concretas.</value></data>
+  <data name="Feature"><value>Característica</value></data>
+  <data name="Interpreted"><value>Interpretado</value></data>
+  <data name="Compiled"><value>Compilado</value></data>
+  <data name="NotAvailable"><value>No disponible</value></data>
+  <data name="BarAria"><value>{0} de {1} pruebas válidas pasan ({2} por ciento).</value></data>
+  <data name="Skipped"><value>omitidas</value></data>
+  <data name="PercentageFootnote"><value>Los porcentajes cuentan los resultados Pass sobre todos los resultados no omitidos. Cualquier otro resultado no omitido cuenta como fallo; los omitidos se muestran por separado.</value></data>
+  <data name="HonestyFootnote"><value>Test262 examina casos límite de la especificación mucho más allá de los programas habituales. Estos totales se muestran sin ajustes.</value></data>
+  <data name="Provenance"><value>Generado a partir de</value></data>
+  <data name="Test262Suite"><value>suite Test262</value></data>
+  <data name="TypeScriptSuite"><value>suite TypeScript</value></data>
+  <data name="Category_BuiltIns"><value>Objetos integrados</value></data>
+  <data name="Category_Language"><value>Lenguaje</value></data>
+  <data name="Category_TypeSystem"><value>Sistema de tipos</value></data>
+  <data name="Category_General"><value>General</value></data>
+</root>

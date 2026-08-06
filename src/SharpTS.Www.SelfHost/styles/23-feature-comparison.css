@@ -74,6 +74,13 @@
     max-width: 160px;
 }
 
+.comparison__conformance-link {
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
 @media (max-width: 768px) {
     .comparison {
         grid-template-columns: 1fr;

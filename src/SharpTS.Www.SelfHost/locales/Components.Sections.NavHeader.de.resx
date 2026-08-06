@@ -21,6 +21,9 @@
   <data name="Nav_HowItWorks" xml:space="preserve">
     <value>So funktioniert es</value>
   </data>
+  <data name="Nav_Conformance" xml:space="preserve">
+    <value>Konformität</value>
+  </data>
   <data name="Nav_Playground" xml:space="preserve">
     <value>Playground</value>
   </data>

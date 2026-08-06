@@ -9,7 +9,7 @@ export interface Locale {
     bundles: { [bundle: string]: { [key: string]: string } };
 }
 
-export type PageKind = 'home' | 'guide';
+export type PageKind = 'home' | 'guide' | 'conformance';
 
 export interface GeneratedRoute {
     culture: string;
@@ -34,10 +34,11 @@ export const cultures: CultureInfo[] = [
     { code: 'de', displayName: 'Deutsch', openGraphLocale: 'de_DE' }
 ];
 
-export const pageKinds: PageKind[] = ['home', 'guide'];
+export const pageKinds: PageKind[] = ['home', 'guide', 'conformance'];
 
 export const bundleNames = [
     'Components.App',
+    'Components.Pages.Conformance',
     'Components.Pages.HowItWorks',
     'Components.Sections.ArchitectureDiagram',
     'Components.Sections.FaqSection',

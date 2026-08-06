@@ -1,4 +1,7 @@
 import { buildSite } from './site-build';
+import { eligibleResults, loadConformanceData, passPercentage } from './conformance-data';
+import type { ConformanceData, ConformanceNode, ResultCounts } from './conformance-data';
+import { loadSitePaths } from './site-config';
 import { escapeHtml, renderRichText } from './site-html';
 import { t } from './site-localization';
 import { cultures, siteOrigin } from './site-model';
@@ -6,6 +9,8 @@ import type { BrowserAssets, Locale, PageKind } from './site-model';
 import { routePath } from './site-paths';
 import { comparisonGroups, showcaseExamples } from './showcase-data';
 import { presets } from './presets';
+
+const conformanceData = loadConformanceData(loadSitePaths().repoRoot);
 
 const githubIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
 
@@ -49,6 +54,7 @@ function renderNav(locale: Locale, page: PageKind): string {
     const bundle = 'Components.Sections.NavHeader';
     const home = routePath(locale.culture, 'home');
     const guide = routePath(locale.culture, 'guide');
+    const conformance = routePath(locale.culture, 'conformance');
     return `<header class="nav" data-nav>
   <div class="container nav__inner">
     <a href="${home}" class="nav__logo"><img src="/img/sharpts-logo.png" alt="SharpTS logo" class="nav__logo-icon" width="32" height="32"><span class="nav__logo-text">SharpTS</span></a>
@@ -56,6 +62,7 @@ function renderNav(locale: Locale, page: PageKind): string {
       <a href="${home}#features" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Features'))}</a>
       <a href="${home}#examples" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Examples'))}</a>
       <a href="${guide}" class="nav__link"${page === 'guide' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_HowItWorks'))}</a>
+      <a href="${conformance}" class="nav__link"${page === 'conformance' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Conformance'))}</a>
       <a href="${home}#playground" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Playground'))}</a>
       <a href="${home}#get-started" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_GetStarted'))}</a>
       <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="nav__link nav__link--github" aria-label="GitHub">${githubIcon}</a>
@@ -182,7 +189,7 @@ function renderComparison(locale: Locale): string {
         const rows = group.features.map(feature => `<tr><td class="comparison__feature">${escapeHtml(t(locale, bundle, feature.key))}</td><td><span class="badge ${badgeClass[feature.status]}">${escapeHtml(t(locale, bundle, badgeKey[feature.status]))}</span></td><td class="comparison__notes">${feature.note ? escapeHtml(t(locale, bundle, feature.note)) : ''}</td></tr>`).join('\n');
         return `<div class="comparison__group"><h3 class="comparison__group-title">${escapeHtml(t(locale, bundle, group.key))}</h3><table class="comparison__table"><thead><tr><th>${escapeHtml(t(locale, bundle, 'Th_Feature'))}</th><th>${escapeHtml(t(locale, bundle, 'Th_Status'))}</th><th>${escapeHtml(t(locale, bundle, 'Th_Notes'))}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }).join('\n');
-    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="comparison reveal">${groups}</div></div></section>`;
+    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="comparison reveal">${groups}</div><p class="comparison__conformance-link reveal"><a href="${routePath(locale.culture, 'conformance')}">${escapeHtml(t(locale, bundle, 'Link_Conformance'))}</a></p></div></section>`;
 }
 
 function renderFaq(locale: Locale): string {
@@ -274,6 +281,47 @@ function renderGuide(locale: Locale): string {
 </main>`;
 }
 
+function conformanceName(locale: Locale, node: ConformanceNode): string {
+    return node.localizationKey
+        ? t(locale, 'Components.Pages.Conformance', node.localizationKey)
+        : node.name;
+}
+
+function renderConformanceMode(locale: Locale, counts: ResultCounts | null): string {
+    const bundle = 'Components.Pages.Conformance';
+    if (!counts)
+        return `<span class="conformance__unavailable">${escapeHtml(t(locale, bundle, 'NotAvailable'))}</span>`;
+    const eligible = eligibleResults(counts);
+    const percentage = passPercentage(counts);
+    const formattedPercentage = percentage.toFixed(1);
+    const aria = t(locale, bundle, 'BarAria')
+        .replace('{0}', String(counts.Pass))
+        .replace('{1}', String(eligible))
+        .replace('{2}', formattedPercentage);
+    return `<div class="conformance__metric"><div class="conformance__bar" role="img" aria-label="${escapeHtml(aria)}"><span style="width:${formattedPercentage}%"></span></div><span class="conformance__ratio"><strong>${counts.Pass}</strong> / ${eligible} (${formattedPercentage}%)</span><small>${counts.Skipped} ${escapeHtml(t(locale, bundle, 'Skipped'))}</small></div>`;
+}
+
+function renderConformanceRow(locale: Locale, node: ConformanceNode, depth: number): string {
+    const label = escapeHtml(conformanceName(locale, node));
+    const row = `<span class="conformance__name">${label}</span>${renderConformanceMode(locale, node.interpreted)}${renderConformanceMode(locale, node.compiled)}`;
+    if (node.children.length === 0)
+        return `<div class="conformance__row conformance__row--leaf" style="--tree-depth:${depth}">${row}</div>`;
+    const children = node.children.map(child => renderConformanceRow(locale, child, depth + 1)).join('\n');
+    return `<details class="conformance__node conformance__node--depth-${depth}"${depth === 0 ? ' open' : ''}><summary class="conformance__row" style="--tree-depth:${depth}">${row}</summary><div class="conformance__children">${children}</div></details>`;
+}
+
+function renderConformance(locale: Locale, data: ConformanceData): string {
+    const bundle = 'Components.Pages.Conformance';
+    const rows = data.roots.map(node => renderConformanceRow(locale, node, 0)).join('\n');
+    const sharpTs = data.provenance.sharpTsRevision;
+    const test262 = data.provenance.test262Revision;
+    const typeScript = data.provenance.typeScriptRevision;
+    return `<main class="landing conformance-page"><section class="section conformance-hero"><div class="container"><p class="conformance-hero__eyebrow">${escapeHtml(t(locale, bundle, 'Eyebrow'))}</p><h1 class="section-title">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p></div></section>
+  <section class="section section--alt"><div class="container"><div class="conformance card"><div class="conformance__header"><span>${escapeHtml(t(locale, bundle, 'Feature'))}</span><span>${escapeHtml(t(locale, bundle, 'Interpreted'))}</span><span>${escapeHtml(t(locale, bundle, 'Compiled'))}</span></div><div class="conformance__tree">${rows}</div></div>
+  <div class="conformance__notes"><p>${escapeHtml(t(locale, bundle, 'PercentageFootnote'))}</p><p>${escapeHtml(t(locale, bundle, 'HonestyFootnote'))}</p></div>
+  <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 8)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScript}">${typeScript.slice(0, 8)}</a>)</p></div></section>${renderFooter(locale)}</main>`;
+}
+
 function alternateLinks(page: PageKind): string {
     const links = cultures.map(culture => `<link rel="alternate" hreflang="${culture.code}" href="${siteOrigin}${routePath(culture, page)}">`).join('\n');
     return links + `\n<link rel="alternate" hreflang="x-default" href="${siteOrigin}${routePath(cultures[0], page)}">`;
@@ -283,20 +331,31 @@ function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAs
     const appBundle = 'Components.App';
     const pagePath = routePath(locale.culture, page);
     const canonical = siteOrigin + pagePath;
-    const title = page === 'home'
-        ? t(locale, appBundle, 'Meta_Title')
-        : t(locale, 'Components.Pages.HowItWorks', 'Meta_Title');
+    const pageBundle = page === 'guide' ? 'Components.Pages.HowItWorks' : 'Components.Pages.Conformance';
+    const title = page === 'home' ? t(locale, appBundle, 'Meta_Title') : t(locale, pageBundle, 'Meta_Title');
     const ogTitle = page === 'home' ? t(locale, appBundle, 'Og_Title') : title;
-    const body = page === 'home' ? renderHome(locale) : renderGuide(locale);
+    const description = page === 'conformance'
+        ? t(locale, 'Components.Pages.Conformance', 'Meta_Description')
+        : t(locale, appBundle, 'Meta_Description');
+    const ogDescription = page === 'conformance'
+        ? description
+        : t(locale, appBundle, 'Og_Description');
+    const body = page === 'home'
+        ? renderHome(locale)
+        : page === 'guide' ? renderGuide(locale) : renderConformance(locale, conformanceData);
+    const preloadScript = page === 'conformance' ? '' : '  <script src="/js/preload.js"></script>\n';
+    const browserScript = page === 'conformance'
+        ? ''
+        : `  <script type="module" src="/assets/browser/${browserAssets.script}"></script>\n`;
     return `<!doctype html>
 <html lang="${locale.culture.code}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="${escapeHtml(t(locale, appBundle, 'Meta_Description'))}">
+  <meta name="description" content="${escapeHtml(description)}">
   <meta name="theme-color" content="#0d1117">
   <meta property="og:title" content="${escapeHtml(ogTitle)}">
-  <meta property="og:description" content="${escapeHtml(t(locale, appBundle, 'Og_Description'))}">
+  <meta property="og:description" content="${escapeHtml(ogDescription)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
@@ -306,17 +365,16 @@ function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAs
   <title>${escapeHtml(title)}</title>
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="icon" type="image/png" href="/favicon.png" sizes="any">
-  <script src="/js/preload.js"></script>
-  <link rel="stylesheet" href="/css/site.css">
+${preloadScript}  <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/assets/browser/${browserAssets.style}">
 </head>
-<body>
+<body class="page-${page}">
   ${renderNav(locale, page)}
   <div class="page">${body}</div>
-  <script type="module" src="/assets/browser/${browserAssets.script}"></script>
+${browserScript}
 </body>
 </html>
 `;
 }
 
-buildSite(renderDocument);
+buildSite(renderDocument, conformanceData);
