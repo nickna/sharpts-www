@@ -132,14 +132,6 @@ summary.conformance__row:hover,
     border-radius: 999px;
 }
 
-.conformance__bar span {
-    display: block;
-    height: 100%;
-    min-width: 2px;
-    background: linear-gradient(90deg, var(--accent-ts), var(--accent-green));
-    border-radius: inherit;
-}
-
 .conformance__unavailable {
     color: var(--text-secondary);
     font-size: 0.75rem;

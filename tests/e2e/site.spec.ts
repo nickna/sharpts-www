@@ -155,6 +155,22 @@ test('conformance explorer is localized, filterable, and natively collapsible', 
     await root.locator(':scope > summary').click();
     await expect(root).not.toHaveAttribute('open', '');
     await expect(page.locator('.conformance__bar').first()).toHaveAttribute('role', 'img');
+    const outcomeColors = await page.evaluate(() => {
+        const color = (selector: string) => {
+            const element = document.querySelector<HTMLElement>(selector);
+            if (!element) throw new Error(`Missing conformance color element: ${selector}`);
+            return getComputedStyle(element).backgroundColor;
+        };
+        return {
+            passSegment: color('.conformance__bar .conformance__bar-segment--pass'),
+            passLegend: color('.conformance__legend .conformance__bar-segment--pass'),
+            failSegment: color('.conformance__bar .conformance__bar-segment--fail'),
+            failLegend: color('.conformance__legend .conformance__bar-segment--fail')
+        };
+    });
+    expect(outcomeColors.passSegment).toBe(outcomeColors.passLegend);
+    expect(outcomeColors.failSegment).toBe(outcomeColors.failLegend);
+    expect(outcomeColors.passSegment).not.toBe(outcomeColors.failSegment);
 
     await page.locator('[data-conformance-search]').fill('Array');
     await expect(page).toHaveURL(/q=Array/);
