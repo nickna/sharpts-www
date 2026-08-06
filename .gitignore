@@ -36,5 +36,8 @@ bld/
 ## Rider
 .idea/
 
+## Local agent settings
+.claude/settings.local.json
+
 ## Aspire
 .aspire/
