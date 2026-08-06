@@ -144,13 +144,38 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
     }
 });
 
-test('conformance explorer is static, localized, and natively collapsible', async ({ page }) => {
+test('conformance explorer is localized, filterable, and natively collapsible', async ({ page }) => {
     await page.goto('/de/conformance');
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
-    await expect(page.locator('script')).toHaveCount(0);
+    await expect(page.locator('[data-conformance-suite="test262"]')).toBeVisible();
+    await expect(page.locator('[data-conformance-suite="typescript"]')).toBeVisible();
+    await expect(page.locator('[data-conformance-controls]')).toBeVisible();
     const root = page.locator('.conformance__node--depth-0').first();
     await expect(root).toHaveAttribute('open', '');
     await root.locator(':scope > summary').click();
     await expect(root).not.toHaveAttribute('open', '');
     await expect(page.locator('.conformance__bar').first()).toHaveAttribute('role', 'img');
+
+    await page.locator('[data-conformance-search]').fill('Array');
+    await expect(page).toHaveURL(/q=Array/);
+    await expect(page.locator('[data-conformance-name="array"]').first()).toBeVisible();
+    await page.locator('[data-conformance-reset]').click();
+    await expect(page).not.toHaveURL(/q=/);
+});
+
+test('conformance remains readable without JavaScript and fits a mobile viewport', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.goto('/conformance');
+
+    await expect(page.locator('[data-conformance-controls]')).toBeHidden();
+    await expect(page.locator('[data-conformance-suite="test262"]')).toBeVisible();
+    await expect(page.locator('[data-conformance-suite="typescript"]')).toBeVisible();
+    const root = page.locator('.conformance__node--depth-0').first();
+    await root.locator(':scope > summary').click();
+    await expect(root).not.toHaveAttribute('open', '');
+    expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+    ).toBe(true);
+    await context.close();
 });

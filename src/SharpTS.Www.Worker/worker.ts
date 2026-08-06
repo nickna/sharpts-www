@@ -1,6 +1,10 @@
 import { Console } from 'dotnet:System.Console';
 import { configureUntrustedProcess, runSourceJson } from 'sharpts:execution';
-import type { WorkerRequestPayload, WorkerResponsePayload } from '../SharpTS.Www.Shared/execution-contract';
+import {
+    serializeWorkerMessage,
+    type WorkerRequestPayload,
+    type WorkerResponsePayload
+} from '../SharpTS.Www.Shared/execution-contract';
 
 const maxOutputLength = 100 * 1024;
 
@@ -25,7 +29,7 @@ function exitInvalidRequest(): never {
 }
 
 function writeResponse(response: WorkerResponsePayload): void {
-    process.stdout.write(JSON.stringify(response) + '\n');
+    process.stdout.write(serializeWorkerMessage(response) + '\n');
 }
 
 function failure(message: string): WorkerResponsePayload {
@@ -42,6 +46,8 @@ function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
+// The host serializes requests as ASCII-only JSON, so Console's inherited text
+// encoding cannot alter the message. JSON.parse restores all escaped Unicode.
 const inputLine = Console.ReadLine();
 if (inputLine === null || !String(inputLine).trim()) exitInvalidRequest();
 

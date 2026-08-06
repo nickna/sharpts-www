@@ -3,67 +3,67 @@
   "files": [
     {
       "path": "index.html",
-      "sha256": "d3d9c6cb3633192101c7eb7b365a727fce73561d37d727778d32d79210d85851"
+      "sha256": "d6bf8981867bc1eb268dd9a4cf46d7fea68853ea1bd347cff65f51371df209ad"
     },
     {
       "path": "how-it-works/index.html",
-      "sha256": "8a5695ae2508dd84523afab0bbe161666bfe6f25377797ffc9b84c6c13dc35b2"
+      "sha256": "08235d46f521a12cb82efb0e4970e338b982747d23e7c2b1fb3c4569440924ef"
     },
     {
       "path": "conformance/index.html",
-      "sha256": "2fb3702bfe2c821a6632bbf9a374927bd6753a2132f0d12fdf19288ac5b3d159"
+      "sha256": "3ab1df7a02ef2df938171d99852c5e336fef429f78811ab21685caaaf708a119"
     },
     {
       "path": "zh-Hans/index.html",
-      "sha256": "b659dcecf3f08a20be2ec2cd72950ac648cf2e92ca593ebcc79e35226777bcba"
+      "sha256": "3a4807ad5f3f96c00f315858a203453f0b8382c27d45360c811ab9d2ec76f3d0"
     },
     {
       "path": "zh-Hans/how-it-works/index.html",
-      "sha256": "802941ec03a155c75ad107e47af22e8e67a0ef0fbbe2de9776052702e114198c"
+      "sha256": "7499b56c1294a66918af06c46549008f5a1e6be40ec5f2c0a41a21e5628c248d"
     },
     {
       "path": "zh-Hans/conformance/index.html",
-      "sha256": "22c4875a6fa0824ba3ee5d9496d2f710ea86052b2e97d2acee09df094fc7bb6e"
+      "sha256": "2da4b67e6a15289a2236a427d53dd0208e8be1ebc5085e7bb7f412531e309053"
     },
     {
       "path": "fr/index.html",
-      "sha256": "cc48589cefd22b1bbe6e757bdcb352f48f306ee22252fb0bac84722de1d91abc"
+      "sha256": "f884b4381bc6f0e35ca6dea4531a86085defd7da9137d7de80dc9c9917c6ce60"
     },
     {
       "path": "fr/how-it-works/index.html",
-      "sha256": "b6f73a403daf7916692678fe8260b56bd18868e98e599ade27dd3089268dbc2a"
+      "sha256": "366ecc36b1539751256cd30e0622d4812a907e6bee641355a62362d5e2f77f4f"
     },
     {
       "path": "fr/conformance/index.html",
-      "sha256": "0f2db6979316d754f062e54769893e0b91a6e058d718653c870e51879c034ba9"
+      "sha256": "149af859f7aec49bf03b17cc243a0799eef039681ef27f060dc9dcd0a68bd1d4"
     },
     {
       "path": "es/index.html",
-      "sha256": "0d167cb656ee5624fb44399b8874270bd1705213b5eeff9497fd89a977714dea"
+      "sha256": "e477d9e8c933b3a9080a454358bb34f9048f889771b42b2cc45891cc44ec3552"
     },
     {
       "path": "es/how-it-works/index.html",
-      "sha256": "665815771fd576f163375400bbf2c13f7dbb1f0486e986f90153711547092042"
+      "sha256": "9a8ec74b65799b30f4dd0786e642df4a463d5d02bfd9722d23a6967afe0690e7"
     },
     {
       "path": "es/conformance/index.html",
-      "sha256": "b3093557b9d4f057574c7ea5c959b1fbd9ec59f5010c84fe1df92a18e6fed8ad"
+      "sha256": "315fde1d01f8f207266a5f36b817e31376b3fa304365f99e98c5e08e88b1a898"
     },
     {
       "path": "de/index.html",
-      "sha256": "cd0775c698b906edd547caa821fa0188e710f69323b11b2a550bca1e69928966"
+      "sha256": "8c016bf32b184ad149740e3ae0b118af12bba4348863107cea171bae0a409f19"
     },
     {
       "path": "de/how-it-works/index.html",
-      "sha256": "9aefd4e81a6159282711f83c23732574a91c6205ae74372bc3626ae47520e33a"
+      "sha256": "3242ce711a70f5f7652a2d13e836a14d2e15270fdc8ea240e3da60574baa8949"
     },
     {
       "path": "de/conformance/index.html",
-      "sha256": "0d1ee2e0bc0bcc383b289a710902d5b3ede9c7833bc3ed1b3507f16bf89d3ecc"
+      "sha256": "73bffb5adfe6a63a710d41042ae2c48258c0ba2469123a284ad06283f1276055"
     },
     {
-      "path": "css/site.css",
-      "sha256": "e2114b4ac067951ec944d6287b5458c03b2063781b76f3efbc45e5209d6ae155"
+      "path": "css/site-4cf83fce.css",
+      "sha256": "549b3e2b2a2f7062a54b5e4d913c7154962e1ba52d452447dc391ed0b8270495"
     },
     {
       "path": "assets/browser/chunks/chunk-RYKCZ5D5.js",
@@ -72,6 +72,10 @@
     {
       "path": "assets/browser/chunks/playground-IJ6LF43U.js",
       "sha256": "11d9f706d50de9e6386be28a42dceefb30043a4bba84178f10c1779fdbf5e8b5"
+    },
+    {
+      "path": "assets/browser/conformance-EIEJVSIO.js",
+      "sha256": "1ae764e6e40c02507ac7b7329a7aea2b6895b4dae7ef6a44a26e743568a8da84"
     },
     {
       "path": "assets/browser/site-EURFGK2E.css",

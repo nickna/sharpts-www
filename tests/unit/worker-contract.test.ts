@@ -1,5 +1,22 @@
 import { describe, expect, it } from 'vitest';
+import { serializeWorkerMessage } from '../../src/SharpTS.Www.Shared/execution-contract';
 import { normalizeWorkerResponse } from '../../src/SharpTS.Www.SelfHost/supervisor';
+
+describe('worker protocol serialization', () => {
+    it('round-trips Unicode through an ASCII-only wire message', () => {
+        const payload = {
+            Source: 'console.log("✓ TypeScript — 你好 🌍");',
+            TimeoutMs: 5_000,
+            Mode: 'interpret'
+        };
+
+        const message = serializeWorkerMessage(payload);
+
+        expect(Array.from(message).every((character) => character.charCodeAt(0) <= 0x7f)).toBe(true);
+        expect(message).toContain('\\u2713');
+        expect(JSON.parse(message)).toEqual(payload);
+    });
+});
 
 describe('worker response normalization', () => {
     it('maps a valid worker payload without coercion', () => {

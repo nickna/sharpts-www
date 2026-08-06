@@ -12,7 +12,8 @@ import {
 import {
     isWorkerResponsePayload,
     normalizeExecutionMode,
-    normalizeExecutionTimeout
+    normalizeExecutionTimeout,
+    serializeWorkerMessage
 } from './execution-contract';
 import type {
     ExecutionError,
@@ -296,7 +297,7 @@ function runWorker(request: RunRequest, executionId: string, control: ExecutionC
         }
     });
 
-    child.stdin.write(JSON.stringify({
+    child.stdin.write(serializeWorkerMessage({
         Source: request.source,
         TimeoutMs: timeoutMs,
         Mode: mode

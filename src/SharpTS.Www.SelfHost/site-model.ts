@@ -21,6 +21,8 @@ export interface GeneratedRoute {
 export interface BrowserAssets {
     script: string;
     style: string;
+    conformanceScript: string;
+    siteStyle: string;
     files: string[];
 }
 

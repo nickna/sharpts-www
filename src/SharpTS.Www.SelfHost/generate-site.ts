@@ -1,5 +1,5 @@
 import { buildSite } from './site-build';
-import { eligibleResults, loadConformanceData, passPercentage } from './conformance-data';
+import { eligibleResults, loadConformanceData, passPercentage, totalResults } from './conformance-data';
 import type { ConformanceData, ConformanceNode, ResultCounts } from './conformance-data';
 import { loadSitePaths } from './site-config';
 import { escapeHtml, renderRichText } from './site-html';
@@ -287,10 +287,71 @@ function conformanceName(locale: Locale, node: ConformanceNode): string {
         : node.name;
 }
 
-function renderConformanceMode(locale: Locale, counts: ResultCounts | null): string {
-    const bundle = 'Components.Pages.Conformance';
+const conformanceBuckets: string[] = [
+    'Pass', 'Fail', 'ParseError', 'TypeCheckError', 'RuntimeError', 'Timeout', 'HarnessError', 'Skipped'
+];
+
+function emptyConformanceCounts(): ResultCounts {
+    return {
+        Pass: 0,
+        Fail: 0,
+        RuntimeError: 0,
+        ParseError: 0,
+        TypeCheckError: 0,
+        Timeout: 0,
+        HarnessError: 0,
+        Skipped: 0
+    };
+}
+
+function sumConformanceCounts(nodes: ConformanceNode[], mode: 'interpreted' | 'compiled'): ResultCounts | null {
+    const total = emptyConformanceCounts();
+    let available = false;
+    for (const node of nodes) {
+        const counts = mode === 'interpreted' ? node.interpreted : node.compiled;
+        if (!counts)
+            continue;
+        const actual = counts as ResultCounts;
+        available = true;
+        total.Pass += actual.Pass;
+        total.Fail += actual.Fail;
+        total.RuntimeError += actual.RuntimeError;
+        total.ParseError += actual.ParseError;
+        total.TypeCheckError += actual.TypeCheckError;
+        total.Timeout += actual.Timeout;
+        total.HarnessError += actual.HarnessError;
+        total.Skipped += actual.Skipped;
+    }
+    return available ? total : null;
+}
+
+function conformanceBucketCount(counts: ResultCounts, bucket: string): number {
+    if (bucket === 'Pass') return counts.Pass;
+    if (bucket === 'Fail') return counts.Fail;
+    if (bucket === 'RuntimeError') return counts.RuntimeError;
+    if (bucket === 'ParseError') return counts.ParseError;
+    if (bucket === 'TypeCheckError') return counts.TypeCheckError;
+    if (bucket === 'Timeout') return counts.Timeout;
+    if (bucket === 'HarnessError') return counts.HarnessError;
+    return counts.Skipped;
+}
+
+function conformanceStatus(counts: ResultCounts | null): string {
+    if (!counts || eligibleResults(counts) === 0)
+        return 'no-eligible';
+    if (counts.Pass === 0)
+        return 'zero';
+    return counts.Pass === eligibleResults(counts) ? 'passing' : 'partial';
+}
+
+function conformanceDataAttributes(mode: 'interpreted' | 'compiled', counts: ResultCounts | null): string {
     if (!counts)
-        return `<span class="conformance__unavailable">${escapeHtml(t(locale, bundle, 'NotAvailable'))}</span>`;
+        return ` data-${mode}-status="no-eligible"`;
+    return ` data-${mode}-status="${conformanceStatus(counts)}" data-${mode}-pass="${counts.Pass}" data-${mode}-eligible="${eligibleResults(counts)}"`;
+}
+
+function renderConformanceBar(locale: Locale, counts: ResultCounts): string {
+    const bundle = 'Components.Pages.Conformance';
     const eligible = eligibleResults(counts);
     const percentage = passPercentage(counts);
     const formattedPercentage = percentage.toFixed(1);
@@ -298,28 +359,107 @@ function renderConformanceMode(locale: Locale, counts: ResultCounts | null): str
         .replace('{0}', String(counts.Pass))
         .replace('{1}', String(eligible))
         .replace('{2}', formattedPercentage);
-    return `<div class="conformance__metric"><div class="conformance__bar" role="img" aria-label="${escapeHtml(aria)}"><span style="width:${formattedPercentage}%"></span></div><span class="conformance__ratio"><strong>${counts.Pass}</strong> / ${eligible} (${formattedPercentage}%)</span><small>${counts.Skipped} ${escapeHtml(t(locale, bundle, 'Skipped'))}</small></div>`;
+    const total = totalResults(counts);
+    const segmentValues: string[] = [];
+    const outcomeDescriptions: string[] = [];
+    for (const bucket of conformanceBuckets) {
+        const count = conformanceBucketCount(counts, bucket);
+        if (count === 0)
+            continue;
+        const width = total === 0 ? 0 : count * 100 / total;
+        const label = t(locale, bundle, 'Outcome_' + bucket);
+        outcomeDescriptions.push(label + ': ' + count);
+        segmentValues.push(`<span class="conformance__bar-segment conformance__bar-segment--${bucket.toLowerCase()}" style="width:${width.toFixed(3)}%" title="${escapeHtml(label)}: ${count}" aria-hidden="true"></span>`);
+    }
+    const segments = segmentValues.join('');
+    const fullAria = aria + ' ' + outcomeDescriptions.join(', ') + '.';
+    return `<div class="conformance__bar" role="img" aria-label="${escapeHtml(fullAria)}">${segments}</div>`;
 }
 
-function renderConformanceRow(locale: Locale, node: ConformanceNode, depth: number): string {
-    const label = escapeHtml(conformanceName(locale, node));
-    const row = `<span class="conformance__name">${label}</span>${renderConformanceMode(locale, node.interpreted)}${renderConformanceMode(locale, node.compiled)}`;
+function renderConformanceMode(locale: Locale, counts: ResultCounts | null,
+    mode: 'interpreted' | 'compiled', comparison: ResultCounts | null = null): string {
+    const bundle = 'Components.Pages.Conformance';
+    const modeClass = ` conformance__metric--${mode}`;
+    if (!counts)
+        return `<div class="conformance__metric${modeClass}" data-conformance-metric="${mode}"><span class="conformance__unavailable" aria-label="${escapeHtml(t(locale, bundle, 'NotAvailable'))}">—</span></div>`;
+    const eligible = eligibleResults(counts);
+    const percentage = passPercentage(counts);
+    const formattedPercentage = percentage.toFixed(1);
+    let delta = '';
+    if (comparison) {
+        const difference = percentage - passPercentage(comparison);
+        const sign = difference > 0 ? '+' : '';
+        const deltaClass = difference > 0 ? 'positive' : difference < 0 ? 'negative' : 'neutral';
+        delta = `<span class="conformance__delta conformance__delta--${deltaClass}" title="${escapeHtml(t(locale, bundle, 'Delta_Label'))}">${sign}${difference.toFixed(1)}</span>`;
+    }
+    return `<div class="conformance__metric${modeClass}" data-conformance-metric="${mode}"><div class="conformance__metric-heading"><strong class="conformance__percentage">${formattedPercentage}%</strong>${delta}<span class="conformance__ratio">${counts.Pass} / ${eligible}</span></div>${renderConformanceBar(locale, counts)}<small>${counts.Skipped} ${escapeHtml(t(locale, bundle, 'Skipped'))}</small></div>`;
+}
+
+function renderConformanceRow(locale: Locale, node: ConformanceNode, depth: number,
+    suite: 'test262' | 'typescript'): string {
+    const localizedName = conformanceName(locale, node);
+    const label = escapeHtml(localizedName);
+    const attributes = ` data-conformance-node data-conformance-name="${escapeHtml(localizedName.toLowerCase())}"${conformanceDataAttributes('interpreted', node.interpreted)}${conformanceDataAttributes('compiled', node.compiled)}`;
+    const compiled = suite === 'test262' ? renderConformanceMode(locale, node.compiled, 'compiled', node.interpreted) : '';
+    const row = `<span class="conformance__name">${label}</span>${renderConformanceMode(locale, node.interpreted, 'interpreted')}${compiled}`;
     if (node.children.length === 0)
-        return `<div class="conformance__row conformance__row--leaf" style="--tree-depth:${depth}">${row}</div>`;
-    const children = node.children.map(child => renderConformanceRow(locale, child, depth + 1)).join('\n');
-    return `<details class="conformance__node conformance__node--depth-${depth}"${depth === 0 ? ' open' : ''}><summary class="conformance__row" style="--tree-depth:${depth}">${row}</summary><div class="conformance__children">${children}</div></details>`;
+        return `<div class="conformance__node conformance__node--leaf conformance__node--depth-${depth}"${attributes}><div class="conformance__row conformance__row--leaf" style="--tree-depth:${depth}">${row}</div></div>`;
+    const children = node.children.map(child => renderConformanceRow(locale, child, depth + 1, suite)).join('\n');
+    return `<details class="conformance__node conformance__node--depth-${depth}"${attributes}${depth === 0 ? ' open' : ''}><summary class="conformance__row" style="--tree-depth:${depth}">${row}</summary><div class="conformance__children">${children}</div></details>`;
+}
+
+function renderOutcomeLegend(locale: Locale, buckets: string[]): string {
+    const bundle = 'Components.Pages.Conformance';
+    const itemValues: string[] = [];
+    for (const bucket of buckets)
+        itemValues.push(`<li><span class="conformance__legend-swatch conformance__bar-segment--${bucket.toLowerCase()}" aria-hidden="true"></span>${escapeHtml(t(locale, bundle, 'Outcome_' + bucket))}</li>`);
+    const items = itemValues.join('');
+    return `<ul class="conformance__legend" aria-label="${escapeHtml(t(locale, bundle, 'Legend_Label'))}">${items}</ul>`;
+}
+
+function renderSummaryCard(locale: Locale, titleKey: string, descriptionKey: string,
+    counts: ResultCounts | null, modifier: string): string {
+    const bundle = 'Components.Pages.Conformance';
+    if (!counts)
+        return '';
+    return `<article class="conformance-summary__card conformance-summary__card--${modifier}"><p>${escapeHtml(t(locale, bundle, titleKey))}</p><strong>${passPercentage(counts).toFixed(1)}%</strong><span>${counts.Pass} / ${eligibleResults(counts)} ${escapeHtml(t(locale, bundle, 'Eligible'))}</span>${renderConformanceBar(locale, counts)}<small>${escapeHtml(t(locale, bundle, descriptionKey))}</small></article>`;
+}
+
+function renderSuiteControls(locale: Locale, suite: 'test262' | 'typescript'): string {
+    const bundle = 'Components.Pages.Conformance';
+    const mode = suite === 'test262' ? `<label>${escapeHtml(t(locale, bundle, 'Mode_Label'))}<select data-conformance-mode><option value="compare">${escapeHtml(t(locale, bundle, 'Mode_Compare'))}</option><option value="interpreted">${escapeHtml(t(locale, bundle, 'Interpreted'))}</option><option value="compiled">${escapeHtml(t(locale, bundle, 'Compiled'))}</option></select></label>` : '';
+    return `<div class="conformance-suite__controls" data-conformance-suite-controls hidden>${mode}<label>${escapeHtml(t(locale, bundle, 'Status_Label'))}<select data-conformance-status><option value="all">${escapeHtml(t(locale, bundle, 'Status_All'))}</option><option value="passing">${escapeHtml(t(locale, bundle, 'Status_Passing'))}</option><option value="partial">${escapeHtml(t(locale, bundle, 'Status_Partial'))}</option><option value="zero">${escapeHtml(t(locale, bundle, 'Status_Zero'))}</option><option value="no-eligible">${escapeHtml(t(locale, bundle, 'Status_NoEligible'))}</option></select></label></div>`;
+}
+
+function renderConformanceSuite(locale: Locale, suite: 'test262' | 'typescript', nodes: ConformanceNode[]): string {
+    const bundle = 'Components.Pages.Conformance';
+    const test262 = suite === 'test262';
+    const titleKey = test262 ? 'Test262_Title' : 'TypeScript_Title';
+    const descriptionKey = test262 ? 'Test262_Description' : 'TypeScript_Description';
+    const columns = test262
+        ? `<span>${escapeHtml(t(locale, bundle, 'Feature'))}</span><span class="conformance__column--interpreted">${escapeHtml(t(locale, bundle, 'Interpreted'))}</span><span class="conformance__column--compiled">${escapeHtml(t(locale, bundle, 'Compiled'))}</span>`
+        : `<span>${escapeHtml(t(locale, bundle, 'Feature'))}</span><span class="conformance__column--interpreted">${escapeHtml(t(locale, bundle, 'DiagnosticMatch'))}</span>`;
+    const rows = nodes.map(node => renderConformanceRow(locale, node, 0, suite)).join('\n');
+    const applicableBuckets = test262 ? conformanceBuckets : [
+        'Pass', 'Fail', 'ParseError', 'TypeCheckError', 'HarnessError', 'Skipped'
+    ];
+    return `<section class="conformance-suite conformance-suite--${suite}" id="${suite}" data-conformance-suite="${suite}" data-view-mode="${test262 ? 'compare' : 'interpreted'}"><div class="conformance-suite__heading"><div><p class="conformance-suite__eyebrow">${escapeHtml(t(locale, bundle, test262 ? 'Test262_Eyebrow' : 'TypeScript_Eyebrow'))}</p><h2>${escapeHtml(t(locale, bundle, titleKey))}</h2><p>${escapeHtml(t(locale, bundle, descriptionKey))}</p></div>${renderSuiteControls(locale, suite)}</div>${renderOutcomeLegend(locale, applicableBuckets)}<div class="conformance card"><div class="conformance__header">${columns}</div><div class="conformance__tree">${rows}</div></div><p class="conformance__empty" data-conformance-empty hidden>${escapeHtml(t(locale, bundle, 'NoResults'))}</p><p class="conformance__result-count" data-conformance-result-count data-count-template="${escapeHtml(t(locale, bundle, 'ResultCount'))}"></p></section>`;
 }
 
 function renderConformance(locale: Locale, data: ConformanceData): string {
     const bundle = 'Components.Pages.Conformance';
-    const rows = data.roots.map(node => renderConformanceRow(locale, node, 0)).join('\n');
+    const test262Roots = data.roots.filter(node => node.compiled !== null);
+    const typeScriptRoots = data.roots.filter(node => node.compiled === null);
+    const test262Interpreted = sumConformanceCounts(test262Roots, 'interpreted');
+    const test262Compiled = sumConformanceCounts(test262Roots, 'compiled');
+    const typeScriptCounts = sumConformanceCounts(typeScriptRoots, 'interpreted');
     const sharpTs = data.provenance.sharpTsRevision;
     const test262 = data.provenance.test262Revision;
-    const typeScript = data.provenance.typeScriptRevision;
-    return `<main class="landing conformance-page"><section class="section conformance-hero"><div class="container"><p class="conformance-hero__eyebrow">${escapeHtml(t(locale, bundle, 'Eyebrow'))}</p><h1 class="section-title">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p></div></section>
-  <section class="section section--alt"><div class="container"><div class="conformance card"><div class="conformance__header"><span>${escapeHtml(t(locale, bundle, 'Feature'))}</span><span>${escapeHtml(t(locale, bundle, 'Interpreted'))}</span><span>${escapeHtml(t(locale, bundle, 'Compiled'))}</span></div><div class="conformance__tree">${rows}</div></div>
+    const typeScriptRevision = data.provenance.typeScriptRevision;
+    return `<main class="landing conformance-page" data-conformance-explorer><section class="section conformance-hero"><div class="container"><p class="conformance-hero__eyebrow">${escapeHtml(t(locale, bundle, 'Eyebrow'))}</p><h1 class="section-title">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><nav class="conformance-hero__links" aria-label="${escapeHtml(t(locale, bundle, 'SuiteNavigation'))}"><a href="#test262">Test262</a><a href="#typescript">TypeScript</a></nav></div></section>
+  <section class="section section--alt conformance-content"><div class="container"><div class="conformance-summary" aria-label="${escapeHtml(t(locale, bundle, 'Overview'))}">${renderSummaryCard(locale, 'Summary_Test262Interpreted', 'Summary_Runtime', test262Interpreted, 'interpreted')}${renderSummaryCard(locale, 'Summary_Test262Compiled', 'Summary_Runtime', test262Compiled, 'compiled')}${renderSummaryCard(locale, 'Summary_TypeScript', 'Summary_Diagnostics', typeScriptCounts, 'typescript')}</div><div class="conformance-explorer__controls" data-conformance-controls hidden><label class="conformance-search"><span>${escapeHtml(t(locale, bundle, 'Search_Label'))}</span><input type="search" data-conformance-search placeholder="${escapeHtml(t(locale, bundle, 'Search_Placeholder'))}"></label><div class="conformance-explorer__actions"><button type="button" class="btn btn-secondary btn-sm" data-conformance-expand>${escapeHtml(t(locale, bundle, 'ExpandAll'))}</button><button type="button" class="btn btn-secondary btn-sm" data-conformance-collapse>${escapeHtml(t(locale, bundle, 'CollapseAll'))}</button><button type="button" class="btn btn-secondary btn-sm" data-conformance-reset>${escapeHtml(t(locale, bundle, 'Reset'))}</button></div></div>${renderConformanceSuite(locale, 'test262', test262Roots)}${renderConformanceSuite(locale, 'typescript', typeScriptRoots)}
   <div class="conformance__notes"><p>${escapeHtml(t(locale, bundle, 'PercentageFootnote'))}</p><p>${escapeHtml(t(locale, bundle, 'HonestyFootnote'))}</p></div>
-  <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 8)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScript}">${typeScript.slice(0, 8)}</a>)</p></div></section>${renderFooter(locale)}</main>`;
+  <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 8)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScriptRevision}">${typeScriptRevision.slice(0, 8)}</a>) · <a href="/conformance.json">JSON</a></p></div></section>${renderFooter(locale)}</main>`;
 }
 
 function alternateLinks(page: PageKind): string {
@@ -345,7 +485,7 @@ function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAs
         : page === 'guide' ? renderGuide(locale) : renderConformance(locale, conformanceData);
     const preloadScript = page === 'conformance' ? '' : '  <script src="/js/preload.js"></script>\n';
     const browserScript = page === 'conformance'
-        ? ''
+        ? `  <script type="module" src="/assets/browser/${browserAssets.conformanceScript}"></script>\n`
         : `  <script type="module" src="/assets/browser/${browserAssets.script}"></script>\n`;
     return `<!doctype html>
 <html lang="${locale.culture.code}">
@@ -365,7 +505,7 @@ function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAs
   <title>${escapeHtml(title)}</title>
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
   <link rel="icon" type="image/png" href="/favicon.png" sizes="any">
-${preloadScript}  <link rel="stylesheet" href="/css/site.css">
+${preloadScript}  <link rel="stylesheet" href="/css/${browserAssets.siteStyle}">
   <link rel="stylesheet" href="/assets/browser/${browserAssets.style}">
 </head>
 <body class="page-${page}">

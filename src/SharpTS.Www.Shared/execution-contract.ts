@@ -51,6 +51,19 @@ export interface WorkerResponsePayload {
     CompileTimeMs: number | null;
 }
 
+/**
+ * Serialize a worker protocol message using printable ASCII JSON.
+ *
+ * The protocol still represents full Unicode through JSON `\uXXXX` escapes,
+ * but keeping the pipe bytes ASCII prevents inherited console code pages from
+ * corrupting source text or execution output on Windows.
+ */
+export function serializeWorkerMessage(value: unknown): string {
+    return JSON.stringify(value).replace(/[\u007f-\uffff]/g, (character) =>
+        `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`
+    );
+}
+
 const defaultTimeoutMs = 5_000;
 const minimumTimeoutMs = 100;
 const maximumTimeoutMs = 10_000;

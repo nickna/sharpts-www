@@ -35,6 +35,10 @@ Assert-True (-not [string]::IsNullOrWhiteSpace($manifest.browserEntry.script)) `
     "Browser script entry is missing from the manifest."
 Assert-True (-not [string]::IsNullOrWhiteSpace($manifest.browserEntry.style)) `
     "Browser style entry is missing from the manifest."
+Assert-True (-not [string]::IsNullOrWhiteSpace($manifest.browserEntry.conformanceScript)) `
+    "Conformance browser entry is missing from the manifest."
+Assert-True ($manifest.stylesheet -match '^css/site-[0-9a-f]{8}\.css$') `
+    "Site stylesheet is not content fingerprinted."
 
 $allowedRoot = $resolvedRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 
@@ -74,8 +78,12 @@ foreach ($route in $manifest.routes) {
     if ($route.page -eq "conformance") {
         Assert-True ($html.Contains('<details class="conformance__node')) `
             "Conformance tree is missing from $($route.route)."
-        Assert-True (-not $html.Contains('<script')) `
-            "Conformance route $($route.route) must remain JavaScript-free."
+        Assert-True ($html.Contains("src=`"/$($manifest.browserEntry.conformanceScript)`"")) `
+            "Conformance route $($route.route) is missing its explorer bundle."
+        Assert-True ($html.Contains('data-conformance-suite="test262"')) `
+            "Test262 section is missing from $($route.route)."
+        Assert-True ($html.Contains('data-conformance-suite="typescript"')) `
+            "TypeScript section is missing from $($route.route)."
     }
 
     foreach ($legacyMarker in @('_framework/', 'blazor.web.js', 'SharpTS.Www.Web.styles.css',
@@ -104,7 +112,7 @@ foreach ($route in $manifest.routes) {
     }
 }
 
-$cssPath = Join-Path $resolvedRoot "css/site.css"
+$cssPath = Join-Path $resolvedRoot $manifest.stylesheet
 $css = Get-Content -Raw -LiteralPath $cssPath
 Assert-True (-not $css.Contains('::deep')) "CSS bundle contains a Blazor ::deep selector."
 foreach ($selector in @('.hero', '.features-grid', '.pipeline', '.playground', '.lang-selector', '.conformance', '.footer')) {
@@ -113,10 +121,13 @@ foreach ($selector in @('.hero', '.features-grid', '.pipeline', '.playground', '
 
 $browserJavaScriptPath = Join-Path $resolvedRoot $manifest.browserEntry.script
 $browserCssPath = Join-Path $resolvedRoot $manifest.browserEntry.style
+$conformanceJavaScriptPath = Join-Path $resolvedRoot $manifest.browserEntry.conformanceScript
 Assert-True (Test-Path -LiteralPath $browserJavaScriptPath -PathType Leaf) `
     "Browser JavaScript bundle is missing."
 Assert-True (Test-Path -LiteralPath $browserCssPath -PathType Leaf) `
     "Browser CSS bundle is missing."
+Assert-True (Test-Path -LiteralPath $conformanceJavaScriptPath -PathType Leaf) `
+    "Conformance JavaScript bundle is missing."
 $browserJavaScript = Get-Content -Raw -LiteralPath $browserJavaScriptPath
 foreach ($remoteMarker in @('esm.sh', 'cdnjs.cloudflare.com', 'fonts.googleapis.com',
         'clarity.ms', 'invokeMethodAsync', 'dotNetRef')) {

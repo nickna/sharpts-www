@@ -175,16 +175,20 @@ try {
         Assert-True (-not $page.Content.Contains("_framework/blazor")) `
             "Localized route $($route.Key) still references Blazor."
         if ($route.Key.EndsWith("/conformance") -or $route.Key -eq "/conformance") {
-            Assert-True (-not $page.Content.Contains("<script")) `
-                "Conformance route $($route.Key) must remain JavaScript-free."
+            Assert-True ($page.Content.Contains('data-conformance-explorer')) `
+                "Conformance route $($route.Key) is missing the explorer markup."
+            Assert-True ($page.Content.Contains('<script type="module"')) `
+                "Conformance route $($route.Key) is missing the explorer script."
         }
     }
 
-    $siteCss = Invoke-TestRequest -Method Get -Path "/css/site.css"
+    $siteManifest = (Invoke-TestRequest -Method Get -Path '/site-manifest.json').Content | ConvertFrom-Json
+    $siteCss = Invoke-TestRequest -Method Get -Path "/$($siteManifest.stylesheet)"
     Assert-True ([int]$siteCss.StatusCode -eq 200) "Generated CSS bundle did not return HTTP 200."
     Assert-True (-not $siteCss.Content.Contains("::deep")) "Generated CSS still contains ::deep."
+    Assert-True ($siteCss.Headers["Cache-Control"] -like "*immutable*") `
+        "Fingerprint-named site CSS must use immutable caching."
 
-    $siteManifest = (Invoke-TestRequest -Method Get -Path '/site-manifest.json').Content | ConvertFrom-Json
     Assert-True (@($siteManifest.browserBundle).Count -ge 2) 'Browser manifest must list split assets.'
     $browserJavaScriptPath = "/$($siteManifest.browserEntry.script)"
     $browserCssPath = "/$($siteManifest.browserEntry.style)"

@@ -67,6 +67,13 @@ function normalizeOutput(value) {
     return String(value).replace(/\r\n/g, '\n').trimEnd();
 }
 
+function serializeWorkerMessage(value) {
+    return JSON.stringify(value).replace(
+        /[\u007f-\uffff]/g,
+        (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`
+    );
+}
+
 function assertShowcaseOutput(example, mode, output) {
     const actual = normalizeOutput(output);
     const expected = normalizeOutput(example.expectedOutput);
@@ -189,7 +196,7 @@ try {
                     workerOutput,
                     [],
                     {},
-                    `${JSON.stringify({
+                    `${serializeWorkerMessage({
                         Source: example.source,
                         TimeoutMs: 10_000,
                         Mode: mode

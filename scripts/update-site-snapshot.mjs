@@ -12,7 +12,7 @@ const publicRoot = path.resolve(
 const manifest = JSON.parse(fs.readFileSync(path.join(publicRoot, 'site-manifest.json'), 'utf8'));
 const paths = [
     ...manifest.routes.map((route) => route.file),
-    'css/site.css',
+    manifest.stylesheet,
     ...manifest.browserBundle.filter((file) => file.endsWith('.js') || file.endsWith('.css'))
 ];
 const uniquePaths = [...new Set(paths)];

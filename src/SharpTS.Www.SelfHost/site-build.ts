@@ -19,7 +19,14 @@ function fail(message: string): never {
     throw new Error('Static site generation failed: ' + message);
 }
 
-function buildStyles(stylesRoot: string, outputRoot: string): number {
+function styleHash(value: string): string {
+    let hash = 0;
+    for (let index = 0; index < value.length; index++)
+        hash = (hash * 31 + value.charCodeAt(index)) % 4294967296;
+    return ('00000000' + Math.floor(hash).toString(16)).slice(-8);
+}
+
+function buildStyles(stylesRoot: string, outputRoot: string): { sources: number; file: string } {
     const styleFiles = (fs.readdirSync(stylesRoot) as string[])
         .filter(file => file.endsWith('.css'))
         .sort();
@@ -31,35 +38,46 @@ function buildStyles(stylesRoot: string, outputRoot: string): number {
         fail('CSS bundle still contains a Blazor ::deep selector');
     if (bundle.indexOf('SharpTS.Www.Web.styles.css') >= 0)
         fail('CSS bundle references Blazor CSS isolation output');
-    writeText(path.join(outputRoot, 'css', 'site.css'), bundle + '\n');
-    return styleFiles.length;
+    const content = bundle + '\n';
+    const file = `site-${styleHash(content)}.css`;
+    writeText(path.join(outputRoot, 'css', file), content);
+    return { sources: styleFiles.length, file };
 }
 
-function loadBrowserAssets(browserRoot: string): BrowserAssets {
+function loadBrowserAssets(browserRoot: string, siteStyle: string): BrowserAssets {
     const manifestPath = path.join(browserRoot, 'browser-manifest.json');
     if (!fs.existsSync(manifestPath))
         fail('browser asset manifest is missing; run npm run build:browser first');
     const manifest = JSON.parse(String(fs.readFileSync(manifestPath, 'utf8'))) as {
-        entry?: { script?: unknown; style?: unknown };
+        entry?: { script?: unknown; style?: unknown; conformanceScript?: unknown };
         files?: unknown;
     };
     const script = manifest.entry?.script;
     const style = manifest.entry?.style;
+    const conformanceScript = manifest.entry?.conformanceScript;
     const files = manifest.files;
-    if (typeof script !== 'string' || typeof style !== 'string' || !Array.isArray(files))
+    if (typeof script !== 'string' || typeof style !== 'string' ||
+        typeof conformanceScript !== 'string' || !Array.isArray(files))
         fail('browser asset manifest is malformed');
     const entryScript = String(script);
     const entryStyle = String(style);
+    const conformanceEntryScript = String(conformanceScript);
     const safeFiles = files as string[];
     if (!safeFiles.every(file => typeof file === 'string'))
         fail('browser asset manifest contains a non-string file path');
-    for (const file of [entryScript, entryStyle, ...safeFiles]) {
+    for (const file of [entryScript, entryStyle, conformanceEntryScript, ...safeFiles]) {
         if (!file || file.indexOf('..') >= 0 || file.startsWith('/') || file.indexOf('\\') >= 0)
             fail('browser asset manifest contains an unsafe path');
         if (!fs.existsSync(path.join(browserRoot, file)))
             fail('browser asset manifest references missing file ' + file);
     }
-    return { script: entryScript, style: entryStyle, files: safeFiles };
+    return {
+        script: entryScript,
+        style: entryStyle,
+        conformanceScript: conformanceEntryScript,
+        siteStyle,
+        files: safeFiles
+    };
 }
 
 export function validateDocument(html: string, locale: Locale, page: PageKind,
@@ -67,12 +85,14 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
     const required = [
         `<html lang="${locale.culture.code}">`,
         `<link rel="canonical" href="${siteOrigin}${routePath(locale.culture, page)}">`,
-        'href="/css/site.css"',
+        `href="/css/${browserAssets.siteStyle}"`,
         'src="/img/sharpts-logo.png"',
         `href="/assets/browser/${browserAssets.style}"`
     ];
     if (page !== 'conformance')
         required.push(`src="/assets/browser/${browserAssets.script}"`);
+    else
+        required.push(`src="/assets/browser/${browserAssets.conformanceScript}"`);
     for (const marker of required) {
         if (html.indexOf(marker) < 0)
             fail('missing ' + marker + ' from ' + locale.culture.code + ' ' + page);
@@ -86,18 +106,16 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
         if (html.indexOf(marker) >= 0)
             fail('forbidden legacy marker ' + marker + ' in ' + locale.culture.code + ' ' + page);
     }
-    if (page === 'conformance' && html.indexOf('<script') >= 0)
-        fail('conformance page must not contain JavaScript');
 }
 
 export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     browserAssets: BrowserAssets) => string, conformance: ConformanceData): void {
     const paths = loadSitePaths();
-    const browserAssets = loadBrowserAssets(paths.browserRoot);
     ensureDirectory(paths.outputRoot);
     copyTree(paths.staticRoot, paths.outputRoot);
     copyTree(paths.browserRoot, path.join(paths.outputRoot, 'assets', 'browser'));
-    const stylesheetSources = buildStyles(paths.stylesRoot, paths.outputRoot);
+    const stylesheet = buildStyles(paths.stylesRoot, paths.outputRoot);
+    const browserAssets = loadBrowserAssets(paths.browserRoot, stylesheet.file);
 
     const routes: GeneratedRoute[] = [];
     for (const culture of cultures) {
@@ -120,12 +138,14 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         generatedBy: 'SharpTS',
         cultures: cultures.map(culture => culture.code),
         routes,
-        stylesheetSources,
+        stylesheetSources: stylesheet.sources,
+        stylesheet: 'css/' + stylesheet.file,
         resourceFiles: cultures.length * bundleNames.length,
         browserBundle: browserAssets.files.map(file => 'assets/browser/' + file),
         browserEntry: {
             script: 'assets/browser/' + browserAssets.script,
-            style: 'assets/browser/' + browserAssets.style
+            style: 'assets/browser/' + browserAssets.style,
+            conformanceScript: 'assets/browser/' + browserAssets.conformanceScript
         }
     }, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'showcase-manifest.json'),
@@ -134,5 +154,5 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         JSON.stringify(conformance, null, 2) + '\n');
 
     console.log('Generated localized static site with ' + routes.length +
-        ' pages and ' + stylesheetSources + ' CSS sources at ' + paths.outputRoot);
+        ' pages and ' + stylesheet.sources + ' CSS sources at ' + paths.outputRoot);
 }
