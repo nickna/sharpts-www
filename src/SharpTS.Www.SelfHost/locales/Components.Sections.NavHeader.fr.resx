@@ -27,8 +27,8 @@
   <data name="Nav_Playground" xml:space="preserve">
     <value>Bac à sable</value>
   </data>
-  <data name="Nav_GetStarted" xml:space="preserve">
-    <value>Démarrer</value>
+  <data name="Nav_Documentation" xml:space="preserve">
+    <value>Documentation</value>
   </data>
   <data name="Nav_ToggleAriaLabel" xml:space="preserve">
     <value>Basculer la navigation</value>

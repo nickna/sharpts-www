@@ -238,6 +238,64 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
     }
 });
 
+test('documentation navigation, outlines, copy controls, and pagination work on desktop', async ({ page }) => {
+    const externalRequests: string[] = [];
+    page.on('request', (request) => {
+        if (new URL(request.url()).origin !== expectedOrigin) externalRequests.push(request.url());
+    });
+
+    await page.goto('/docs/getting-started/cli-basics');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        'https://sharpts.dev/docs/getting-started/cli-basics'
+    );
+    await expect(page.locator('link[rel="alternate"]')).toHaveCount(0);
+    await expect(page.locator('.nav__link[aria-current="page"]')).toHaveText('Documentation');
+    await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('CLI basics');
+    await expect(page.locator('.docs-outline a').first()).toHaveAttribute('href', '#open-the-repl');
+    await expect(page.locator('.docs-pagination__previous')).toContainText('Installation');
+    await expect(page.locator('.docs-pagination__next')).toHaveCount(0);
+
+    const copy = page.locator('.docs-code [data-copy-button]').first();
+    await copy.focus();
+    await expect(copy).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(copy).toHaveClass(/copied/);
+    expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toBe('sharpts');
+    expect(externalRequests).toEqual([]);
+});
+
+test('documentation mobile menus are keyboard accessible and fit the viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/docs');
+
+    const globalMenu = page.locator('[data-nav-toggle]');
+    await globalMenu.click();
+    await expect(globalMenu).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(globalMenu).toHaveAttribute('aria-expanded', 'false');
+
+    const documentationMenu = page.locator('.docs-mobile-menu');
+    await documentationMenu.locator('summary').focus();
+    await page.keyboard.press('Enter');
+    await expect(documentationMenu).toHaveAttribute('open', '');
+    await expect(documentationMenu.locator('a[aria-current="page"]')).toHaveText('Start using SharpTS');
+
+    const outline = page.locator('.docs-mobile-outline');
+    await outline.locator('summary').click();
+    await expect(outline).toHaveAttribute('open', '');
+    await expect(outline.locator('a').first()).toHaveText('Choose your first workflow');
+    expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+    ).toBe(true);
+
+    const accessibility = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+    expect(accessibility.violations).toEqual([]);
+});
+
 test('conformance explorer is localized, filterable, and natively collapsible', async ({ page }) => {
     await page.goto('/de/conformance');
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');

@@ -52,7 +52,25 @@ const conformanceResult = await build({
     metafile: true
 });
 
-const outputs = [...Object.entries(result.metafile.outputs), ...Object.entries(conformanceResult.metafile.outputs)];
+const docsResult = await build({
+    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'docs.ts')],
+    outdir: outputRoot,
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: ['es2022'],
+    minify: true,
+    sourcemap: false,
+    legalComments: 'none',
+    entryNames: '[name]-[hash]',
+    metafile: true
+});
+
+const outputs = [
+    ...Object.entries(result.metafile.outputs),
+    ...Object.entries(conformanceResult.metafile.outputs),
+    ...Object.entries(docsResult.metafile.outputs)
+];
 const entryOutput = outputs.find(
     ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/site.ts')
 );
@@ -64,6 +82,11 @@ const conformanceOutput = outputs.find(
 );
 if (!conformanceOutput) throw new Error('Browser build did not emit the conformance JavaScript entry.');
 const [conformanceScriptPath] = conformanceOutput;
+const docsOutput = outputs.find(
+    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/docs.ts')
+);
+if (!docsOutput) throw new Error('Browser build did not emit the documentation JavaScript entry.');
+const [docsScriptPath] = docsOutput;
 
 const relativeOutput = (outputPath) =>
     path.relative(outputRoot, path.resolve(repoRoot, outputPath)).replaceAll(path.sep, '/');
@@ -71,7 +94,8 @@ const manifest = {
     entry: {
         script: relativeOutput(entryScriptPath),
         style: relativeOutput(entryMetadata.cssBundle),
-        conformanceScript: relativeOutput(conformanceScriptPath)
+        conformanceScript: relativeOutput(conformanceScriptPath),
+        docsScript: relativeOutput(docsScriptPath)
     },
     files: outputs.map(([outputPath]) => relativeOutput(outputPath)).sort()
 };

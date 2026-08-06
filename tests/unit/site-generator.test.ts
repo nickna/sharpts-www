@@ -3,7 +3,16 @@ import { escapeHtml, renderRichText } from '../../src/SharpTS.Www.SelfHost/site-
 import { parseResxContent } from '../../src/SharpTS.Www.SelfHost/site-localization';
 import { cultures } from '../../src/SharpTS.Www.SelfHost/site-model';
 import { routePath } from '../../src/SharpTS.Www.SelfHost/site-paths';
+import { docsOutputPath, docsRoutePath } from '../../src/SharpTS.Www.SelfHost/site-paths';
 import { eligibleResults, parseBaselineText, passPercentage } from '../../src/SharpTS.Www.SelfHost/conformance-data';
+import {
+    documentationManifest,
+    publishedDocumentation,
+    validateDocumentationManifest
+} from '../../src/SharpTS.Www.SelfHost/docs-manifest';
+import { renderDocumentationMarkdown } from '../../src/SharpTS.Www.SelfHost/docs-markdown';
+import { loadDocumentation } from '../../src/SharpTS.Www.SelfHost/documentation';
+import path from 'node:path';
 
 describe('static site primitives', () => {
     it('escapes text by default', () => {
@@ -39,6 +48,61 @@ describe('static site primitives', () => {
         expect(routePath(cultures[2], 'home')).toBe('/fr');
         expect(routePath(cultures[2], 'guide')).toBe('/fr/how-it-works');
         expect(routePath(cultures[2], 'conformance')).toBe('/fr/conformance');
+        expect(docsRoutePath('index')).toBe('/docs');
+        expect(docsRoutePath('getting-started/installation')).toBe('/docs/getting-started/installation');
+        expect(docsOutputPath('out', 'getting-started/installation')).toBe(
+            path.join('out', 'docs', 'getting-started', 'installation', 'index.html')
+        );
+    });
+
+    it('renders and escapes the supported documentation Markdown subset', () => {
+        const rendered = renderDocumentationMarkdown(
+            '## Hello, `SharpTS`!\n\nUse **safe** *Markdown* with [docs](/docs).\n\n<script>alert(1)</script>',
+            { articleSlug: 'fixture', renderFigure: (name) => `<figure>${name}</figure>` }
+        );
+        expect(rendered.headings).toEqual([{ level: 2, id: 'hello-sharpts', text: 'Hello, SharpTS!' }]);
+        expect(rendered.links).toEqual(['/docs']);
+        expect(rendered.html).toContain('<strong>safe</strong> <em>Markdown</em>');
+        expect(rendered.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    });
+
+    it('rejects malformed Markdown and duplicate heading IDs', () => {
+        const render = (source: string) =>
+            renderDocumentationMarkdown(source, {
+                articleSlug: 'fixture',
+                renderFigure: () => ''
+            });
+        expect(() => render('## Same\n\n### Same')).toThrow(/Duplicate heading ID/);
+        expect(() => render('```typescript\nconst open = true;')).toThrow(/Unclosed fenced code block/);
+        expect(() => render(':::figure')).toThrow(/Malformed documentation directive/);
+        expect(() => render('[unsafe](javascript:alert(1))')).toThrow(/Unsafe or unsupported/);
+        expect(() => render('| unsupported | table |')).toThrow(/Unsupported documentation Markdown/);
+        expect(() => render('[broken](two words)')).toThrow(/Malformed documentation link/);
+    });
+
+    it('validates metadata ordering and excludes unpublished documentation', () => {
+        expect(publishedDocumentation()).toHaveLength(3);
+        expect(publishedDocumentation().map((article) => article.order)).toEqual([0, 1, 2]);
+        expect(publishedDocumentation().some((article) => article.slug.endsWith('/scripting'))).toBe(false);
+        expect(() =>
+            validateDocumentationManifest([documentationManifest[0], { ...documentationManifest[1], slug: 'index' }])
+        ).toThrow(/Duplicate documentation slug/);
+        expect(() =>
+            validateDocumentationManifest([documentationManifest[0], { ...documentationManifest[1], order: 0 }])
+        ).toThrow(/Duplicate documentation order/);
+    });
+
+    it('loads every source for validation but emits examples only from published articles', () => {
+        const repoRoot = path.resolve('.');
+        const docs = loadDocumentation(repoRoot, path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'docs'));
+        expect(docs.all).toHaveLength(5);
+        expect(docs.published).toHaveLength(3);
+        expect(docs.examples).toEqual([
+            expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] })
+        ]);
+        expect(docs.all.find((article) => article.metadata.slug.endsWith('/scripting'))?.rendered.html).toContain(
+            '#!/usr/bin/env sharpts'
+        );
     });
 
     it('parses the versioned baseline contract and preserves skip semantics', () => {

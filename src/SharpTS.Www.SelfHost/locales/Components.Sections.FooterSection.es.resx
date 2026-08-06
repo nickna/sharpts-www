@@ -57,8 +57,8 @@
   <data name="Link_Faq" xml:space="preserve">
     <value>Preguntas frecuentes</value>
   </data>
-  <data name="Link_GetStarted" xml:space="preserve">
-    <value>Empezar</value>
+  <data name="Link_Documentation" xml:space="preserve">
+    <value>Documentación</value>
   </data>
   <data name="BuiltWith" xml:space="preserve">
     <value>Creado con SharpTS, TypeScript y mucho ☕</value>

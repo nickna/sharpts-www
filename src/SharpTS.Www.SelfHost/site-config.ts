@@ -5,6 +5,7 @@ export interface SitePaths {
     localeRoot: string;
     stylesRoot: string;
     staticRoot: string;
+    docsRoot: string;
     browserRoot: string;
     outputRoot: string;
 }
@@ -17,6 +18,7 @@ export function loadSitePaths(): SitePaths {
         localeRoot: path.join(sourceRoot, 'locales'),
         stylesRoot: path.join(sourceRoot, 'styles'),
         staticRoot: path.join(sourceRoot, 'static'),
+        docsRoot: path.join(sourceRoot, 'docs'),
         browserRoot: path.resolve(process.env.SHARPTS_WWW_BROWSER_OUTPUT ||
             path.join(repoRoot, 'artifacts', 'browser-assets')),
         outputRoot: path.resolve(process.env.SHARPTS_WWW_SITE_OUTPUT ||

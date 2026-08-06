@@ -11,9 +11,11 @@ import {
     siteOrigin
 } from './site-model';
 import type { BrowserAssets, GeneratedRoute, Locale, PageKind } from './site-model';
-import { outputPath, routePath } from './site-paths';
+import { docsOutputPath, docsRoutePath, outputPath, routePath } from './site-paths';
 import { showcaseExamples } from './showcase-data';
 import type { ConformanceData } from './conformance-data';
+import { loadDocumentation } from './documentation';
+import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 
 function fail(message: string): never {
     throw new Error('Static site generation failed: ' + message);
@@ -49,23 +51,25 @@ function loadBrowserAssets(browserRoot: string, siteStyle: string): BrowserAsset
     if (!fs.existsSync(manifestPath))
         fail('browser asset manifest is missing; run npm run build:browser first');
     const manifest = JSON.parse(String(fs.readFileSync(manifestPath, 'utf8'))) as {
-        entry?: { script?: unknown; style?: unknown; conformanceScript?: unknown };
+        entry?: { script?: unknown; style?: unknown; conformanceScript?: unknown; docsScript?: unknown };
         files?: unknown;
     };
     const script = manifest.entry?.script;
     const style = manifest.entry?.style;
     const conformanceScript = manifest.entry?.conformanceScript;
+    const docsScript = manifest.entry?.docsScript;
     const files = manifest.files;
     if (typeof script !== 'string' || typeof style !== 'string' ||
-        typeof conformanceScript !== 'string' || !Array.isArray(files))
+        typeof conformanceScript !== 'string' || typeof docsScript !== 'string' || !Array.isArray(files))
         fail('browser asset manifest is malformed');
     const entryScript = String(script);
     const entryStyle = String(style);
     const conformanceEntryScript = String(conformanceScript);
+    const docsEntryScript = String(docsScript);
     const safeFiles = files as string[];
     if (!safeFiles.every(file => typeof file === 'string'))
         fail('browser asset manifest contains a non-string file path');
-    for (const file of [entryScript, entryStyle, conformanceEntryScript, ...safeFiles]) {
+    for (const file of [entryScript, entryStyle, conformanceEntryScript, docsEntryScript, ...safeFiles]) {
         if (!file || file.indexOf('..') >= 0 || file.startsWith('/') || file.indexOf('\\') >= 0)
             fail('browser asset manifest contains an unsafe path');
         if (!fs.existsSync(path.join(browserRoot, file)))
@@ -75,6 +79,7 @@ function loadBrowserAssets(browserRoot: string, siteStyle: string): BrowserAsset
         script: entryScript,
         style: entryStyle,
         conformanceScript: conformanceEntryScript,
+        docsScript: docsEntryScript,
         siteStyle,
         files: safeFiles
     };
@@ -108,14 +113,41 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
     }
 }
 
+export function validateDocumentationDocument(html: string, article: LoadedDocumentationArticle,
+    browserAssets: BrowserAssets): void {
+    const route = docsRoutePath(article.metadata.slug);
+    const required = [
+        '<html lang="en">',
+        `<link rel="canonical" href="${siteOrigin}${route}">`,
+        `href="/css/${browserAssets.siteStyle}"`,
+        `href="/assets/browser/${browserAssets.style}"`,
+        `src="/assets/browser/${browserAssets.docsScript}"`,
+        'src="/img/sharpts-logo.png"',
+        'data-docs-sidebar',
+        'data-docs-outline'
+    ];
+    for (const marker of required) {
+        if (html.indexOf(marker) < 0)
+            fail('missing ' + marker + ' from documentation route ' + route);
+    }
+    if (html.indexOf('rel="alternate" hreflang=') >= 0)
+        fail('English-only documentation must not emit translated alternates for ' + route);
+    if (html.indexOf('<arrow fn>') >= 0 || html.indexOf('&lt;arrow fn&gt;') >= 0)
+        fail('documentation contains an internal SharpTS function representation at ' + route);
+}
+
 export function buildSite(renderDocument: (locale: Locale, page: PageKind,
-    browserAssets: BrowserAssets) => string, conformance: ConformanceData): void {
+    browserAssets: BrowserAssets) => string,
+    renderDocumentationDocument: (locale: Locale, article: LoadedDocumentationArticle, documentation: LoadedDocumentation,
+        browserAssets: BrowserAssets) => string,
+    conformance: ConformanceData): void {
     const paths = loadSitePaths();
     ensureDirectory(paths.outputRoot);
     copyTree(paths.staticRoot, paths.outputRoot);
     copyTree(paths.browserRoot, path.join(paths.outputRoot, 'assets', 'browser'));
     const stylesheet = buildStyles(paths.stylesRoot, paths.outputRoot);
     const browserAssets = loadBrowserAssets(paths.browserRoot, stylesheet.file);
+    const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
 
     const routes: GeneratedRoute[] = [];
     for (const culture of cultures) {
@@ -134,6 +166,21 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         }
     }
 
+    const documentationLocale = loadLocale(paths.localeRoot, cultures[0]);
+    for (const article of documentation.published) {
+        const html = renderDocumentationDocument(documentationLocale, article, documentation, browserAssets);
+        validateDocumentationDocument(html, article, browserAssets);
+        const destination = docsOutputPath(paths.outputRoot, article.metadata.slug);
+        writeText(destination, html);
+        routes.push({
+            culture: 'en',
+            page: 'docs',
+            slug: article.metadata.slug,
+            route: docsRoutePath(article.metadata.slug),
+            file: path.relative(paths.outputRoot, destination).replace(/\\/g, '/')
+        });
+    }
+
     writeText(path.join(paths.outputRoot, 'site-manifest.json'), JSON.stringify({
         generatedBy: 'SharpTS',
         cultures: cultures.map(culture => culture.code),
@@ -145,14 +192,27 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         browserEntry: {
             script: 'assets/browser/' + browserAssets.script,
             style: 'assets/browser/' + browserAssets.style,
-            conformanceScript: 'assets/browser/' + browserAssets.conformanceScript
+            conformanceScript: 'assets/browser/' + browserAssets.conformanceScript,
+            docsScript: 'assets/browser/' + browserAssets.docsScript
         }
     }, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'showcase-manifest.json'),
         JSON.stringify(showcaseExamples, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'conformance.json'),
         JSON.stringify(conformance, null, 2) + '\n');
+    writeText(path.join(paths.outputRoot, 'docs-manifest.json'), JSON.stringify({
+        language: 'en',
+        testedVersion: documentation.testedVersion,
+        articles: documentation.published.map(article => ({
+            ...article.metadata,
+            route: docsRoutePath(article.metadata.slug),
+            headings: article.rendered.headings
+        }))
+    }, null, 2) + '\n');
+    writeText(path.join(paths.outputRoot, 'docs-examples-manifest.json'),
+        JSON.stringify(documentation.examples, null, 2) + '\n');
 
     console.log('Generated localized static site with ' + routes.length +
-        ' pages and ' + stylesheet.sources + ' CSS sources at ' + paths.outputRoot);
+        ' pages (including ' + documentation.published.length + ' documentation pages) and ' +
+        stylesheet.sources + ' CSS sources at ' + paths.outputRoot);
 }

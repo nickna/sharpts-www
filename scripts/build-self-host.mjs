@@ -170,7 +170,12 @@ try {
         [path.join(browserRoot, 'browser-manifest.json')]
     );
     const browserManifest = JSON.parse(fs.readFileSync(path.join(browserRoot, 'browser-manifest.json'), 'utf8'));
-    for (const entry of [browserManifest.entry?.script, browserManifest.entry?.style]) {
+    for (const entry of [
+        browserManifest.entry?.script,
+        browserManifest.entry?.style,
+        browserManifest.entry?.conformanceScript,
+        browserManifest.entry?.docsScript
+    ]) {
         if (typeof entry !== 'string' || !fs.existsSync(path.join(browserRoot, entry)))
             throw new Error(`Browser entry asset is missing: ${entry}`);
     }
@@ -236,6 +241,39 @@ try {
         console.log(`Verified ${example.key} in interpreter and compile modes via ${example.executionSurface}.`);
     }
     fs.rmSync(showcaseRoot, { recursive: true, force: true });
+
+    const docsExamplesManifestPath = path.join(publicRoot, 'docs-examples-manifest.json');
+    if (!fs.existsSync(docsExamplesManifestPath))
+        throw new Error('Generated documentation example manifest is missing.');
+    const docsExamplesRoot = path.join(stagingRoot, 'docs-example-verification');
+    fs.mkdirSync(docsExamplesRoot, { recursive: true });
+    const docsExamples = JSON.parse(fs.readFileSync(docsExamplesManifestPath, 'utf8'));
+    for (const example of docsExamples) {
+        const sourcePath = path.join(docsExamplesRoot, `${example.key}.ts`);
+        fs.writeFileSync(sourcePath, example.source, 'utf8');
+        for (const mode of example.modes) {
+            if (mode === 'interpret') {
+                const result = run('dotnet', [...sharpTsPrefix, sourcePath]);
+                requireSuccessful(result, `${example.key} documentation example interpretation`);
+                assertShowcaseOutput(example, mode, result.stdout);
+            } else if (mode === 'compile') {
+                const compiledExample = path.join(docsExamplesRoot, `${example.key}.dll`);
+                requireSuccessful(
+                    run('dotnet', [...sharpTsPrefix, '--compile', sourcePath, '--verify', '-o', compiledExample]),
+                    `${example.key} documentation example compilation`,
+                    ['Compiled to', 'IL verification passed.'],
+                    [compiledExample]
+                );
+                const result = run('dotnet', [compiledExample]);
+                requireSuccessful(result, `${example.key} compiled documentation example execution`);
+                assertShowcaseOutput(example, mode, result.stdout);
+            } else {
+                throw new Error(`Unsupported documentation example mode: ${mode}`);
+            }
+        }
+        console.log(`Verified documentation example ${example.key} in ${example.modes.join(' and ')} modes.`);
+    }
+    fs.rmSync(docsExamplesRoot, { recursive: true, force: true });
 
     fs.rmSync(browserRoot, { recursive: true, force: true });
     removeBuildDirectory(outputRoot);

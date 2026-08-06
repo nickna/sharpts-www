@@ -27,8 +27,8 @@
   <data name="Nav_Playground" xml:space="preserve">
     <value>演练场</value>
   </data>
-  <data name="Nav_GetStarted" xml:space="preserve">
-    <value>快速开始</value>
+  <data name="Nav_Documentation" xml:space="preserve">
+    <value>文档</value>
   </data>
   <data name="Nav_ToggleAriaLabel" xml:space="preserve">
     <value>切换导航</value>

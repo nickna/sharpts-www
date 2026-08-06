@@ -6,9 +6,10 @@ import { escapeHtml, renderRichText } from './site-html';
 import { t } from './site-localization';
 import { cultures, siteOrigin } from './site-model';
 import type { BrowserAssets, Locale, PageKind } from './site-model';
-import { routePath } from './site-paths';
+import { docsRoutePath, routePath } from './site-paths';
 import { comparisonGroups, showcaseExamples } from './showcase-data';
 import { presets } from './presets';
+import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 
 const conformanceData = loadConformanceData(loadSitePaths().repoRoot);
 
@@ -50,7 +51,7 @@ function languageSelector(locale: Locale, page: PageKind): string {
 </details>`;
 }
 
-function renderNav(locale: Locale, page: PageKind): string {
+function renderNav(locale: Locale, page: PageKind | 'docs'): string {
     const bundle = 'Components.Sections.NavHeader';
     const home = routePath(locale.culture, 'home');
     const guide = routePath(locale.culture, 'guide');
@@ -64,9 +65,9 @@ function renderNav(locale: Locale, page: PageKind): string {
       <a href="${guide}" class="nav__link"${page === 'guide' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_HowItWorks'))}</a>
       <a href="${conformance}" class="nav__link"${page === 'conformance' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Conformance'))}</a>
       <a href="${home}#playground" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Playground'))}</a>
-      <a href="${home}#get-started" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_GetStarted'))}</a>
+      <a href="/docs" class="nav__link"${page === 'docs' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Documentation'))}</a>
       <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="nav__link nav__link--github" aria-label="GitHub">${githubIcon}</a>
-      ${languageSelector(locale, page)}
+      ${page === 'docs' ? '' : languageSelector(locale, page)}
     </nav>
     <button type="button" class="nav__hamburger" data-nav-toggle aria-expanded="false" aria-label="${escapeHtml(t(locale, bundle, 'Nav_ToggleAriaLabel'))}"><span></span><span></span><span></span></button>
   </div>
@@ -82,9 +83,9 @@ function renderFooter(locale: Locale): string {
     <div class="footer__top">
       <div class="footer__brand"><a href="${home}" class="footer__logo-link"><span class="footer__logo-name">SharpTS</span></a><p class="footer__tagline">${escapeHtml(t(locale, bundle, 'Tagline'))}</p></div>
       <div class="footer__links">
-        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Resources'))}</h4><a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener">GitHub</a><a href="https://www.nuget.org/packages/SharpTS" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_NuGet'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/STATUS.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Status'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Architecture'))}</a></div>
+        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Resources'))}</h4><a href="/docs">${escapeHtml(t(locale, bundle, 'Link_Documentation'))}</a><a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener">GitHub</a><a href="https://www.nuget.org/packages/SharpTS" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_NuGet'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/STATUS.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Status'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Architecture'))}</a></div>
         <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Community'))}</h4><a href="https://github.com/nickna/SharpTS/issues" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_ReportIssue'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Contributing'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/LICENSE" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_License'))}</a></div>
-        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_OnThisPage'))}</h4><a href="${home}#features">${escapeHtml(t(locale, bundle, 'Link_Features'))}</a><a href="${home}#examples">${escapeHtml(t(locale, bundle, 'Link_CodeExamples'))}</a><a href="${home}#use-cases">${escapeHtml(t(locale, bundle, 'Link_UseCases'))}</a><a href="${home}#playground">${escapeHtml(t(locale, bundle, 'Link_Playground'))}</a><a href="${home}#faq">${escapeHtml(t(locale, bundle, 'Link_Faq'))}</a><a href="${home}#get-started">${escapeHtml(t(locale, bundle, 'Link_GetStarted'))}</a></div>
+        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_OnThisPage'))}</h4><a href="${home}#features">${escapeHtml(t(locale, bundle, 'Link_Features'))}</a><a href="${home}#examples">${escapeHtml(t(locale, bundle, 'Link_CodeExamples'))}</a><a href="${home}#use-cases">${escapeHtml(t(locale, bundle, 'Link_UseCases'))}</a><a href="${home}#playground">${escapeHtml(t(locale, bundle, 'Link_Playground'))}</a><a href="${home}#faq">${escapeHtml(t(locale, bundle, 'Link_Faq'))}</a><a href="/docs">${escapeHtml(t(locale, bundle, 'Link_Documentation'))}</a></div>
       </div>
     </div>
     <div class="footer__bottom"><p>&copy; 2026 <a href="https://github.com/nickna" target="_blank" rel="noopener">Nick Nassiri</a>.</p><p>${escapeHtml(t(locale, bundle, 'BuiltWith'))}</p></div>
@@ -539,4 +540,79 @@ ${browserScript}
 `;
 }
 
-buildSite(renderDocument, conformanceData);
+function renderDocsSidebar(article: LoadedDocumentationArticle, documentation: LoadedDocumentation): string {
+    const items = documentation.published.map(candidate => {
+        const current = candidate.metadata.slug === article.metadata.slug;
+        return `<li><a href="${docsRoutePath(candidate.metadata.slug)}"${current ? ' aria-current="page"' : ''}>${escapeHtml(candidate.metadata.title)}</a></li>`;
+    }).join('\n');
+    return `<nav class="docs-sidebar__nav" aria-label="Documentation" data-docs-sidebar><p class="docs-sidebar__section">Getting Started</p><ul>${items}</ul></nav>`;
+}
+
+function renderDocsOutline(article: LoadedDocumentationArticle, mobile: boolean): string {
+    const items = article.rendered.headings.map(heading => `<li class="docs-outline__level-${heading.level}"><a href="#${heading.id}">${escapeHtml(heading.text)}</a></li>`).join('\n');
+    if (mobile)
+        return `<details class="docs-mobile-outline" data-docs-outline><summary>On this page</summary><nav aria-label="On this page"><ul>${items}</ul></nav></details>`;
+    return `<aside class="docs-outline" data-docs-outline><p>On this page</p><nav aria-label="On this page"><ul>${items}</ul></nav></aside>`;
+}
+
+function renderDocsPagination(article: LoadedDocumentationArticle, documentation: LoadedDocumentation): string {
+    const index = documentation.published.findIndex(candidate => candidate.metadata.slug === article.metadata.slug);
+    const previous = index > 0 ? documentation.published[index - 1] : null;
+    const next = index + 1 < documentation.published.length ? documentation.published[index + 1] : null;
+    const previousLink = previous ? `<a class="docs-pagination__previous" href="${docsRoutePath(previous.metadata.slug)}"><span>Previous</span><strong>← ${escapeHtml(previous.metadata.title)}</strong></a>` : '<span></span>';
+    const nextLink = next ? `<a class="docs-pagination__next" href="${docsRoutePath(next.metadata.slug)}"><span>Next</span><strong>${escapeHtml(next.metadata.title)} →</strong></a>` : '<span></span>';
+    return `<nav class="docs-pagination" aria-label="Documentation pagination">${previousLink}${nextLink}</nav>`;
+}
+
+function renderDocumentationDocument(locale: Locale, article: LoadedDocumentationArticle,
+    documentation: LoadedDocumentation, browserAssets: BrowserAssets): string {
+    const route = docsRoutePath(article.metadata.slug);
+    const canonical = siteOrigin + route;
+    const sidebar = renderDocsSidebar(article, documentation);
+    const crumb = article.metadata.slug === 'index' ? '' : `<li><span aria-hidden="true">/</span><span>${escapeHtml(article.metadata.section)}</span></li><li><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(article.metadata.title)}</span></li>`;
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="${escapeHtml(article.metadata.description)}">
+  <meta name="theme-color" content="#0d1117">
+  <meta property="og:title" content="${escapeHtml(article.metadata.title)} · SharpTS Documentation">
+  <meta property="og:description" content="${escapeHtml(article.metadata.description)}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
+  <meta property="og:locale" content="en_US">
+  <link rel="canonical" href="${canonical}">
+  <title>${escapeHtml(article.metadata.title)} · SharpTS Documentation</title>
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="any">
+  <link rel="stylesheet" href="/css/${browserAssets.siteStyle}">
+  <link rel="stylesheet" href="/assets/browser/${browserAssets.style}">
+</head>
+<body class="page-docs">
+  ${renderNav(locale, 'docs')}
+  <div class="page docs-page">
+    <div class="docs-mobile-controls"><details class="docs-mobile-menu"><summary>Documentation</summary>${sidebar}</details>${renderDocsOutline(article, true)}</div>
+    <div class="docs-layout">
+      <aside class="docs-sidebar">${sidebar}</aside>
+      <main class="docs-main" id="main-content">
+        <nav class="docs-breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Documentation</a></li>${crumb}</ol></nav>
+        <p class="docs-language-notice">Documentation is currently available in English.</p>
+        <article class="docs-article">
+          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(article.metadata.section)}</p><h1>${escapeHtml(article.metadata.title)}</h1><p>${escapeHtml(article.metadata.description)}</p><span class="docs-tested">Tested with SharpTS ${escapeHtml(documentation.testedVersion)}</span></header>
+          ${article.rendered.html}
+        </article>
+        ${renderDocsPagination(article, documentation)}
+      </main>
+      ${renderDocsOutline(article, false)}
+    </div>
+    ${renderFooter(locale)}
+  </div>
+  <script type="module" src="/assets/browser/${browserAssets.docsScript}"></script>
+</body>
+</html>
+`;
+}
+
+buildSite(renderDocument, renderDocumentationDocument, conformanceData);

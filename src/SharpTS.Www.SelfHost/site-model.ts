@@ -11,9 +11,17 @@ export interface Locale {
 
 export type PageKind = 'home' | 'guide' | 'conformance';
 
+export interface DocumentationRoute {
+    page: 'docs';
+    slug: string;
+}
+
+export type SiteRoute = PageKind | DocumentationRoute;
+
 export interface GeneratedRoute {
     culture: string;
-    page: PageKind;
+    page: PageKind | 'docs';
+    slug?: string;
     route: string;
     file: string;
 }
@@ -22,6 +30,7 @@ export interface BrowserAssets {
     script: string;
     style: string;
     conformanceScript: string;
+    docsScript: string;
     siteStyle: string;
     files: string[];
 }

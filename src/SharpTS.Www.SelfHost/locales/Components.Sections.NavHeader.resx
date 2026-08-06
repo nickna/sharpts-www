@@ -27,8 +27,8 @@
   <data name="Nav_Playground" xml:space="preserve">
     <value>Playground</value>
   </data>
-  <data name="Nav_GetStarted" xml:space="preserve">
-    <value>Get Started</value>
+  <data name="Nav_Documentation" xml:space="preserve">
+    <value>Documentation</value>
   </data>
   <data name="Nav_ToggleAriaLabel" xml:space="preserve">
     <value>Toggle navigation</value>

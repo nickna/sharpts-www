@@ -57,8 +57,8 @@
   <data name="Link_Faq" xml:space="preserve">
     <value>常见问题</value>
   </data>
-  <data name="Link_GetStarted" xml:space="preserve">
-    <value>快速开始</value>
+  <data name="Link_Documentation" xml:space="preserve">
+    <value>文档</value>
   </data>
   <data name="BuiltWith" xml:space="preserve">
     <value>使用 SharpTS、TypeScript 和大量 ☕ 构建</value>

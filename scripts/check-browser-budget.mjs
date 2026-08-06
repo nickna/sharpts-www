@@ -12,6 +12,7 @@ const initialJavaScript = javascript.filter(
     (file) => file === manifest.entry.script || file.startsWith('chunks/chunk-')
 );
 const conformanceJavaScript = javascript.filter((file) => file === manifest.entry.conformanceScript);
+const docsJavaScript = javascript.filter((file) => file === manifest.entry.docsScript);
 
 function size(files) {
     const buffers = files.map((file) => fs.readFileSync(path.join(browserRoot, file)));
@@ -23,12 +24,15 @@ function size(files) {
 
 const initial = size(initialJavaScript);
 const conformance = size(conformanceJavaScript);
+const docs = size(docsJavaScript);
 const total = size(javascript);
 const budgets = {
     initialRaw: 60 * 1024,
     initialBrotli: 25 * 1024,
     conformanceRaw: 18 * 1024,
     conformanceBrotli: 7 * 1024,
+    docsRaw: 8 * 1024,
+    docsBrotli: 3 * 1024,
     totalRaw: 600 * 1024,
     totalBrotli: 180 * 1024
 };
@@ -40,6 +44,8 @@ if (conformance.raw > budgets.conformanceRaw)
     failures.push(`conformance raw ${conformance.raw} > ${budgets.conformanceRaw}`);
 if (conformance.brotli > budgets.conformanceBrotli)
     failures.push(`conformance Brotli ${conformance.brotli} > ${budgets.conformanceBrotli}`);
+if (docs.raw > budgets.docsRaw) failures.push(`docs raw ${docs.raw} > ${budgets.docsRaw}`);
+if (docs.brotli > budgets.docsBrotli) failures.push(`docs Brotli ${docs.brotli} > ${budgets.docsBrotli}`);
 if (total.raw > budgets.totalRaw) failures.push(`total raw ${total.raw} > ${budgets.totalRaw}`);
 if (total.brotli > budgets.totalBrotli) failures.push(`total Brotli ${total.brotli} > ${budgets.totalBrotli}`);
 if (failures.length) throw new Error(`Browser bundle budget exceeded:\n${failures.join('\n')}`);
@@ -49,6 +55,7 @@ console.log(
         {
             initial: { files: initialJavaScript, ...initial },
             conformance: { files: conformanceJavaScript, ...conformance },
+            docs: { files: docsJavaScript, ...docs },
             total: { files: javascript, ...total },
             budgets
         },
