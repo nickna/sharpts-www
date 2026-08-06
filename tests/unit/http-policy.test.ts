@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { loadServerConfig } from '../../src/SharpTS.Www.SelfHost/config';
 import {
@@ -16,8 +17,8 @@ describe('HTTP policy', () => {
     });
 
     it('keeps static paths inside their content root', () => {
-        const root = 'D:\\site\\public';
-        expect(staticFilePath(root, '/guide')).toBe('D:\\site\\public\\guide\\index.html');
+        const root = path.resolve('site', 'public');
+        expect(staticFilePath(root, '/guide')).toBe(path.join(root, 'guide', 'index.html'));
         expect(staticFilePath(root, '/../secret')).toBeNull();
     });
 
