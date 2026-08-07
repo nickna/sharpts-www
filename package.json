@@ -12,6 +12,7 @@
     "typecheck": "npm run typecheck:browser",
     "verify:source": "node scripts/verify-sharpts-source.mjs",
     "check:secrets": "node scripts/scan-secrets.mjs",
+    "check:i18n": "vitest run --project unit tests/unit/i18n.test.ts",
     "build:browser": "node scripts/build-browser.mjs",
     "build:self-host": "node scripts/build-self-host.mjs",
     "check:browser-budget": "node scripts/check-browser-budget.mjs",
@@ -24,7 +25,7 @@
     "snapshot:update": "node scripts/update-site-snapshot.mjs --accept",
     "typecheck:browser": "tsc --noEmit -p src/SharpTS.Www.SelfHost/browser/tsconfig.json",
     "verify:browser": "npm run typecheck:browser && npm run test:browser && npm run build:browser && npm run check:browser-budget && npm run test:browser-bundle",
-    "verify": "npm run verify:source && npm run check:secrets && npm run check && npm run verify:browser"
+    "verify": "npm run verify:source && npm run check:secrets && npm run check:i18n && npm run check && npm run verify:browser"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "6.2.5",

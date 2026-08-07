@@ -3,9 +3,9 @@ import * as path from 'path';
 import { loadSitePaths } from './site-config';
 import { copyTree, ensureDirectory, writeText } from './site-files';
 import { normalizeNewlines } from './site-html';
-import { loadLocale } from './site-localization';
+import { loadLocale } from './i18n';
 import {
-    bundleNames,
+    catalogNames,
     cultures,
     pageKinds,
     siteOrigin
@@ -187,7 +187,7 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         routes,
         stylesheetSources: stylesheet.sources,
         stylesheet: 'css/' + stylesheet.file,
-        resourceFiles: cultures.length * bundleNames.length,
+        messageFiles: cultures.length * catalogNames.length,
         browserBundle: browserAssets.files.map(file => 'assets/browser/' + file),
         browserEntry: {
             script: 'assets/browser/' + browserAssets.script,

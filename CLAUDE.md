@@ -83,16 +83,19 @@ rather than a shared assembly.
 
 ### Localization (i18n)
 
-The active static generator reads the localized `.resx` files under
-`SharpTS.Www.SelfHost/locales`, validates every localized key set against English,
-and emits direct path-based routes. Add every new key to all five cultures and run
-`scripts/test-generated-site.ps1`; there is no culture cookie or `/set-culture`
-endpoint in the SelfHost contract.
+The active static generator reads four JSON message catalogs from each culture
+directory under `SharpTS.Www.SelfHost/locales`, validates recursive localized
+key and named-placeholder parity against English, and emits direct path-based
+routes. Add every new dotted key to all five cultures and run `npm run check:i18n`
+plus `scripts/test-generated-site.ps1`; there is no culture cookie or
+`/set-culture` endpoint in the SelfHost contract.
 
 English uses `/`; the other cultures use `/fr`, `/es`, `/de`, and `/zh-Hans`.
 Language switching is a normal link to the equivalent localized route. There is
 no culture cookie, request-time localization middleware, or `/set-culture`
 endpoint. Code-sample comments are localized; literal program output is not.
+Catalog templates use named placeholders such as `{count}` and `{duration}`;
+the generator and browser share the same strict formatter.
 
 ## Deployment
 

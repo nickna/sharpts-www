@@ -6,8 +6,8 @@ import { createFakeEditor } from './fixtures';
 function playgroundMarkup(): HTMLElement {
     document.documentElement.lang = 'en';
     document.body.innerHTML = `<div data-playground data-running="false" data-placeholder="Run something" data-request-failed="Request failed" data-invalid-response="Invalid response"
-      data-timing-headline="Executed in {0}" data-timing-failed-headline="{0} failed"
-      data-timing-sharp-ts-pipeline="SharpTS pipeline: {0}" data-timing-end-to-end="End to end: {0}"
+      data-timing-headline="Executed in {duration}" data-timing-failed-headline="{stage} failed"
+      data-timing-sharp-ts-pipeline="SharpTS pipeline: {duration}" data-timing-end-to-end="End to end: {duration}"
       data-timing-status-completed="completed" data-timing-status-failed="failed"
       data-phase-tokenize-name="Tokenize" data-phase-tokenize-description="Tokenize details"
       data-phase-parse-name="Parse" data-phase-parse-description="Parse details"
@@ -22,7 +22,7 @@ function playgroundMarkup(): HTMLElement {
       <button data-playground-mode="interpret"></button><button data-playground-mode="compile"></button>
       <button data-playground-clear></button><button data-playground-run aria-busy="false"></button>
       <div id="playground-editor"><textarea data-playground-editor>initial</textarea></div>
-      <button data-playground-timing data-timing-compiled="compiled {0}ms / ran {1}ms" data-timing-executed="ran {0}ms" aria-expanded="false" hidden><span data-playground-timing-headline></span></button>
+      <button data-playground-timing data-timing-compiled="compiled {compileDuration}ms / ran {executionDuration}ms" data-timing-executed="ran {duration}ms" aria-expanded="false" hidden><span data-playground-timing-headline></span></button>
       <div data-playground-timing-details hidden>
         <div data-playground-timing-phases></div><p data-playground-timing-description></p>
         <span data-playground-timing-pipeline></span><span data-playground-timing-total></span>

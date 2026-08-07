@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "title": "规范一致性 — SharpTS",
+    "description": "查看 SharpTS 在固定版本 Test262 和 TypeScript 一致性语料库中的结果。"
+  },
+  "eyebrow": "实证兼容性",
+  "title": "规范一致性",
+  "subtitle": "浏览本站所运行的确切 SharpTS 修订版的真实结果，从语言大类深入到各个内置对象和功能。",
+  "feature": "功能",
+  "interpreted": "解释模式",
+  "compiled": "编译模式",
+  "notAvailable": "不可用",
+  "barAria": "{eligible} 个有效测试中有 {passed} 个通过（{percentage}%）。",
+  "skipped": "已跳过",
+  "percentageFootnote": "百分比以所有未跳过结果为分母，仅 Pass 计入分子。其他未跳过结果均视为未通过；跳过数量单独显示。",
+  "honestyFootnote": "Test262 涵盖了远超一般程序所遇情况的规范边界案例。此处总数未经调整。",
+  "provenance": "生成来源",
+  "test262Suite": "Test262 测试套件",
+  "typeScriptSuite": "TypeScript 测试套件",
+  "category": {
+    "builtIns": "内置对象",
+    "language": "语言",
+    "typeSystem": "类型系统",
+    "general": "常规"
+  },
+  "suiteNavigation": "一致性测试套件",
+  "overview": "一致性概览",
+  "eligible": "项有效测试",
+  "summary": {
+    "test262Interpreted": "Test262 · 解释器",
+    "test262Compiled": "Test262 · AOT 编译器",
+    "typeScript": "TypeScript · 诊断",
+    "runtime": "ECMAScript 运行时语义",
+    "diagnostics": "与 tsc 的诊断一致性"
+  },
+  "search": {
+    "label": "搜索功能",
+    "placeholder": "Array、conditional、modules…"
+  },
+  "expandAll": "展开可见项",
+  "collapseAll": "折叠可见项",
+  "reset": "重置",
+  "test262": {
+    "eyebrow": "ECMAScript 运行时",
+    "title": "Test262 一致性",
+    "description": "由 SharpTS 两种后端执行的 TC39 测试，用于验证 JavaScript 语言与内置对象的运行时行为。"
+  },
+  "typeScript": {
+    "eyebrow": "解析器与类型检查器",
+    "title": "TypeScript 诊断一致性",
+    "description": "Microsoft TypeScript 测试；Pass 表示 SharpTS 诊断按源代码行和 TS 错误代码与 tsc 一致。"
+  },
+  "diagnosticMatch": "诊断匹配",
+  "mode": {
+    "label": "模式",
+    "compare": "对比"
+  },
+  "status": {
+    "label": "状态",
+    "all": "全部结果",
+    "passing": "全部通过",
+    "partial": "部分通过",
+    "zero": "无通过项",
+    "noEligible": "无有效测试"
+  },
+  "delta": {
+    "label": "与解释器相比的百分点差值"
+  },
+  "legend": {
+    "label": "测试结果"
+  },
+  "outcome": {
+    "pass": "通过",
+    "fail": "失败",
+    "parseError": "解析错误",
+    "typeCheckError": "类型检查错误",
+    "runtimeError": "运行时错误",
+    "timeout": "超时",
+    "harnessError": "测试框架错误",
+    "skipped": "已跳过"
+  },
+  "noResults": "没有功能组符合这些筛选条件。",
+  "resultCount": "{count} 个匹配的功能组"
+}

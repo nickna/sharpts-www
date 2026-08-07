@@ -1,0 +1,41 @@
+{
+  "footer": {
+    "tagline": "Ein TypeScript-Interpreter und AOT-Compiler, vollständig in C# für die .NET-Laufzeit entwickelt.",
+    "col": {
+      "resources": "Ressourcen",
+      "community": "Community",
+      "onThisPage": "Auf dieser Seite"
+    },
+    "link": {
+      "nuGet": "NuGet-Paket",
+      "status": "Implementierungsstatus",
+      "architecture": "Architektur-Leitfaden",
+      "reportIssue": "Problem melden",
+      "contributing": "Mitwirken",
+      "license": "MIT-Lizenz",
+      "features": "Funktionen",
+      "codeExamples": "Code-Beispiele",
+      "useCases": "Einsatzszenarien",
+      "playground": "Playground",
+      "faq": "FAQ",
+      "documentation": "Dokumentation"
+    },
+    "builtWith": "Erstellt mit SharpTS, TypeScript und viel ☕"
+  },
+  "navigation": {
+    "features": "Funktionen",
+    "examples": "Beispiele",
+    "howItWorks": "So funktioniert es",
+    "conformance": "Konformität",
+    "playground": "Playground",
+    "documentation": "Dokumentation",
+    "toggleAriaLabel": "Navigation umschalten"
+  },
+  "copyButton": {
+    "copy": "Kopieren",
+    "copied": "Kopiert!"
+  },
+  "languageSelector": {
+    "changeLanguage": "Sprache ändern"
+  }
+}

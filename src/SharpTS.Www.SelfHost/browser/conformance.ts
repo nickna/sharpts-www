@@ -154,7 +154,7 @@ export function initializeConformanceExplorer(doc: Document = document, win: Win
             if (empty)
                 empty.hidden = visible;
             if (counter)
-                counter.textContent = (counter.dataset.countTemplate || '{0}').replace('{0}', String(count));
+                counter.textContent = formatMessage(counter.dataset.countTemplate || '{count}', { count });
         });
     };
 
@@ -201,3 +201,4 @@ export function initializeConformanceExplorer(doc: Document = document, win: Win
 
     apply();
 }
+import { formatMessage } from '../../SharpTS.Www.Shared/message-format';

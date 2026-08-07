@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "title": "Wie SharpTS funktioniert — SharpTS"
+  },
+  "terminal": "Terminal",
+  "modes": {
+    "title": "Zwei Wege zur Ausführung",
+    "subtitle": "Dasselbe TypeScript kann direkt interpretiert oder vorab zu einer .NET-Assembly kompiliert werden. Sie wählen pro Befehl."
+  },
+  "mode": {
+    "interpret": {
+      "title": "Interpretieren",
+      "desc": "Ausführung per Baumdurchlauf mit sofortigem Start und ohne Build-Schritt — ideal für Skripting, die REPL und schnelle Iteration. Richten Sie SharpTS einfach auf eine Datei."
+    },
+    "compile": {
+      "title": "Kompilieren (AOT)",
+      "desc": "Erzeugt eine echte .NET-Assembly, die nativ auf der CLR läuft. Derselbe Weg kann auch eine eigenständige ausführbare Datei, ein NuGet-Paket (--pack) oder eine Referenz-Assembly für die C#-Interop (--ref-asm) erzeugen."
+    }
+  },
+  "typing": {
+    "title": "Erst typisiert, dann ausgeführt",
+    "subtitle": "SharpTS prüft die Typen Ihres gesamten Programms, bevor es läuft — danach treten die Typen zurück und nur die Werte zählen.",
+    "compileTime": {
+      "title": "Kompilierzeit — Typen",
+      "desc": "Der Typprüfer validiert jeden Ausdruck anhand der TypeScript-Regeln: nominale Typisierung für Klassen, strukturelle Typisierung für Schnittstellen. Ein Typfehler stoppt das Programm vor der Ausführung."
+    },
+    "runtime": {
+      "title": "Laufzeit — Werte",
+      "desc": "Sobald die Prüfungen bestanden sind, fallen die Typen weg und Ihr Programm läuft mit einfachen Werten — wie kompiliertes JavaScript. Die Sicherheit beim Schreiben kostet zur Laufzeit nichts."
+    },
+    "caption": "Strukturelle Typisierung in Aktion: Dog erfüllt Walkable allein deshalb, weil es eine walk()-Methode hat — kein explizites „implements“ nötig."
+  },
+  "dotnet": {
+    "title": "TypeScript, das auf .NET läuft",
+    "subtitle": "Da SharpTS die CLR als Ziel hat, wird Ihr TypeScript zu einem vollwertigen .NET-Bürger — es ruft .NET auf und ist aus .NET aufrufbar."
+  },
+  "cap1": {
+    "title": ".NET aus TypeScript aufrufen",
+    "body": "Greifen Sie mit dem @DotNetType-Decorator auf die BCL zu — StringBuilder, Guid, DateTime, TimeSpan — mit automatischer Konvertierung und Überladungsauflösung."
+  },
+  "cap2": {
+    "title": "TypeScript aus C# nutzen",
+    "body": "Kompilieren Sie mit --ref-asm, um eine Referenz-Assembly zu erhalten, und instanziieren Sie dann Ihre TypeScript-Klassen und rufen ihre Methoden direkt aus C# auf — vollständig typisiert."
+  },
+  "cap3": {
+    "title": "Echte .NET-Artefakte ausliefern",
+    "body": "Erzeugen Sie eine .NET-Assembly, eine eigenständige ausführbare Datei oder ein versioniertes NuGet-Paket direkt aus Ihrem TypeScript-Quelltext."
+  },
+  "cap4": {
+    "title": "MSBuild-SDK",
+    "body": "Fügen Sie SharpTS.Sdk zu einer Projektdatei hinzu und bauen Sie .ts-Dateien als Teil Ihres normalen .NET-Builds, gesteuert über tsconfig.json."
+  },
+  "cap5": {
+    "title": "Editor-Tooling direkt aus dem Compiler",
+    "body": "Eine LSP-Brücke stellt SharpTS' eigenen Typprüfer über die Erweiterung vscode-sharpts in VS Code bereit — Editor und Laufzeit können sich nicht widersprechen. Die Deklarationsgenerierung geht den umgekehrten Weg und macht aus .NET-Typen .d.ts-Dateien: Auch die Interop-Oberfläche ist typisiert."
+  },
+  "matrix": {
+    "link": "Interessiert Sie ein bestimmtes Feature? Zur vollständigen Support-Übersicht →"
+  },
+  "cta": {
+    "title": "Probieren Sie es selbst aus",
+    "body": "Der beste Weg, die Pipeline zu verstehen, ist, Code durch sie laufen zu lassen.",
+    "playground": "Playground öffnen",
+    "gitHub": "Auf GitHub ansehen"
+  },
+  "architecture": {
+    "title": "So funktioniert es",
+    "subtitle": "Eine mehrstufige Pipeline vom Quellcode bis zur Ausführung",
+    "label": {
+      "source": "Quellcode",
+      "lexer": "Lexer",
+      "parser": "Parser",
+      "typeChecker": "Typprüfer",
+      "interpreter": "Interpreter",
+      "output": "Ausgabe",
+      "ilCompiler": "IL-Compiler",
+      "dotNetAssembly": ".NET-Assembly"
+    },
+    "detail": {
+      "lexer": "Tokenisierung",
+      "parser": "AST-Erzeugung",
+      "typeChecker": "Statische Analyse",
+      "interpreter": "Baumdurchlauf",
+      "ilCompiler": "AOT-Kompilierung"
+    },
+    "selectHint": "Wählen Sie oben eine Stufe aus, um zu sehen, was sie tut.",
+    "explain": {
+      "lexer": "Ein Scan in einem einzigen Durchgang wandelt den rohen TypeScript-Quelltext in einen Token-Strom um — Schlüsselwörter, Bezeichner, Literale und Operatoren — das Vokabular, das der Parser liest.",
+      "parser": "Ein Parser mit rekursivem Abstieg liest die Tokens und erstellt einen abstrakten Syntaxbaum (AST) aus unveränderlichen Records; dabei wandelt er Konstrukte wie for-Schleifen in while-Schleifen um und löst Destrukturierung auf.",
+      "typeChecker": "Validiert den AST statisch anhand der Typregeln von TypeScript, bevor irgendetwas läuft — nominale Typisierung für Klassen, strukturelle Typisierung für Schnittstellen. Typfehler stoppen das Programm hier.",
+      "interpreter": "Durchläuft den validierten AST und führt ihn direkt aus, ohne Build-Schritt — der schnelle Weg hinter REPL und Playground. Laufzeitwerte leben in ihrer eigenen Umgebung, getrennt von den Typen.",
+      "ilCompiler": "Der vorzeitige Weg (AOT): überführt das Programm in rund zwanzig Phasen in .NET-IL — Closures werden zu Display-Klassen, Async und Generatoren zu Zustandsautomaten — und erzeugt eine echte .NET-Assembly."
+    },
+    "cta": {
+      "learnMore": "So funktioniert es"
+    }
+  }
+}

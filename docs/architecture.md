@@ -10,7 +10,7 @@ for the language itself.
 ```text
 server.ts + supervisor.ts ── SharpTS AOT compiler ──> HTTP server DLL
 worker.ts                  ── SharpTS AOT compiler ──> worker executable
-site modules + .resx       ── SharpTS interpreter ──> localized HTML/CSS
+site modules + JSON        ── SharpTS interpreter ──> localized HTML/CSS
 browser/site.ts            ── TypeScript + esbuild ──> split browser JS/CSS
 ```
 
@@ -74,14 +74,22 @@ runtime types. The browser and supervisor validate JSON again before use.
 ## Static generation and localization
 
 The generator is separated into path/configuration, localization, safe HTML,
-filesystem, validation/build, and page-markup modules. It treats English
-`.resx` files as the neutral resource set and requires identical keys for
-French, Spanish, German, and Simplified Chinese.
+filesystem, validation/build, and page-markup modules. Each of the five culture
+directories contains `common.json`, `home.json`, `how-it-works.json`, and
+`conformance.json`. English defines the recursive dotted-key shape; every leaf
+must be a string, and French, Spanish, German, and Simplified Chinese must have
+identical keys and named-placeholder sets. Catalogs are read with
+`readFileSync`/`JSON.parse` at build time and are not shipped to the browser.
 It emits direct path-based routes rather than selecting culture at request time.
 CSS sources are concatenated deterministically. The browser manifest identifies
 fingerprinted entry/chunk files; the small site controller loads the playground
 and CodeMirror chunk only when needed. Dependencies and fonts are bundled
 locally so the production Content Security Policy needs no CDN.
+
+Templates use strict named interpolation (`{count}`, `{duration}`, `{stage}`),
+including repeated values and locale-specific ordering. The static generator
+and browser import the same formatter. Localized hero and playground comments
+are composed with typed TypeScript code bodies during rendering.
 
 `showcase-data.ts` is the typed source of truth for displayed examples, expected
 output, execution surface, and the human-reviewed feature matrix revision. The

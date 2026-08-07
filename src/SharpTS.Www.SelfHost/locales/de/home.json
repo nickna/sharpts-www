@@ -1,0 +1,290 @@
+{
+  "metadata": {
+    "title": "SharpTS — TypeScript für .NET",
+    "description": "SharpTS — ein TypeScript-Interpreter und AOT-Compiler für .NET. Führen Sie TypeScript nativ auf der .NET-Laufzeit aus."
+  },
+  "og": {
+    "title": "SharpTS — TypeScript für .NET",
+    "description": "Ein TypeScript-Interpreter und AOT-Compiler für .NET. Führen Sie TypeScript nativ auf der .NET-Laufzeit aus."
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Die Fragen, die zuerst kommen — direkt beantwortet.",
+    "q1": "Worin unterscheidet sich SharpTS von tsc?",
+    "a1": "tsc prüft die Typen Ihres Codes und erzeugt JavaScript, das eine Engine wie Node ausführt. SharpTS erzeugt nie JavaScript: Es prüft dasselbe TypeScript und führt es dann entweder direkt aus oder kompiliert es zu einer .NET-Assembly. Nirgendwo in der Kette steckt Node — die einzige Voraussetzung ist das .NET SDK.",
+    "q2": "Warum nicht eine JavaScript-Engine wie Jint oder ClearScript einbetten?",
+    "a2": "Diese Projekte führen reines, untypisiertes JavaScript in einem .NET-Host aus — gut geeignet für kleine eingebettete Skripte. SharpTS führt TypeScript selbst aus, typgeprüft vor der Ausführung, und bietet, was eine eingebettete JS-Engine nicht kann: vorzeitige Kompilierung zu IL, NuGet-Paketierung und typisierte Interop in beide Richtungen zwischen TypeScript und C#.",
+    "q3": "Kann ich npm-Pakete verwenden?",
+    "a3": "Teilweise. Importe ohne Pfad werden über node_modules aufgelöst, daher können Pakete funktionieren, die TypeScript-Quellcode ausliefern, und eine wachsende Zahl von Node-Built-ins — fs, path, process, buffer, events, streams — ist nativ auf .NET implementiert. Pakete, die reines JavaScript ausliefern oder auf die „exports“-Einträge in package.json angewiesen sind, werden noch nicht unterstützt.",
+    "link": {
+      "nodeStatus": "Zur Node.js-Kompatibilitätsübersicht →",
+      "status": "Fortschritt in STATUS.md verfolgen →"
+    },
+    "q4": "Ist es schnell?",
+    "a4": "Jeder Modus antwortet anders. Der Interpreter durchläuft den Syntaxbaum und ist auf sofortigen Start ausgelegt — richtig für Skripte und die REPL, nicht für Zahlenakrobatik. Der kompilierte Modus erzeugt IL, das der CLR-JIT wie jede C#-Assembly kompiliert: Es läuft als nativer .NET-Code. In beiden Modi werden die Typen vorab geprüft und dann entfernt — zur Laufzeit kosten sie nichts.",
+    "q5": "Wie ausgereift ist SharpTS?",
+    "a5": "Es ist ein junges, MIT-lizenziertes Projekt in aktiver Entwicklung. Die Übersicht oben zeigt das ehrliche Bild: Der größte Teil der modernen Sprache funktioniert, und die Lücken — etwa Proxy und WeakRef — sind aufgelistet statt versteckt."
+  },
+  "comparison": {
+    "title": "Was unterstützt wird",
+    "subtitle": "Das TypeScript, das Sie ohnehin schreiben — Funktion für Funktion.",
+    "th": {
+      "feature": "Funktion",
+      "status": "Status",
+      "notes": "Anmerkungen"
+    },
+    "badge": {
+      "implemented": "Implementiert",
+      "partial": "Teilweise",
+      "missing": "Fehlt"
+    },
+    "group": {
+      "typeSystem": "Typsystem",
+      "classes": "Klassen & OOP",
+      "functions": "Funktionen & Async",
+      "modules": "Module",
+      "builtinApis": "Integrierte APIs",
+      "advanced": "Erweitert"
+    },
+    "feat": {
+      "primitiveTypes": "Primitive Typen",
+      "generics": "Generics",
+      "unionIntersection": "Union- & Intersection-Typen",
+      "literalTypes": "Literal-Typen",
+      "tupleTypes": "Tupel-Typen",
+      "conditionalTypes": "Conditional Types",
+      "mappedTypes": "Mapped Types",
+      "templateLiteralTypes": "Template-Literal-Typen",
+      "utilityTypes": "Utility-Typen",
+      "classesInheritance": "Klassen & Vererbung",
+      "accessModifiers": "Zugriffsmodifizierer",
+      "abstractClasses": "Abstrakte Klassen",
+      "gettersSetters": "Getter/Setter",
+      "privateFields": "Private Felder (#field)",
+      "staticBlocks": "Statische Blöcke",
+      "decorators": "Dekoratoren",
+      "methodOverloading": "Methodenüberladung",
+      "arrowFunctions": "Pfeilfunktionen",
+      "restSpread": "Rest/Spread",
+      "closures": "Closures",
+      "asyncAwait": "async/await",
+      "promiseCombinators": "Promise.all/race/any",
+      "generators": "Generatoren (function*)",
+      "asyncGenerators": "Asynchrone Generatoren",
+      "forAwaitOf": "for await...of",
+      "importExport": "import/export",
+      "defaultExports": "Standard-Exporte",
+      "namespaceImports": "Namespace-Importe",
+      "dynamicImports": "Dynamische Importe",
+      "typeScriptNamespaces": "TypeScript-Namespaces",
+      "importType": "import type",
+      "moduleAugmentation": "Modulerweiterung",
+      "consoleLog": "console.log",
+      "mathObject": "Math-Objekt",
+      "stringMethods": "String-Methoden",
+      "arrayMethods": "Array-Methoden",
+      "mapSet": "Map/Set",
+      "regExp": "RegExp",
+      "date": "Date",
+      "json": "JSON",
+      "promise": "Promise",
+      "symbol": "Symbol",
+      "proxy": "Proxy",
+      "weakRef": "WeakRef",
+      "usingAwaitUsing": "using/await using",
+      "satisfiesOperator": "satisfies-Operator",
+      "constTypeParameters": "const-Typparameter",
+      "bigintType": "bigint-Typ",
+      "typedArrays": "TypedArrays",
+      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
+    },
+    "note": {
+      "generics": "Vollständige Unterstützung mit Constraints",
+      "tupleTypes": "Optionale, Rest- und benannte Elemente",
+      "conditionalTypes": "infer-Schlüsselwort, Distribution",
+      "mappedTypes": "keyof, indizierter Zugriff",
+      "utilityTypes": "Partial, Required, Pick, Omit usw.",
+      "decorators": "Legacy & TC39 Stage 3",
+      "consoleLog": "Formatangaben im printf-Stil",
+      "stringMethods": "Über 40 Methoden",
+      "arrayMethods": "Über 50 Methoden",
+      "mapSet": "ES2025-Set-Operationen",
+      "usingAwaitUsing": "TS 5.2+ Ressourcenverwaltung"
+    },
+    "link": {
+      "conformance": "Live-Spezifikationskonformität ansehen →"
+    }
+  },
+  "features": {
+    "title": "Was SharpTS leistet",
+    "subtitle": "Schreiben Sie TypeScript, das auf der .NET-Laufzeit läuft — interpretiert für schnelle Iteration oder kompiliert zu nativen .NET-Assemblys.",
+    "card1": {
+      "title": "Sofort ausführen",
+      "desc": "Richten Sie SharpTS auf eine .ts-Datei, und sie läuft — ohne Build-Schritt, ohne Konfiguration. Ideal für Skripte, Automatisierung und das Ausprobieren von Ideen in der REPL."
+    },
+    "card2": {
+      "title": "Nach .NET kompilieren",
+      "desc": "Vorzeitige Kompilierung zu einer echten .NET-Assembly — einer DLL, einer eigenständigen ausführbaren Datei oder einem NuGet-Paket — mit nativer CLR-Geschwindigkeit."
+    },
+    "card3": {
+      "title": "Interop in beide Richtungen",
+      "desc": "Rufen Sie .NET-Bibliotheken aus TypeScript mit <code>@DotNetType</code> auf und nutzen Sie Ihr kompiliertes TypeScript aus C#. Verwenden Sie die BCL, NuGet-Pakete und vorhandenen Code weiter."
+    },
+    "card4": {
+      "title": "Echtes TypeScript",
+      "desc": "Keine Teilmenge — die echte Sprache: Generics, Klassen, Decorators, Async, Module und mehr, alle typgeprüft, bevor Ihr Code läuft. Die vollständige Übersicht finden Sie unten."
+    },
+    "card5": {
+      "title": "Passt in Ihren .NET-Build",
+      "desc": "Fügen Sie das <code>SharpTS.Sdk</code> zu einem .NET-Projekt hinzu, und <code>dotnet build</code> kompiliert Ihr TypeScript zusammen mit Ihrem C# — dieselbe Toolchain, dasselbe Ergebnis."
+    },
+    "card6": {
+      "title": "Editor-Unterstützung",
+      "desc": "Ein Language Server bringt Autovervollständigung, Typprüfung und „Gehe zu Definition“ in VS Code und Visual Studio."
+    }
+  },
+  "gettingStarted": {
+    "title": "Erste Schritte",
+    "subtitle": "In drei Schritten einsatzbereit",
+    "terminal": "Terminal",
+    "step1": {
+      "title": "Installieren",
+      "desc": "Installieren Sie SharpTS als globales .NET-Tool"
+    },
+    "step2": {
+      "title": "Schreiben",
+      "desc": "Erstellen Sie eine TypeScript-Datei"
+    },
+    "step3": {
+      "title": "Ausführen",
+      "desc": "Direkt interpretieren oder zu einer .NET-Assembly kompilieren"
+    },
+    "runCode": "# Interpretieren (sofortiger Start)\nsharpts hello.ts\n\n# Zu einer .NET-Assembly kompilieren\nsharpts --compile hello.ts -o hello"
+  },
+  "hero": {
+    "badge": "Open Source — MIT-Lizenz",
+    "tagline": "Ein TypeScript-Interpreter und AOT-Compiler für .NET",
+    "subtagline": "Führen Sie es als Skript für sofortiges Feedback aus oder kompilieren Sie es zu einer nativen .NET-Assembly — mit vollem Zugriff auf das .NET-Ökosystem.",
+    "starOnGitHub": "Auf GitHub mit Stern markieren",
+    "codeComment": "// Führen Sie TypeScript direkt auf .NET aus"
+  },
+  "examples": {
+    "title": "In Aktion sehen",
+    "subtitle": "Echtes TypeScript, ausgeführt auf der .NET-Laufzeit",
+    "output": "Ausgabe",
+    "ex1": {
+      "title": "Hallo Welt"
+    },
+    "ex2": {
+      "title": "Klassen & Generics"
+    },
+    "ex3": {
+      "title": "Async/Await"
+    },
+    "ex4": {
+      "title": "Funktional"
+    },
+    "ex5": {
+      "title": "Integrierte APIs"
+    },
+    "ex6": {
+      "title": ".NET aufrufen"
+    },
+    "cta": {
+      "tryYourOwn": "Eigenen Code ausführen? Playground öffnen ↓"
+    }
+  },
+  "playground": {
+    "title": "Interaktiver Playground",
+    "subtitle": "Schreiben Sie TypeScript und führen Sie es auf .NET aus — direkt in Ihrem Browser",
+    "selectPreset": "Vorlage auswählen…",
+    "clear": "Leeren",
+    "running": "Wird ausgeführt…",
+    "run": "Ausführen",
+    "runShortcut": "Ctrl+Enter",
+    "output": "Ausgabe",
+    "placeholder": "Klicken Sie auf Ausführen oder drücken Sie Strg+Eingabe zum Ausführen",
+    "introComment": "// Willkommen im SharpTS-Playground!\n// Schreiben Sie TypeScript und klicken Sie auf Ausführen (oder Strg+Eingabe)",
+    "modeLabel": "Ausführungsmodus",
+    "modeInterpret": "Interpretieren",
+    "modeCompile": "Kompilieren",
+    "timingCompiled": "kompiliert in {compileDuration} ms · ausgeführt in {executionDuration} ms",
+    "timingExecuted": "{duration} ms",
+    "requestFailed": "Die Playground-Anfrage ist fehlgeschlagen. Bitte versuche es erneut.",
+    "invalidResponse": "Der Playground hat eine ungültige Serverantwort erhalten.",
+    "timingHeadline": "Ausgeführt in {duration}",
+    "timingFailedHeadline": "{stage} fehlgeschlagen",
+    "timingJourneyLabel": "Ausführungsphasen",
+    "timingSharpTSPipeline": "SharpTS-Pipeline: {duration}",
+    "timingEndToEnd": "Ende-zu-Ende: {duration}",
+    "timingStatusCompleted": "abgeschlossen",
+    "timingStatusFailed": "fehlgeschlagen",
+    "timingPhaseTokenizeName": "Tokenisierung",
+    "timingPhaseTokenizeDescription": "Wandelt den Quelltext in Token um.",
+    "timingPhaseParseName": "Syntaxanalyse",
+    "timingPhaseParseDescription": "Erstellt aus den Token die Programmstruktur.",
+    "timingPhaseValidateModulesName": "Module prüfen",
+    "timingPhaseValidateModulesDescription": "Lehnt Modulsyntax ab, die bei der Einzelquellenausführung nicht geladen werden kann.",
+    "timingPhaseTypeCheckName": "Typprüfung",
+    "timingPhaseTypeCheckDescription": "Prüft TypeScript-Typen und meldet statische Fehler.",
+    "timingPhasePrepareInterpreterName": "Interpreter vorbereiten",
+    "timingPhasePrepareInterpreterDescription": "Erstellt die Laufzeitumgebung und löst Variablen auf.",
+    "timingPhaseCompileName": "Kompilieren",
+    "timingPhaseCompileDescription": "Erzeugt nach der Analyse die .NET-Assembly im Speicher.",
+    "timingPhaseAnalyzeDeadCodeName": "Toten Code analysieren",
+    "timingPhaseAnalyzeDeadCodeDescription": "Findet nicht erreichbaren Code vor der IL-Erzeugung.",
+    "timingPhaseInitializeCompilerName": "Compiler initialisieren",
+    "timingPhaseInitializeCompilerDescription": "Erstellt den IL-Compiler und die Ausgabe-Assembly.",
+    "timingPhasePrepareCompilationName": "Kompilierung vorbereiten",
+    "timingPhasePrepareCompilationDescription": "Initialisiert den Compilerzustand für das analysierte Programm.",
+    "timingPhaseExtractNamespacesName": "Namespaces extrahieren",
+    "timingPhaseExtractNamespacesDescription": "Erfasst TypeScript-Namespace-Deklarationen.",
+    "timingPhaseEmitRuntimeTypesName": "Laufzeittypen erzeugen",
+    "timingPhaseEmitRuntimeTypesDescription": "Erzeugt Hilfstypen für die SharpTS-Laufzeit.",
+    "timingPhaseAnalyzeClosuresName": "Closures analysieren",
+    "timingPhaseAnalyzeClosuresDescription": "Bestimmt erfasste Variablen und Closure-Strukturen.",
+    "timingPhaseDefineProgramStructureName": "Programmstruktur definieren",
+    "timingPhaseDefineProgramStructureDescription": "Definiert erzeugte Module, Klassen und Programmcontainer.",
+    "timingPhaseAnalyzeModuleBindingsName": "Modulbindungen analysieren",
+    "timingPhaseAnalyzeModuleBindingsDescription": "Löst Bindungen für den erzeugten Modulcode auf.",
+    "timingPhaseDefineDeclarationsName": "Deklarationen definieren",
+    "timingPhaseDefineDeclarationsDescription": "Definiert Felder, Methoden und weitere Ausgabedeklarationen.",
+    "timingPhaseCollectFunctionsName": "Funktionen erfassen",
+    "timingPhaseCollectFunctionsDescription": "Registriert Funktionen, für die Methoden erzeugt werden.",
+    "timingPhaseEmitFunctionBodiesName": "Funktionskörper erzeugen",
+    "timingPhaseEmitFunctionBodiesDescription": "Erzeugt IL für eigenständige und verschachtelte Funktionen.",
+    "timingPhaseEmitMethodBodiesName": "Methodenkörper erzeugen",
+    "timingPhaseEmitMethodBodiesDescription": "Erzeugt IL für Klassen- und Objektmethoden.",
+    "timingPhaseEmitEntryPointName": "Einstiegspunkt erzeugen",
+    "timingPhaseEmitEntryPointDescription": "Erzeugt den Einstiegspunkt des Programms.",
+    "timingPhaseFinalizeTypesName": "Typen abschließen",
+    "timingPhaseFinalizeTypesDescription": "Schließt die erzeugten .NET-Typdefinitionen ab.",
+    "timingPhaseSerializeAssemblyName": "Assembly serialisieren",
+    "timingPhaseSerializeAssemblyDescription": "Schreibt die erzeugten PE- und PDB-Abbilder in den Speicher.",
+    "timingPhaseLoadName": "Laden",
+    "timingPhaseLoadDescription": "Lädt die erzeugte Assembly und findet ihren Einstiegspunkt.",
+    "timingPhaseExecuteName": "Ausführen",
+    "timingPhaseExecuteDescription": "Ruft das Programm auf. Kompilierte Läufe können verzögerte JIT-Arbeit beim ersten Aufruf enthalten."
+  },
+  "useCases": {
+    "title": "Wann SharpTS passt",
+    "subtitle": "Konkrete Situationen, in denen TypeScript auf .NET die bessere Wahl ist als Node — oder als C#.",
+    "terminal": "Terminal",
+    "case1": {
+      "title": "Skripte und Automatisierung für .NET-Teams",
+      "desc": "Schreiben Sie Build-Skripte, Entwickler-Tools und einmalige Automatisierung in TypeScript mit der gesamten BCL — auf Maschinen, die bereits das .NET SDK haben und keine Node-Toolchain. Kein <code>package.json</code>, kein Build-Schritt: Richten Sie <code>sharpts</code> auf die Datei."
+    },
+    "case2": {
+      "title": "TypeScript-Logik als .NET-Bibliothek ausliefern",
+      "desc": "Kompilieren Sie ein TypeScript-Modul zu einer echten Assembly und veröffentlichen Sie es als versioniertes NuGet-Paket. Mit einer Referenz-Assembly instanziieren C#-Aufrufer Ihre Klassen und rufen Ihre Methoden vollständig typisiert auf."
+    },
+    "case3": {
+      "title": "TypeScript-Entwickler in einer .NET-Codebasis",
+      "desc": "Lassen Sie Kolleginnen und Kollegen mit TypeScript-Hintergrund in der Sprache beitragen, die sie am besten kennen. Mit dem <code>SharpTS.Sdk</code> werden ihre <code>.ts</code>-Dateien im selben <code>dotnet build</code> kompiliert wie die C#-Projekte drumherum — eine Toolchain, eine CI-Pipeline."
+    },
+    "case4": {
+      "title": "Eigenständige Kommandozeilen-Tools",
+      "desc": "Kompilieren Sie zu einer einzigen eigenständigen ausführbaren Datei, die ohne separate Laufzeitinstallation läuft — kein Node auf der Zielmaschine, kein <code>node_modules</code>-Ordner neben Ihrem Tool."
+    }
+  }
+}

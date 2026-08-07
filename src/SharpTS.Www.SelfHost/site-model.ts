@@ -4,9 +4,13 @@ export interface CultureInfo {
     openGraphLocale: string;
 }
 
+export interface MessageCatalog {
+    [key: string]: string | MessageCatalog;
+}
+
 export interface Locale {
     culture: CultureInfo;
-    bundles: { [bundle: string]: { [key: string]: string } };
+    messages: { [catalog: string]: MessageCatalog };
 }
 
 export type PageKind = 'home' | 'guide' | 'conformance';
@@ -45,21 +49,4 @@ export const cultures: CultureInfo[] = [
 
 export const pageKinds: PageKind[] = ['home', 'guide', 'conformance'];
 
-export const bundleNames = [
-    'Components.App',
-    'Components.Pages.Conformance',
-    'Components.Pages.HowItWorks',
-    'Components.Sections.ArchitectureDiagram',
-    'Components.Sections.FaqSection',
-    'Components.Sections.FeatureComparison',
-    'Components.Sections.FeaturesGrid',
-    'Components.Sections.FooterSection',
-    'Components.Sections.GettingStarted',
-    'Components.Sections.HeroSection',
-    'Components.Sections.LiveCodeExamples',
-    'Components.Sections.NavHeader',
-    'Components.Sections.PlaygroundSection',
-    'Components.Sections.WhenItFits',
-    'Components.Shared.CopyButton',
-    'Components.Shared.LanguageSelector'
-];
+export const catalogNames = ['common', 'home', 'how-it-works', 'conformance'];

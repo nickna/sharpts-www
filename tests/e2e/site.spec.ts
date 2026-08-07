@@ -205,11 +205,11 @@ test('execution timing contract reports mode-specific and partial phase sequence
 
 test('execution journey labels are available in every locale and reduced motion is honored', async ({ page }) => {
     const locales = [
-        ['/', 'Execute', 'SharpTS pipeline: {0}'],
-        ['/de', 'Ausführen', 'SharpTS-Pipeline: {0}'],
-        ['/es', 'Ejecución', 'Proceso de SharpTS: {0}'],
-        ['/fr', 'Exécution', 'Pipeline SharpTS : {0}'],
-        ['/zh-Hans', '执行', 'SharpTS 流程：{0}']
+        ['/', 'Execute', 'SharpTS pipeline: {duration}'],
+        ['/de', 'Ausführen', 'SharpTS-Pipeline: {duration}'],
+        ['/es', 'Ejecución', 'Proceso de SharpTS: {duration}'],
+        ['/fr', 'Exécution', 'Pipeline SharpTS : {duration}'],
+        ['/zh-Hans', '执行', 'SharpTS 流程：{duration}']
     ];
     for (const [route, executeLabel, pipelineLabel] of locales) {
         await page.goto(route);

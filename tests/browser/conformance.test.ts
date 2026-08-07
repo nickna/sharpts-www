@@ -28,7 +28,7 @@ function fixture(): void {
           </details>
         </div>
         <p data-conformance-empty hidden>None</p>
-        <p data-conformance-result-count data-count-template="{0} groups"></p>
+        <p data-conformance-result-count data-count-template="{count} groups"></p>
       </section>
       <section data-conformance-suite="typescript" data-view-mode="interpreted">
         <div data-conformance-suite-controls hidden>
@@ -36,7 +36,7 @@ function fixture(): void {
         </div>
         <div class="conformance__tree"><div data-conformance-node data-conformance-name="conditional" data-interpreted-status="partial"></div></div>
         <p data-conformance-empty hidden>None</p>
-        <p data-conformance-result-count data-count-template="{0} groups"></p>
+        <p data-conformance-result-count data-count-template="{count} groups"></p>
       </section>
     </main>`;
 }

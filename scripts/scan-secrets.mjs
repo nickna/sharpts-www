@@ -26,6 +26,8 @@ const findings = [];
 let scanned = 0;
 for (const relativePath of listed.stdout.split('\0').filter(Boolean)) {
     const filePath = path.join(repoRoot, relativePath);
+    // Deleted tracked files remain in the index until a migration is staged.
+    if (!fs.existsSync(filePath)) continue;
     const stat = fs.statSync(filePath);
     if (!stat.isFile() || stat.size > 1024 * 1024) continue;
     const content = fs.readFileSync(filePath);

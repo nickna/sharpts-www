@@ -13,7 +13,7 @@ it('wires playground controls before optional enhancements and preset loading co
         <button data-playground-clear>Clear</button>
         <button data-playground-run aria-busy="false">Run</button>
         <div id="playground-editor"><textarea data-playground-editor>initial</textarea></div>
-        <span data-playground-timing data-timing-compiled="compiled {0}ms / ran {1}ms" data-timing-executed="ran {0}ms" hidden></span>
+        <span data-playground-timing data-timing-compiled="compiled {compileDuration}ms / ran {executionDuration}ms" data-timing-executed="ran {duration}ms" hidden></span>
         <div data-playground-output><span class="playground__placeholder">Run something</span></div>
       </div>
     </main>`;

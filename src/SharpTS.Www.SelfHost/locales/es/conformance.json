@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "title": "Conformidad con la especificación — SharpTS",
+    "description": "Explora los resultados de SharpTS de los corpus fijados de Test262 y TypeScript."
+  },
+  "eyebrow": "Compatibilidad empírica",
+  "title": "Conformidad con la especificación",
+  "subtitle": "Explora resultados reales de la revisión exacta de SharpTS que ejecuta este sitio, desde áreas generales del lenguaje hasta funciones y características concretas.",
+  "feature": "Característica",
+  "interpreted": "Interpretado",
+  "compiled": "Compilado",
+  "notAvailable": "No disponible",
+  "barAria": "{passed} de {eligible} pruebas válidas pasan ({percentage} por ciento).",
+  "skipped": "omitidas",
+  "percentageFootnote": "Los porcentajes cuentan los resultados Pass sobre todos los resultados no omitidos. Cualquier otro resultado no omitido cuenta como fallo; los omitidos se muestran por separado.",
+  "honestyFootnote": "Test262 examina casos límite de la especificación mucho más allá de los programas habituales. Estos totales se muestran sin ajustes.",
+  "provenance": "Generado a partir de",
+  "test262Suite": "suite Test262",
+  "typeScriptSuite": "suite TypeScript",
+  "category": {
+    "builtIns": "Objetos integrados",
+    "language": "Lenguaje",
+    "typeSystem": "Sistema de tipos",
+    "general": "General"
+  },
+  "suiteNavigation": "Suites de conformidad",
+  "overview": "Resumen de conformidad",
+  "eligible": "pruebas elegibles",
+  "summary": {
+    "test262Interpreted": "Test262 · Intérprete",
+    "test262Compiled": "Test262 · Compilador AOT",
+    "typeScript": "TypeScript · Diagnósticos",
+    "runtime": "Semántica de ejecución ECMAScript",
+    "diagnostics": "Coincidencia de diagnósticos con tsc"
+  },
+  "search": {
+    "label": "Buscar características",
+    "placeholder": "Array, conditional, modules…"
+  },
+  "expandAll": "Expandir visibles",
+  "collapseAll": "Contraer visibles",
+  "reset": "Restablecer",
+  "test262": {
+    "eyebrow": "Ejecución ECMAScript",
+    "title": "Conformidad Test262",
+    "description": "Pruebas de TC39 para el lenguaje JavaScript y el comportamiento de objetos integrados, ejecutadas por ambos motores de SharpTS."
+  },
+  "typeScript": {
+    "eyebrow": "Analizador y comprobador de tipos",
+    "title": "Conformidad de diagnósticos TypeScript",
+    "description": "Casos de Microsoft TypeScript donde Pass significa que los diagnósticos de SharpTS coinciden con tsc por línea de origen y código de error TS."
+  },
+  "diagnosticMatch": "Coincidencia de diagnósticos",
+  "mode": {
+    "label": "Modo",
+    "compare": "Comparar"
+  },
+  "status": {
+    "label": "Estado",
+    "all": "Todos los resultados",
+    "passing": "Completamente aprobadas",
+    "partial": "Parciales",
+    "zero": "Sin aprobadas",
+    "noEligible": "Sin pruebas elegibles"
+  },
+  "delta": {
+    "label": "Diferencia respecto al intérprete en puntos porcentuales"
+  },
+  "legend": {
+    "label": "Resultados de pruebas"
+  },
+  "outcome": {
+    "pass": "Aprobada",
+    "fail": "Fallida",
+    "parseError": "Error de análisis",
+    "typeCheckError": "Error de tipos",
+    "runtimeError": "Error de ejecución",
+    "timeout": "Tiempo agotado",
+    "harnessError": "Error del sistema de pruebas",
+    "skipped": "Omitida"
+  },
+  "noResults": "Ningún grupo de características coincide con estos filtros.",
+  "resultCount": "{count} grupos de características coincidentes"
+}

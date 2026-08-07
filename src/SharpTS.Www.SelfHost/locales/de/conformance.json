@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "title": "Spezifikationskonformität — SharpTS",
+    "description": "Erkunden Sie SharpTS-Ergebnisse aus den fixierten Test262- und TypeScript-Korpora."
+  },
+  "eyebrow": "Empirische Kompatibilität",
+  "title": "Spezifikationskonformität",
+  "subtitle": "Durchsuchen Sie echte Ergebnisse genau der SharpTS-Version dieser Website – von breiten Sprachbereichen bis zu einzelnen integrierten Funktionen.",
+  "feature": "Funktion",
+  "interpreted": "Interpretiert",
+  "compiled": "Kompiliert",
+  "notAvailable": "Nicht verfügbar",
+  "barAria": "{passed} von {eligible} berücksichtigten Tests bestanden ({percentage} Prozent).",
+  "skipped": "übersprungen",
+  "percentageFootnote": "Prozentwerte zählen Pass-Ergebnisse unter allen nicht übersprungenen Ergebnissen. Jedes andere nicht übersprungene Ergebnis gilt als nicht bestanden; übersprungene Ergebnisse werden separat gezeigt.",
+  "honestyFootnote": "Test262 prüft Spezifikationsrandfälle weit über typische Programme hinaus. Diese Summen werden unverändert dargestellt.",
+  "provenance": "Erzeugt aus",
+  "test262Suite": "Test262-Suite",
+  "typeScriptSuite": "TypeScript-Suite",
+  "category": {
+    "builtIns": "Integrierte Objekte",
+    "language": "Sprache",
+    "typeSystem": "Typsystem",
+    "general": "Allgemein"
+  },
+  "suiteNavigation": "Konformitätssuiten",
+  "overview": "Konformitätsübersicht",
+  "eligible": "berücksichtigte Tests",
+  "summary": {
+    "test262Interpreted": "Test262 · Interpreter",
+    "test262Compiled": "Test262 · AOT-Compiler",
+    "typeScript": "TypeScript · Diagnosen",
+    "runtime": "ECMAScript-Laufzeitsemantik",
+    "diagnostics": "Diagnoseübereinstimmung mit tsc"
+  },
+  "search": {
+    "label": "Funktionen suchen",
+    "placeholder": "Array, conditional, modules…"
+  },
+  "expandAll": "Sichtbare aufklappen",
+  "collapseAll": "Sichtbare zuklappen",
+  "reset": "Zurücksetzen",
+  "test262": {
+    "eyebrow": "ECMAScript-Laufzeit",
+    "title": "Test262-Konformität",
+    "description": "TC39-Tests für JavaScript-Sprache und integriertes Laufzeitverhalten, ausgeführt mit beiden SharpTS-Backends."
+  },
+  "typeScript": {
+    "eyebrow": "Parser und Typprüfung",
+    "title": "TypeScript-Diagnosekonformität",
+    "description": "Microsoft-TypeScript-Fälle, bei denen Pass bedeutet, dass SharpTS-Diagnosen nach Quellzeile und TS-Fehlercode mit tsc übereinstimmen."
+  },
+  "diagnosticMatch": "Diagnoseabgleich",
+  "mode": {
+    "label": "Modus",
+    "compare": "Vergleichen"
+  },
+  "status": {
+    "label": "Status",
+    "all": "Alle Ergebnisse",
+    "passing": "Vollständig bestanden",
+    "partial": "Teilweise",
+    "zero": "Keine bestanden",
+    "noEligible": "Keine berücksichtigten Tests"
+  },
+  "delta": {
+    "label": "Unterschied zum Interpreter in Prozentpunkten"
+  },
+  "legend": {
+    "label": "Testergebnisse"
+  },
+  "outcome": {
+    "pass": "Bestanden",
+    "fail": "Fehlgeschlagen",
+    "parseError": "Parserfehler",
+    "typeCheckError": "Typprüfungsfehler",
+    "runtimeError": "Laufzeitfehler",
+    "timeout": "Zeitüberschreitung",
+    "harnessError": "Testsystemfehler",
+    "skipped": "Übersprungen"
+  },
+  "noResults": "Keine Funktionsgruppen entsprechen diesen Filtern.",
+  "resultCount": "{count} passende Funktionsgruppen"
+}

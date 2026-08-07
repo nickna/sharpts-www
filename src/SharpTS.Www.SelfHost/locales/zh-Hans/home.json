@@ -1,0 +1,290 @@
+{
+  "metadata": {
+    "title": "SharpTS — 面向 .NET 的 TypeScript",
+    "description": "SharpTS — 面向 .NET 的 TypeScript 解释器和 AOT 编译器。在 .NET 运行时上原生运行 TypeScript。"
+  },
+  "og": {
+    "title": "SharpTS — 面向 .NET 的 TypeScript",
+    "description": "面向 .NET 的 TypeScript 解释器和 AOT 编译器。在 .NET 运行时上原生运行 TypeScript。"
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "大家最先问到的问题——直截了当地回答。",
+    "q1": "SharpTS 和 tsc 有什么不同？",
+    "a1": "tsc 对代码做类型检查后生成 JavaScript，交给 Node 这样的引擎去运行。SharpTS 从不生成 JavaScript：它对同样的 TypeScript 做类型检查，然后要么直接执行，要么编译为 .NET 程序集。整条链路中没有 Node——唯一的前提是 .NET SDK。",
+    "q2": "为什么不嵌入 Jint 或 ClearScript 这样的 JavaScript 引擎？",
+    "a2": "那些项目在 .NET 宿主中运行的是无类型的纯 JavaScript——非常适合小型嵌入式脚本。SharpTS 运行的是 TypeScript 本身，执行前经过类型检查，并提供嵌入式 JS 引擎做不到的能力：预先编译为 IL、打包 NuGet，以及 TypeScript 与 C# 之间的双向类型化互操作。",
+    "q3": "可以使用 npm 包吗？",
+    "a3": "部分可以。裸导入会通过 node_modules 解析，因此随包提供 TypeScript 源码的包可以工作；同时越来越多的 Node 内置模块——fs、path、process、buffer、events、streams——已在 .NET 上原生实现。只提供纯 JavaScript 或依赖 package.json「exports」映射的包暂不支持。",
+    "link": {
+      "nodeStatus": "查看 Node.js 兼容性进度 →",
+      "status": "在 STATUS.md 中关注进展 →"
+    },
+    "q4": "它快吗？",
+    "a4": "两种模式的答案不同。解释器以遍历语法树的方式执行，为即时启动而调优——适合脚本和 REPL，不适合数值密集计算。编译模式生成的 IL 由 CLR 像任何 C# 程序集一样即时编译，作为原生 .NET 代码运行。两种模式下，类型都在前期检查后被擦除——运行时零开销。",
+    "q5": "SharpTS 有多成熟？",
+    "a5": "这是一个年轻的项目，采用 MIT 许可证，正在积极开发中。上方的支持对照表就是真实情况：现代语言的绝大部分已经可用，而缺口——比如 Proxy 和 WeakRef——是公开列出的，而不是被藏起来。"
+  },
+  "comparison": {
+    "title": "支持哪些特性",
+    "subtitle": "你平时编写的 TypeScript——逐项列出。",
+    "th": {
+      "feature": "特性",
+      "status": "状态",
+      "notes": "备注"
+    },
+    "badge": {
+      "implemented": "已实现",
+      "partial": "部分",
+      "missing": "缺失"
+    },
+    "group": {
+      "typeSystem": "类型系统",
+      "classes": "类与面向对象",
+      "functions": "函数与异步",
+      "modules": "模块",
+      "builtinApis": "内置 API",
+      "advanced": "高级"
+    },
+    "feat": {
+      "primitiveTypes": "基本类型",
+      "generics": "泛型",
+      "unionIntersection": "联合类型与交叉类型",
+      "literalTypes": "字面量类型",
+      "tupleTypes": "元组类型",
+      "conditionalTypes": "条件类型",
+      "mappedTypes": "映射类型",
+      "templateLiteralTypes": "模板字面量类型",
+      "utilityTypes": "工具类型",
+      "classesInheritance": "类与继承",
+      "accessModifiers": "访问修饰符",
+      "abstractClasses": "抽象类",
+      "gettersSetters": "Getter/Setter",
+      "privateFields": "私有字段 (#field)",
+      "staticBlocks": "静态块",
+      "decorators": "装饰器",
+      "methodOverloading": "方法重载",
+      "arrowFunctions": "箭头函数",
+      "restSpread": "Rest/展开",
+      "closures": "闭包",
+      "asyncAwait": "async/await",
+      "promiseCombinators": "Promise.all/race/any",
+      "generators": "生成器 (function*)",
+      "asyncGenerators": "异步生成器",
+      "forAwaitOf": "for await...of",
+      "importExport": "import/export",
+      "defaultExports": "默认导出",
+      "namespaceImports": "命名空间导入",
+      "dynamicImports": "动态导入",
+      "typeScriptNamespaces": "TypeScript 命名空间",
+      "importType": "import type",
+      "moduleAugmentation": "模块扩充",
+      "consoleLog": "console.log",
+      "mathObject": "Math 对象",
+      "stringMethods": "字符串方法",
+      "arrayMethods": "数组方法",
+      "mapSet": "Map/Set",
+      "regExp": "RegExp",
+      "date": "Date",
+      "json": "JSON",
+      "promise": "Promise",
+      "symbol": "Symbol",
+      "proxy": "Proxy",
+      "weakRef": "WeakRef",
+      "usingAwaitUsing": "using/await using",
+      "satisfiesOperator": "satisfies 运算符",
+      "constTypeParameters": "const 类型参数",
+      "bigintType": "bigint 类型",
+      "typedArrays": "TypedArrays",
+      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
+    },
+    "note": {
+      "generics": "完整支持，包含约束",
+      "tupleTypes": "可选、剩余和具名元素",
+      "conditionalTypes": "infer 关键字、分发",
+      "mappedTypes": "keyof、索引访问",
+      "utilityTypes": "Partial、Required、Pick、Omit 等",
+      "decorators": "旧版与 TC39 Stage 3",
+      "consoleLog": "Printf 风格的格式说明符",
+      "stringMethods": "40+ 个方法",
+      "arrayMethods": "50+ 个方法",
+      "mapSet": "ES2025 Set 操作",
+      "usingAwaitUsing": "TS 5.2+ 资源管理"
+    },
+    "link": {
+      "conformance": "查看实时规范一致性 →"
+    }
+  },
+  "features": {
+    "title": "SharpTS 能做什么",
+    "subtitle": "编写在 .NET 运行时上运行的 TypeScript——可解释执行以快速迭代，也可编译为原生 .NET 程序集。",
+    "card1": {
+      "title": "即刻运行",
+      "desc": "让 SharpTS 指向一个 .ts 文件即可运行——无需构建步骤，无需配置。非常适合脚本、自动化以及在 REPL 中尝试想法。"
+    },
+    "card2": {
+      "title": "编译为 .NET",
+      "desc": "预先编译为真正的 .NET 程序集——DLL、自包含可执行文件或 NuGet 包——以原生 CLR 速度运行。"
+    },
+    "card3": {
+      "title": "双向互操作",
+      "desc": "通过 <code>@DotNetType</code> 从 TypeScript 调用 .NET 库，并从 C# 使用你编译后的 TypeScript。复用 BCL、NuGet 包以及你已有的代码。"
+    },
+    "card4": {
+      "title": "真正的 TypeScript",
+      "desc": "并非子集——而是完整的语言：泛型、类、装饰器、异步、模块等等，在代码运行前全部经过类型检查。完整支持情况见下方对照表。"
+    },
+    "card5": {
+      "title": "融入你的 .NET 构建",
+      "desc": "将 <code>SharpTS.Sdk</code> 加入 .NET 项目，<code>dotnet build</code> 便会把你的 TypeScript 与 C# 一同编译——同一套工具链，同一种产物。"
+    },
+    "card6": {
+      "title": "编辑器支持",
+      "desc": "语言服务器为 VS Code 和 Visual Studio 带来自动补全、类型检查和转到定义。"
+    }
+  },
+  "gettingStarted": {
+    "title": "快速开始",
+    "subtitle": "三步即可上手",
+    "terminal": "终端",
+    "step1": {
+      "title": "安装",
+      "desc": "将 SharpTS 安装为 .NET 全局工具"
+    },
+    "step2": {
+      "title": "编写",
+      "desc": "创建一个 TypeScript 文件"
+    },
+    "step3": {
+      "title": "运行",
+      "desc": "直接解释执行，或编译为 .NET 程序集"
+    },
+    "runCode": "# 解释执行（瞬间启动）\nsharpts hello.ts\n\n# 编译为 .NET 程序集\nsharpts --compile hello.ts -o hello"
+  },
+  "hero": {
+    "badge": "开源 — MIT 许可证",
+    "tagline": "面向 .NET 的 TypeScript 解释器和 AOT 编译器",
+    "subtagline": "既可作为脚本运行以即时获得反馈，也可编译为原生 .NET 程序集——并能完整访问 .NET 生态系统。",
+    "starOnGitHub": "在 GitHub 上 Star",
+    "codeComment": "// 直接在 .NET 上运行 TypeScript"
+  },
+  "examples": {
+    "title": "实际体验",
+    "subtitle": "真实的 TypeScript 运行在 .NET 运行时上",
+    "output": "输出",
+    "ex1": {
+      "title": "你好，世界"
+    },
+    "ex2": {
+      "title": "类与泛型"
+    },
+    "ex3": {
+      "title": "异步/等待"
+    },
+    "ex4": {
+      "title": "函数式"
+    },
+    "ex5": {
+      "title": "内置 API"
+    },
+    "ex6": {
+      "title": "调用 .NET"
+    },
+    "cta": {
+      "tryYourOwn": "想运行你自己的代码？打开演练场 ↓"
+    }
+  },
+  "playground": {
+    "title": "交互式演练场",
+    "subtitle": "编写 TypeScript 并在 .NET 上运行 —— 就在你的浏览器中",
+    "selectPreset": "选择一个预设……",
+    "clear": "清除",
+    "running": "运行中……",
+    "run": "运行",
+    "runShortcut": "Ctrl+Enter",
+    "output": "输出",
+    "placeholder": "点击“运行”或按 Ctrl+Enter 执行",
+    "introComment": "// 欢迎来到 SharpTS 演练场！\n// 编写 TypeScript 并点击“运行”（或按 Ctrl+Enter）",
+    "modeLabel": "执行模式",
+    "modeInterpret": "解释执行",
+    "modeCompile": "编译执行",
+    "timingCompiled": "编译 {compileDuration} ms · 运行 {executionDuration} ms",
+    "timingExecuted": "{duration} ms",
+    "requestFailed": "运行请求失败，请重试。",
+    "invalidResponse": "运行环境收到了无效的服务器响应。",
+    "timingHeadline": "执行用时 {duration}",
+    "timingFailedHeadline": "{stage}失败",
+    "timingJourneyLabel": "执行阶段",
+    "timingSharpTSPipeline": "SharpTS 流程：{duration}",
+    "timingEndToEnd": "端到端：{duration}",
+    "timingStatusCompleted": "已完成",
+    "timingStatusFailed": "失败",
+    "timingPhaseTokenizeName": "词法分析",
+    "timingPhaseTokenizeDescription": "将源代码文本转换为词法标记。",
+    "timingPhaseParseName": "语法分析",
+    "timingPhaseParseDescription": "根据词法标记构建程序结构。",
+    "timingPhaseValidateModulesName": "验证模块",
+    "timingPhaseValidateModulesDescription": "拒绝单源执行无法加载的模块语法。",
+    "timingPhaseTypeCheckName": "类型检查",
+    "timingPhaseTypeCheckDescription": "检查 TypeScript 类型并报告静态错误。",
+    "timingPhasePrepareInterpreterName": "准备解释器",
+    "timingPhasePrepareInterpreterDescription": "创建运行时环境并解析变量。",
+    "timingPhaseCompileName": "编译",
+    "timingPhaseCompileDescription": "分析后在内存中生成 .NET 程序集。",
+    "timingPhaseAnalyzeDeadCodeName": "分析无效代码",
+    "timingPhaseAnalyzeDeadCodeDescription": "在生成 IL 前查找不可达代码。",
+    "timingPhaseInitializeCompilerName": "初始化编译器",
+    "timingPhaseInitializeCompilerDescription": "创建 IL 编译器和输出程序集。",
+    "timingPhasePrepareCompilationName": "准备编译",
+    "timingPhasePrepareCompilationDescription": "为已分析的程序初始化编译器状态。",
+    "timingPhaseExtractNamespacesName": "提取命名空间",
+    "timingPhaseExtractNamespacesDescription": "收集 TypeScript 命名空间声明。",
+    "timingPhaseEmitRuntimeTypesName": "生成运行时类型",
+    "timingPhaseEmitRuntimeTypesDescription": "生成 SharpTS 运行时所需的辅助类型。",
+    "timingPhaseAnalyzeClosuresName": "分析闭包",
+    "timingPhaseAnalyzeClosuresDescription": "确定捕获的变量和闭包布局。",
+    "timingPhaseDefineProgramStructureName": "定义程序结构",
+    "timingPhaseDefineProgramStructureDescription": "定义生成的模块、类和程序容器。",
+    "timingPhaseAnalyzeModuleBindingsName": "分析模块绑定",
+    "timingPhaseAnalyzeModuleBindingsDescription": "解析生成的模块代码使用的绑定。",
+    "timingPhaseDefineDeclarationsName": "定义声明",
+    "timingPhaseDefineDeclarationsDescription": "定义字段、方法和其他生成的声明。",
+    "timingPhaseCollectFunctionsName": "收集函数",
+    "timingPhaseCollectFunctionsDescription": "注册需要生成方法的函数。",
+    "timingPhaseEmitFunctionBodiesName": "生成函数体",
+    "timingPhaseEmitFunctionBodiesDescription": "为独立函数和嵌套函数生成 IL。",
+    "timingPhaseEmitMethodBodiesName": "生成方法体",
+    "timingPhaseEmitMethodBodiesDescription": "为类和对象的方法生成 IL。",
+    "timingPhaseEmitEntryPointName": "生成入口点",
+    "timingPhaseEmitEntryPointDescription": "生成程序入口点。",
+    "timingPhaseFinalizeTypesName": "完成类型",
+    "timingPhaseFinalizeTypesDescription": "完成生成的 .NET 类型定义。",
+    "timingPhaseSerializeAssemblyName": "序列化程序集",
+    "timingPhaseSerializeAssemblyDescription": "将生成的 PE 和 PDB 映像写入内存。",
+    "timingPhaseLoadName": "加载",
+    "timingPhaseLoadDescription": "加载生成的程序集并查找入口点。",
+    "timingPhaseExecuteName": "执行",
+    "timingPhaseExecuteDescription": "调用程序。编译模式可能包含首次使用时的延迟 JIT 工作。"
+  },
+  "useCases": {
+    "title": "SharpTS 适合哪些场景",
+    "subtitle": "在这些具体场景里，.NET 上的 TypeScript 比转向 Node——或者 C#——更划算。",
+    "terminal": "终端",
+    "case1": {
+      "title": "面向 .NET 团队的脚本与自动化",
+      "desc": "用 TypeScript 编写构建脚本、开发工具和一次性自动化任务，完整的 BCL 随手可用——机器上已经装有 .NET SDK，不需要任何 Node 工具链。没有 <code>package.json</code>，没有构建步骤：让 <code>sharpts</code> 指向文件即可。"
+    },
+    "case2": {
+      "title": "把 TypeScript 逻辑作为 .NET 库发布",
+      "desc": "将 TypeScript 模块编译为真正的程序集，并作为带版本号的 NuGet 包发布。借助引用程序集，C# 调用方可以实例化你的类、以完整类型调用你的方法。"
+    },
+    "case3": {
+      "title": "让 TypeScript 开发者参与 .NET 代码库",
+      "desc": "让以 TypeScript 为主的同事用他们最熟悉的语言参与开发。借助 <code>SharpTS.Sdk</code>，他们的 <code>.ts</code> 文件与周围的 C# 项目在同一个 <code>dotnet build</code> 中编译——同一套工具链，同一条 CI 流水线。"
+    },
+    "case4": {
+      "title": "自包含的命令行工具",
+      "desc": "编译为单个自包含可执行文件，无需单独安装运行时——目标机器上不需要 Node，工具旁边也不用附带 <code>node_modules</code> 文件夹。"
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "title": "Spec Conformance — SharpTS",
+    "description": "Explore SharpTS results from the pinned Test262 and TypeScript conformance corpora."
+  },
+  "eyebrow": "Empirical compatibility",
+  "title": "Spec conformance",
+  "subtitle": "Browse real results from the exact SharpTS revision running this site, from broad language areas down to individual built-ins and features.",
+  "feature": "Feature",
+  "interpreted": "Interpreted",
+  "compiled": "Compiled",
+  "notAvailable": "Not available",
+  "barAria": "{passed} of {eligible} eligible tests pass ({percentage} percent).",
+  "skipped": "skipped",
+  "percentageFootnote": "Percentages count Pass results over all non-skipped results. Every other non-skipped bucket counts as not passing; skipped results are shown separately.",
+  "honestyFootnote": "Test262 exercises specification edge cases far beyond what typical programs encounter. These totals are presented without adjustment.",
+  "provenance": "Generated from",
+  "test262Suite": "Test262 suite",
+  "typeScriptSuite": "TypeScript suite",
+  "category": {
+    "builtIns": "Built-ins",
+    "language": "Language",
+    "typeSystem": "Type system",
+    "general": "General"
+  },
+  "suiteNavigation": "Conformance suites",
+  "overview": "Conformance overview",
+  "eligible": "eligible tests",
+  "summary": {
+    "test262Interpreted": "Test262 · Interpreter",
+    "test262Compiled": "Test262 · AOT compiler",
+    "typeScript": "TypeScript · Diagnostics",
+    "runtime": "ECMAScript runtime semantics",
+    "diagnostics": "Diagnostic agreement with tsc"
+  },
+  "search": {
+    "label": "Search features",
+    "placeholder": "Array, conditional, modules…"
+  },
+  "expandAll": "Expand visible",
+  "collapseAll": "Collapse visible",
+  "reset": "Reset",
+  "test262": {
+    "eyebrow": "ECMAScript runtime",
+    "title": "Test262 conformance",
+    "description": "TC39 tests for JavaScript language and built-in runtime behavior, executed by both SharpTS backends."
+  },
+  "typeScript": {
+    "eyebrow": "Parser and type checker",
+    "title": "TypeScript diagnostic conformance",
+    "description": "Microsoft TypeScript cases where Pass means SharpTS diagnostics match tsc by source line and TS error code."
+  },
+  "diagnosticMatch": "Diagnostic match",
+  "mode": {
+    "label": "Mode",
+    "compare": "Compare"
+  },
+  "status": {
+    "label": "Status",
+    "all": "All results",
+    "passing": "Fully passing",
+    "partial": "Partial",
+    "zero": "No passes",
+    "noEligible": "No eligible tests"
+  },
+  "delta": {
+    "label": "Difference from interpreter, in percentage points"
+  },
+  "legend": {
+    "label": "Result outcomes"
+  },
+  "outcome": {
+    "pass": "Pass",
+    "fail": "Fail",
+    "parseError": "Parse error",
+    "typeCheckError": "Type-check error",
+    "runtimeError": "Runtime error",
+    "timeout": "Timeout",
+    "harnessError": "Harness error",
+    "skipped": "Skipped"
+  },
+  "noResults": "No feature groups match these filters.",
+  "resultCount": "{count} matching feature groups"
+}

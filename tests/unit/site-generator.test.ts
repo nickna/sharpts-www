@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { escapeHtml, renderRichText } from '../../src/SharpTS.Www.SelfHost/site-html';
-import { parseResxContent } from '../../src/SharpTS.Www.SelfHost/site-localization';
 import { cultures } from '../../src/SharpTS.Www.SelfHost/site-model';
 import { routePath } from '../../src/SharpTS.Www.SelfHost/site-paths';
 import { docsOutputPath, docsRoutePath } from '../../src/SharpTS.Www.SelfHost/site-paths';
@@ -13,7 +12,7 @@ import {
 import { renderDocumentationMarkdown } from '../../src/SharpTS.Www.SelfHost/docs-markdown';
 import { loadDocumentation } from '../../src/SharpTS.Www.SelfHost/documentation';
 import { loadConformanceData } from '../../src/SharpTS.Www.SelfHost/conformance-data';
-import { loadLocale } from '../../src/SharpTS.Www.SelfHost/site-localization';
+import { loadLocale } from '../../src/SharpTS.Www.SelfHost/i18n';
 import { loadSitePaths } from '../../src/SharpTS.Www.SelfHost/site-config';
 import { renderDocument, renderDocumentationDocument } from '../../src/SharpTS.Www.SelfHost/site-renderers';
 import type { BrowserAssets } from '../../src/SharpTS.Www.SelfHost/site-model';
@@ -61,21 +60,6 @@ describe('static site primitives', () => {
         expect(renderRichText('<code class="bad">unsafe</code><script>alert(1)</script>')).toBe(
             '&lt;code class=&quot;bad&quot;&gt;unsafe</code>&lt;script&gt;alert(1)&lt;/script&gt;'
         );
-    });
-
-    it('parses and decodes resx values while rejecting duplicate keys', () => {
-        const resources = parseResxContent(
-            '<root><data name="Greeting"><value>Hello &amp; &lt;code&gt;SharpTS&lt;/code&gt;</value></data></root>',
-            'inline test'
-        );
-        expect(resources.Greeting).toBe('Hello & <code>SharpTS</code>');
-
-        expect(() =>
-            parseResxContent(
-                '<root><data name="A"><value>one</value></data><data name="A"><value>two</value></data></root>',
-                'duplicates'
-            )
-        ).toThrow(/duplicate resource key/);
     });
 
     it('emits stable localized routes', () => {

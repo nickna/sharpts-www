@@ -20,7 +20,7 @@ of the test suite.
 ## How it works
 
 ```text
-Localized .resx + typed showcase data ──> SharpTS generator ──> HTML/CSS
+Localized JSON + typed showcase data ──> SharpTS generator ──> HTML/CSS
                                                                   │
 Browser ── POST /api/run ──> SharpTS HTTP server                   │
                                   │                               │
@@ -77,6 +77,9 @@ Run the fast, cross-platform contributor gate:
 ```bash
 npm run verify
 ```
+
+To validate only the JSON catalogs, recursive key parity, and named
+placeholders, run `npm run check:i18n`.
 
 Build and exercise the compiled application with:
 

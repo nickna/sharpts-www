@@ -1,0 +1,290 @@
+{
+  "metadata": {
+    "title": "SharpTS — TypeScript for .NET",
+    "description": "SharpTS — A TypeScript interpreter and AOT compiler for .NET. Run TypeScript natively on the .NET runtime."
+  },
+  "og": {
+    "title": "SharpTS — TypeScript for .NET",
+    "description": "A TypeScript interpreter and AOT compiler for .NET. Run TypeScript natively on the .NET runtime."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "The questions that come up first — answered straight.",
+    "q1": "How is SharpTS different from tsc?",
+    "a1": "tsc type-checks your code and emits JavaScript for an engine like Node to run. SharpTS never produces JavaScript: it type-checks the same TypeScript, then either executes it directly or compiles it to a .NET assembly. There is no Node anywhere in the chain — the only prerequisite is the .NET SDK.",
+    "q2": "Why not embed a JavaScript engine like Jint or ClearScript?",
+    "a2": "Those projects run plain, untyped JavaScript inside a .NET host — a great fit for small embedded scripts. SharpTS runs TypeScript itself, type-checked before execution, and adds what an embedded JS engine can't: ahead-of-time compilation to IL, NuGet packaging, and typed interop in both directions between TypeScript and C#.",
+    "q3": "Can I use npm packages?",
+    "a3": "Partially. Bare imports resolve through node_modules, so packages that ship TypeScript source can work, and a growing set of Node built-ins — fs, path, process, buffer, events, streams — is implemented natively on .NET. Packages that ship plain JavaScript or rely on package.json exports maps aren't supported yet.",
+    "link": {
+      "nodeStatus": "See the Node.js compatibility tracker →",
+      "status": "Follow progress in STATUS.md →"
+    },
+    "q4": "Is it fast?",
+    "a4": "Each mode answers differently. The interpreter is a tree-walker tuned for instant startup — right for scripts and the REPL, not for number crunching. Compiled mode emits IL that the CLR JIT-compiles like any C# assembly, so it runs as native .NET code. In both modes, types are checked up front and then erased — they cost nothing at runtime.",
+    "q5": "How mature is SharpTS?",
+    "a5": "It's a young, MIT-licensed project under active development. The support matrix above is the honest picture: most of the modern language works, and the gaps — like Proxy and WeakRef — are listed rather than hidden."
+  },
+  "comparison": {
+    "title": "What's Supported",
+    "subtitle": "The TypeScript you already write — feature by feature.",
+    "th": {
+      "feature": "Feature",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "badge": {
+      "implemented": "Implemented",
+      "partial": "Partial",
+      "missing": "Missing"
+    },
+    "group": {
+      "typeSystem": "Type System",
+      "classes": "Classes & OOP",
+      "functions": "Functions & Async",
+      "modules": "Modules",
+      "builtinApis": "Built-in APIs",
+      "advanced": "Advanced"
+    },
+    "feat": {
+      "primitiveTypes": "Primitive types",
+      "generics": "Generics",
+      "unionIntersection": "Union & Intersection types",
+      "literalTypes": "Literal types",
+      "tupleTypes": "Tuple types",
+      "conditionalTypes": "Conditional types",
+      "mappedTypes": "Mapped types",
+      "templateLiteralTypes": "Template literal types",
+      "utilityTypes": "Utility types",
+      "classesInheritance": "Classes & inheritance",
+      "accessModifiers": "Access modifiers",
+      "abstractClasses": "Abstract classes",
+      "gettersSetters": "Getters/Setters",
+      "privateFields": "Private fields (#field)",
+      "staticBlocks": "Static blocks",
+      "decorators": "Decorators",
+      "methodOverloading": "Method overloading",
+      "arrowFunctions": "Arrow functions",
+      "restSpread": "Rest/spread",
+      "closures": "Closures",
+      "asyncAwait": "async/await",
+      "promiseCombinators": "Promise.all/race/any",
+      "generators": "Generators (function*)",
+      "asyncGenerators": "Async generators",
+      "forAwaitOf": "for await...of",
+      "importExport": "import/export",
+      "defaultExports": "Default exports",
+      "namespaceImports": "Namespace imports",
+      "dynamicImports": "Dynamic imports",
+      "typeScriptNamespaces": "TypeScript namespaces",
+      "importType": "import type",
+      "moduleAugmentation": "Module augmentation",
+      "consoleLog": "console.log",
+      "mathObject": "Math object",
+      "stringMethods": "String methods",
+      "arrayMethods": "Array methods",
+      "mapSet": "Map/Set",
+      "regExp": "RegExp",
+      "date": "Date",
+      "json": "JSON",
+      "promise": "Promise",
+      "symbol": "Symbol",
+      "proxy": "Proxy",
+      "weakRef": "WeakRef",
+      "usingAwaitUsing": "using/await using",
+      "satisfiesOperator": "satisfies operator",
+      "constTypeParameters": "Const type parameters",
+      "bigintType": "bigint type",
+      "typedArrays": "TypedArrays",
+      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
+    },
+    "note": {
+      "generics": "Full support with constraints",
+      "tupleTypes": "Optional, rest, and named elements",
+      "conditionalTypes": "infer keyword, distribution",
+      "mappedTypes": "keyof, indexed access",
+      "utilityTypes": "Partial, Required, Pick, Omit, etc.",
+      "decorators": "Legacy & TC39 Stage 3",
+      "consoleLog": "Printf-style format specifiers",
+      "stringMethods": "40+ methods",
+      "arrayMethods": "50+ methods",
+      "mapSet": "ES2025 Set operations",
+      "usingAwaitUsing": "TS 5.2+ resource management"
+    },
+    "link": {
+      "conformance": "See live spec conformance →"
+    }
+  },
+  "features": {
+    "title": "What SharpTS Does",
+    "subtitle": "Write TypeScript that runs on the .NET runtime — interpreted for quick iteration, or compiled to native .NET assemblies.",
+    "card1": {
+      "title": "Run it instantly",
+      "desc": "Point SharpTS at a .ts file and it runs — no build step, no config. Ideal for scripts, automation, and trying ideas in the REPL."
+    },
+    "card2": {
+      "title": "Compile to .NET",
+      "desc": "Ahead-of-time compile to a real .NET assembly — a DLL, a self-contained executable, or a NuGet package — running at native CLR speed."
+    },
+    "card3": {
+      "title": "Interop both ways",
+      "desc": "Call .NET libraries from TypeScript with <code>@DotNetType</code>, and use your compiled TypeScript from C#. Reuse the BCL, NuGet packages, and code you already have."
+    },
+    "card4": {
+      "title": "Real TypeScript",
+      "desc": "Not a subset — the real language: generics, classes, decorators, async, modules, and more, all type-checked before your code runs. See the full support matrix below."
+    },
+    "card5": {
+      "title": "Fits your .NET build",
+      "desc": "Drop the <code>SharpTS.Sdk</code> into a .NET project and <code>dotnet build</code> compiles your TypeScript alongside your C# — same toolchain, same output."
+    },
+    "card6": {
+      "title": "Editor support",
+      "desc": "A language server brings autocomplete, type checking, and go-to-definition to VS Code and Visual Studio."
+    }
+  },
+  "gettingStarted": {
+    "title": "Get Started",
+    "subtitle": "Up and running in three steps",
+    "terminal": "Terminal",
+    "step1": {
+      "title": "Install",
+      "desc": "Install SharpTS as a .NET global tool"
+    },
+    "step2": {
+      "title": "Write",
+      "desc": "Create a TypeScript file"
+    },
+    "step3": {
+      "title": "Run",
+      "desc": "Interpret directly or compile to a .NET assembly"
+    },
+    "runCode": "# Interpret (instant startup)\nsharpts hello.ts\n\n# Compile to .NET assembly\nsharpts --compile hello.ts -o hello"
+  },
+  "hero": {
+    "badge": "Open Source — MIT License",
+    "tagline": "A TypeScript interpreter and AOT compiler for .NET",
+    "subtagline": "Run it as a script for instant feedback, or compile it to a native .NET assembly — with full access to the .NET ecosystem.",
+    "starOnGitHub": "Star on GitHub",
+    "codeComment": "// Run TypeScript directly on .NET"
+  },
+  "examples": {
+    "title": "See It In Action",
+    "subtitle": "Real TypeScript running on the .NET runtime",
+    "output": "Output",
+    "ex1": {
+      "title": "Hello World"
+    },
+    "ex2": {
+      "title": "Classes & Generics"
+    },
+    "ex3": {
+      "title": "Async/Await"
+    },
+    "ex4": {
+      "title": "Functional"
+    },
+    "ex5": {
+      "title": "Built-ins"
+    },
+    "ex6": {
+      "title": "Call .NET"
+    },
+    "cta": {
+      "tryYourOwn": "Want to run your own? Open the Playground ↓"
+    }
+  },
+  "playground": {
+    "title": "Interactive Playground",
+    "subtitle": "Write TypeScript and run it on .NET — right in your browser",
+    "selectPreset": "Select a preset...",
+    "clear": "Clear",
+    "running": "Running...",
+    "run": "Run",
+    "runShortcut": "Ctrl+Enter",
+    "output": "Output",
+    "placeholder": "Click Run or press Ctrl+Enter to execute",
+    "introComment": "// Welcome to the SharpTS Playground!\n// Write TypeScript and click Run (or Ctrl+Enter)",
+    "modeLabel": "Execution mode",
+    "modeInterpret": "Interpret",
+    "modeCompile": "Compile",
+    "timingCompiled": "compiled {compileDuration}ms · ran {executionDuration}ms",
+    "timingExecuted": "{duration}ms",
+    "requestFailed": "The playground request failed. Please try again.",
+    "invalidResponse": "The playground received an invalid server response.",
+    "timingHeadline": "Executed in {duration}",
+    "timingFailedHeadline": "{stage} failed",
+    "timingJourneyLabel": "Execution phases",
+    "timingSharpTSPipeline": "SharpTS pipeline: {duration}",
+    "timingEndToEnd": "End to end: {duration}",
+    "timingStatusCompleted": "completed",
+    "timingStatusFailed": "failed",
+    "timingPhaseTokenizeName": "Tokenize",
+    "timingPhaseTokenizeDescription": "Turns the source text into tokens.",
+    "timingPhaseParseName": "Parse",
+    "timingPhaseParseDescription": "Builds the program structure from the tokens.",
+    "timingPhaseValidateModulesName": "Validate modules",
+    "timingPhaseValidateModulesDescription": "Rejects module syntax that single-source execution cannot load.",
+    "timingPhaseTypeCheckName": "Type check",
+    "timingPhaseTypeCheckDescription": "Checks TypeScript types and reports static errors.",
+    "timingPhasePrepareInterpreterName": "Prepare interpreter",
+    "timingPhasePrepareInterpreterDescription": "Creates the runtime environment and resolves variables.",
+    "timingPhaseCompileName": "Compile",
+    "timingPhaseCompileDescription": "Emits the in-memory .NET assembly after analysis.",
+    "timingPhaseAnalyzeDeadCodeName": "Analyze dead code",
+    "timingPhaseAnalyzeDeadCodeDescription": "Finds unreachable code before IL generation.",
+    "timingPhaseInitializeCompilerName": "Initialize compiler",
+    "timingPhaseInitializeCompilerDescription": "Creates the IL compiler and output assembly.",
+    "timingPhasePrepareCompilationName": "Prepare compilation",
+    "timingPhasePrepareCompilationDescription": "Initializes compiler state for the analyzed program.",
+    "timingPhaseExtractNamespacesName": "Extract namespaces",
+    "timingPhaseExtractNamespacesDescription": "Collects TypeScript namespace declarations.",
+    "timingPhaseEmitRuntimeTypesName": "Emit runtime types",
+    "timingPhaseEmitRuntimeTypesDescription": "Emits helper types required by the SharpTS runtime.",
+    "timingPhaseAnalyzeClosuresName": "Analyze closures",
+    "timingPhaseAnalyzeClosuresDescription": "Determines captured variables and closure layouts.",
+    "timingPhaseDefineProgramStructureName": "Define program structure",
+    "timingPhaseDefineProgramStructureDescription": "Defines generated modules, classes, and program containers.",
+    "timingPhaseAnalyzeModuleBindingsName": "Analyze module bindings",
+    "timingPhaseAnalyzeModuleBindingsDescription": "Resolves bindings used by generated module code.",
+    "timingPhaseDefineDeclarationsName": "Define declarations",
+    "timingPhaseDefineDeclarationsDescription": "Defines fields, methods, and other emitted declarations.",
+    "timingPhaseCollectFunctionsName": "Collect functions",
+    "timingPhaseCollectFunctionsDescription": "Registers functions that require generated methods.",
+    "timingPhaseEmitFunctionBodiesName": "Emit function bodies",
+    "timingPhaseEmitFunctionBodiesDescription": "Generates IL for standalone and nested functions.",
+    "timingPhaseEmitMethodBodiesName": "Emit method bodies",
+    "timingPhaseEmitMethodBodiesDescription": "Generates IL for class and object methods.",
+    "timingPhaseEmitEntryPointName": "Emit entry point",
+    "timingPhaseEmitEntryPointDescription": "Generates the program entry point.",
+    "timingPhaseFinalizeTypesName": "Finalize types",
+    "timingPhaseFinalizeTypesDescription": "Completes generated .NET type definitions.",
+    "timingPhaseSerializeAssemblyName": "Serialize assembly",
+    "timingPhaseSerializeAssemblyDescription": "Writes the generated PE and PDB images to memory.",
+    "timingPhaseLoadName": "Load",
+    "timingPhaseLoadDescription": "Loads the generated assembly and finds its entry point.",
+    "timingPhaseExecuteName": "Execute",
+    "timingPhaseExecuteDescription": "Invokes your program. Compiled runs can include lazy first-use JIT work."
+  },
+  "useCases": {
+    "title": "When SharpTS Fits",
+    "subtitle": "Concrete situations where TypeScript on .NET beats reaching for Node — or for C#.",
+    "terminal": "Terminal",
+    "case1": {
+      "title": "Scripts and automation for .NET teams",
+      "desc": "Write build scripts, dev tools, and one-off automation in TypeScript with the whole BCL available — on machines that already have the .NET SDK and no Node toolchain. No <code>package.json</code>, no build step: point <code>sharpts</code> at the file."
+    },
+    "case2": {
+      "title": "Ship TypeScript logic as a .NET library",
+      "desc": "Compile a TypeScript module to a real assembly and publish it as a versioned NuGet package. With a reference assembly, C# callers instantiate your classes and call your methods fully typed."
+    },
+    "case3": {
+      "title": "TypeScript developers in a .NET codebase",
+      "desc": "Let TypeScript-first teammates contribute in the language they know best. With <code>SharpTS.Sdk</code>, their <code>.ts</code> files build inside the same <code>dotnet build</code> as the C# projects around them — one toolchain, one CI pipeline."
+    },
+    "case4": {
+      "title": "Self-contained command-line tools",
+      "desc": "Compile to a single self-contained executable that runs without a separate runtime install — no Node on the target machine, no <code>node_modules</code> folder shipped next to your tool."
+    }
+  }
+}

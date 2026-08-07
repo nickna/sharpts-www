@@ -1,0 +1,41 @@
+{
+  "footer": {
+    "tagline": "A TypeScript interpreter and AOT compiler built entirely in C# for the .NET runtime.",
+    "col": {
+      "resources": "Resources",
+      "community": "Community",
+      "onThisPage": "On This Page"
+    },
+    "link": {
+      "nuGet": "NuGet Package",
+      "status": "Implementation Status",
+      "architecture": "Architecture Guide",
+      "reportIssue": "Report an Issue",
+      "contributing": "Contributing",
+      "license": "MIT License",
+      "features": "Features",
+      "codeExamples": "Code Examples",
+      "useCases": "When It Fits",
+      "playground": "Playground",
+      "faq": "FAQ",
+      "documentation": "Documentation"
+    },
+    "builtWith": "Built with SharpTS, TypeScript, and a lot of ☕"
+  },
+  "navigation": {
+    "features": "Features",
+    "examples": "Examples",
+    "howItWorks": "How It Works",
+    "conformance": "Conformance",
+    "playground": "Playground",
+    "documentation": "Documentation",
+    "toggleAriaLabel": "Toggle navigation"
+  },
+  "copyButton": {
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "languageSelector": {
+    "changeLanguage": "Change language"
+  }
+}

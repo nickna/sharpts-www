@@ -53,12 +53,16 @@ and should reach this repository by updating the submodule commit.
 
 ## Localization
 
-English is the neutral `.resx` file. Every resource key must exist in English,
-French, Spanish, German, and Simplified Chinese. The generator validates the key
-sets and emits path-based routes (`/`, `/fr`, `/es`, `/de`, and `/zh-Hans`).
+Localization lives in `locales/<culture>/{common,home,how-it-works,conformance}.json`.
+Every dotted English message key must exist in French, Spanish, German, and
+Simplified Chinese. The generator validates recursive key parity, string leaves,
+and identical named-placeholder sets before emitting path-based routes (`/`,
+`/fr`, `/es`, `/de`, and `/zh-Hans`).
 
-When adding or renaming text, update all five resource files for that component
-and run the generated-site test.
+When adding or renaming text, update the matching catalog in all five culture
+directories. Use named placeholders such as `{count}` or `{duration}` and pass
+values through the shared formatter; positional tokens are not supported. Run
+`npm run check:i18n` and the generated-site test.
 
 ## Run checks
 

@@ -7,18 +7,12 @@ import {
     type ExecutionResponse,
     type Preset
 } from '../../SharpTS.Www.Shared/execution-contract';
+import { formatMessage } from '../../SharpTS.Www.Shared/message-format';
 
 export interface PlaygroundDependencies {
     fetch?: typeof fetch;
     createEditor?: (container: HTMLElement) => EditorAdapter;
     now?: () => number;
-}
-
-function replaceTiming(template: string, first: string | number, second?: string | number): string {
-    let result = template.replace('{0}', String(first));
-    if (second !== undefined)
-        result = result.replace('{1}', String(second));
-    return result;
 }
 
 export function formatDuration(durationMs: number, locale: string = 'en'): string {
@@ -226,17 +220,17 @@ export async function initializePlayground(
                 failedPhase = phase;
         }
         if (executionPhase) {
-            timingHeadline.textContent = replaceTiming(
-                root.dataset.timingHeadline || 'Executed in {0}',
-                formatDuration(body.executionTimeMs, locale));
+            timingHeadline.textContent = formatMessage(
+                root.dataset.timingHeadline || 'Executed in {duration}',
+                { duration: formatDuration(body.executionTimeMs, locale) });
         } else if (failedPhase) {
-            timingHeadline.textContent = replaceTiming(
-                root.dataset.timingFailedHeadline || '{0} failed',
-                phaseText(root, failedPhase, 'name'));
+            timingHeadline.textContent = formatMessage(
+                root.dataset.timingFailedHeadline || '{stage} failed',
+                { stage: phaseText(root, failedPhase, 'name') });
         } else {
-            timingHeadline.textContent = replaceTiming(
-                root.dataset.timingHeadline || 'Executed in {0}',
-                formatDuration(body.executionTimeMs, locale));
+            timingHeadline.textContent = formatMessage(
+                root.dataset.timingHeadline || 'Executed in {duration}',
+                { duration: formatDuration(body.executionTimeMs, locale) });
         }
         timing.setAttribute('aria-label', timingHeadline.textContent || 'Execution phases');
 
@@ -244,12 +238,12 @@ export async function initializePlayground(
             phases,
             body.executionTimeMs,
             body.compileTimeMs);
-        timingPipeline.textContent = replaceTiming(
-            root.dataset.timingSharpTsPipeline || 'SharpTS pipeline: {0}',
-            formatDuration(pipelineDuration, locale));
-        timingTotal.textContent = replaceTiming(
-            root.dataset.timingEndToEnd || 'End to end: {0}',
-            formatDuration(roundTripMs, locale));
+        timingPipeline.textContent = formatMessage(
+            root.dataset.timingSharpTsPipeline || 'SharpTS pipeline: {duration}',
+            { duration: formatDuration(pipelineDuration, locale) });
+        timingTotal.textContent = formatMessage(
+            root.dataset.timingEndToEnd || 'End to end: {duration}',
+            { duration: formatDuration(roundTripMs, locale) });
 
         const initialPhase = executionPhase || failedPhase || phases.at(-1);
         const initialButton = initialPhase
@@ -266,11 +260,15 @@ export async function initializePlayground(
     };
 
     const renderLegacyTiming = (body: ExecutionResponse): void => {
-        const compiledTemplate = timing.dataset.timingCompiled || 'compiled {0}ms · ran {1}ms';
-        const executedTemplate = timing.dataset.timingExecuted || '{0}ms';
+        const compiledTemplate = timing.dataset.timingCompiled ||
+            'compiled {compileDuration}ms · ran {executionDuration}ms';
+        const executedTemplate = timing.dataset.timingExecuted || '{duration}ms';
         const text = body.compileTimeMs === null
-            ? replaceTiming(executedTemplate, body.executionTimeMs)
-            : replaceTiming(compiledTemplate, body.compileTimeMs, body.executionTimeMs);
+            ? formatMessage(executedTemplate, { duration: body.executionTimeMs })
+            : formatMessage(compiledTemplate, {
+                compileDuration: body.compileTimeMs,
+                executionDuration: body.executionTimeMs
+            });
         if (timingHeadline)
             timingHeadline.textContent = text;
         else

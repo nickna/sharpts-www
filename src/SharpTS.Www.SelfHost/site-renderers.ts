@@ -1,7 +1,7 @@
 import { eligibleResults, passPercentage, totalResults } from './conformance-data';
 import type { ConformanceData, ConformanceNode, ResultCounts } from './conformance-data';
 import { escapeHtml, renderRichText } from './site-html';
-import { t } from './site-localization';
+import { t as lookupMessage, tf } from './i18n';
 import { cultures, siteOrigin } from './site-model';
 import type { BrowserAssets, Locale, PageKind } from './site-model';
 import { docsRoutePath, routePath } from './site-paths';
@@ -10,13 +10,27 @@ import { presets } from './presets';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 import { documentationSections } from './docs-manifest';
 import { renderCopyButton } from './site-components';
+import { composeCode, heroCodeBody, playgroundCodeBody } from './code-samples';
+
+function messageKey(key: string): string {
+    const parts = key.split('_');
+    if (parts[0] === 'Nav') parts[0] = 'Navigation';
+    if (parts[0] === 'Meta') parts[0] = 'Metadata';
+    return parts.map(part => part === 'ILCompiler'
+        ? 'ilCompiler'
+        : part.charAt(0).toLowerCase() + part.slice(1)).join('.');
+}
+
+function t(locale: Locale, section: string, key: string): string {
+    return lookupMessage(locale, section + '.' + messageKey(key));
+}
 
 const githubIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
 
 function copyButton(locale: Locale): string {
     return renderCopyButton({
-        copy: t(locale, 'Components.Shared.CopyButton', 'Copy'),
-        copied: t(locale, 'Components.Shared.CopyButton', 'Copied')
+        copy: t(locale, 'common.copyButton', 'Copy'),
+        copied: t(locale, 'common.copyButton', 'Copied')
     });
 }
 
@@ -28,7 +42,7 @@ function codeBlock(locale: Locale, title: string, language: string, code: string
 }
 
 function languageSelector(locale: Locale, page: PageKind): string {
-    const languageBundle = 'Components.Shared.LanguageSelector';
+    const languageBundle = 'common.languageSelector';
     const label = escapeHtml(t(locale, languageBundle, 'ChangeLanguage'));
     const items = cultures.map(culture => {
         const active = culture.code === locale.culture.code;
@@ -49,7 +63,7 @@ function languageSelector(locale: Locale, page: PageKind): string {
 }
 
 function renderNav(locale: Locale, page: PageKind | 'docs'): string {
-    const bundle = 'Components.Sections.NavHeader';
+    const bundle = 'common';
     const home = routePath(locale.culture, 'home');
     const guide = routePath(locale.culture, 'guide');
     const conformance = routePath(locale.culture, 'conformance');
@@ -72,7 +86,7 @@ function renderNav(locale: Locale, page: PageKind | 'docs'): string {
 }
 
 function renderFooter(locale: Locale): string {
-    const bundle = 'Components.Sections.FooterSection';
+    const bundle = 'common.footer';
     const home = routePath(locale.culture, 'home');
     return `<footer class="footer">
   <div class="footer__gradient-border"></div>
@@ -91,8 +105,8 @@ function renderFooter(locale: Locale): string {
 }
 
 function renderHero(locale: Locale): string {
-    const bundle = 'Components.Sections.HeroSection';
-    const heroCode = t(locale, bundle, 'Hero_Code');
+    const bundle = 'home';
+    const heroCode = composeCode(t(locale, bundle, 'Hero_CodeComment'), heroCodeBody);
     return `<section class="hero" id="hero">
   <div class="hero__orb hero__orb--1"></div><div class="hero__orb hero__orb--2"></div><div class="hero__orb hero__orb--3"></div>
   <canvas id="hero-particles" class="hero__particles" aria-hidden="true"></canvas><div class="hero__grid"></div>
@@ -126,13 +140,13 @@ const featureCards: FeatureCardDefinition[] = [
 ];
 
 function renderFeatures(locale: Locale): string {
-    const bundle = 'Components.Sections.FeaturesGrid';
+    const bundle = 'home.features';
     const cards = featureCards.map(card => `<div class="card feature-card reveal"><div class="feature-card__icon" style="color:var(${card.color})"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${card.icon}</svg></div><h3 class="feature-card__title">${escapeHtml(t(locale, bundle, card.key + '_Title'))}</h3><p class="feature-card__desc">${renderRichText(t(locale, bundle, card.key + '_Desc'))}</p></div>`);
     return `<section class="section"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="features-grid">${cards.join('\n')}</div></div></section>`;
 }
 
 function renderExamples(locale: Locale): string {
-    const bundle = 'Components.Sections.LiveCodeExamples';
+    const bundle = 'home.examples';
     const tabs: string[] = [];
     const panels: string[] = [];
     for (let index = 1; index <= showcaseExamples.length; index++) {
@@ -158,13 +172,13 @@ const useCases: UseCaseDefinition[] = [
 ];
 
 function renderUseCases(locale: Locale): string {
-    const bundle = 'Components.Sections.WhenItFits';
+    const bundle = 'home.useCases';
     const cards = useCases.map(useCase => `<div class="card usecase-card reveal"><h3 class="usecase-card__title">${escapeHtml(t(locale, bundle, useCase.key + '_Title'))}</h3><p class="usecase-card__desc">${renderRichText(t(locale, bundle, useCase.key + '_Desc'))}</p>${codeBlock(locale, useCase.title || t(locale, bundle, 'Terminal'), useCase.language, useCase.code)}</div>`);
     return `<section class="section"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="usecase-grid">${cards.join('\n')}</div></div></section>`;
 }
 
 function renderArchitecturePreview(locale: Locale): string {
-    const bundle = 'Components.Sections.ArchitectureDiagram';
+    const bundle = 'how-it-works.architecture';
     const node = (key: string, className: string = ''): string =>
         `<span class="arch-preview__node${className}">${escapeHtml(t(locale, bundle, key))}</span>`;
     return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="arch-preview reveal"><div class="arch-preview__flow">${node('Label_Source')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Lexer')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Parser')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_TypeChecker', ' arch-preview__node--accent')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Interpreter', ' arch-preview__node--interpret')}<span class="arch-preview__sep arch-preview__sep--or" aria-hidden="true">/</span>${node('Label_ILCompiler', ' arch-preview__node--compile')}</div><a href="${routePath(locale.culture, 'guide')}" class="btn btn-primary arch-preview__cta">${escapeHtml(t(locale, bundle, 'Cta_LearnMore'))}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></div></div></section>`;
@@ -198,7 +212,8 @@ const playgroundTimingPhases = [
 ] as const;
 
 function renderPlayground(locale: Locale): string {
-    const bundle = 'Components.Sections.PlaygroundSection';
+    const bundle = 'home.playground';
+    const defaultCode = composeCode(t(locale, bundle, 'IntroComment') + '\n', playgroundCodeBody);
     const options = presets.map(preset => `<option value="${escapeHtml(preset.name)}">${escapeHtml(preset.name)}</option>`).join('\n');
     const timingData: Array<{ attribute: string; key: string }> = [
         { attribute: 'timing-headline', key: 'TimingHeadline' },
@@ -218,12 +233,12 @@ function renderPlayground(locale: Locale): string {
         .join(' ');
     return `<section class="section" id="playground"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="playground reveal" data-playground data-running="false" data-placeholder="${escapeHtml(t(locale, bundle, 'Placeholder'))}" data-request-failed="${escapeHtml(t(locale, bundle, 'RequestFailed'))}" data-invalid-response="${escapeHtml(t(locale, bundle, 'InvalidResponse'))}" ${timingAttributes}>
   <div class="playground__toolbar"><div class="playground__toolbar-left"><select class="playground__preset" data-playground-preset aria-label="${escapeHtml(t(locale, bundle, 'SelectPreset'))}"><option value="">${escapeHtml(t(locale, bundle, 'SelectPreset'))}</option>${options}</select><div class="playground__mode" role="group" aria-label="${escapeHtml(t(locale, bundle, 'ModeLabel'))}"><button type="button" class="playground__mode-btn playground__mode-btn--active" data-playground-mode="interpret" aria-pressed="true">${escapeHtml(t(locale, bundle, 'ModeInterpret'))}</button><button type="button" class="playground__mode-btn" data-playground-mode="compile" aria-pressed="false">${escapeHtml(t(locale, bundle, 'ModeCompile'))}</button></div></div><div class="playground__toolbar-right"><button type="button" class="btn btn-sm btn-secondary" data-playground-clear>${escapeHtml(t(locale, bundle, 'Clear'))}</button><button type="button" id="playground-run-btn" class="btn btn-sm btn-primary" data-playground-run aria-busy="false"><span class="playground__spinner" aria-hidden="true"></span><span class="playground__run-label--idle">${escapeHtml(t(locale, bundle, 'Run'))}</span><span class="playground__run-label--running">${escapeHtml(t(locale, bundle, 'Running'))}</span><kbd class="playground__kbd">${escapeHtml(t(locale, bundle, 'RunShortcut'))}</kbd></button></div></div>
-  <div class="playground__body"><div class="playground__editor"><div id="playground-editor" class="playground__cm-container"><textarea class="playground__fallback-editor" data-playground-editor spellcheck="false" aria-label="TypeScript source">${escapeHtml(t(locale, bundle, 'DefaultCode'))}</textarea></div></div><div class="playground__output"><div class="playground__output-header"><span>${escapeHtml(t(locale, bundle, 'Output'))}</span><button type="button" class="playground__timing" data-playground-timing data-timing-compiled="${escapeHtml(t(locale, bundle, 'TimingCompiled'))}" data-timing-executed="${escapeHtml(t(locale, bundle, 'TimingExecuted'))}" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}" aria-expanded="false" aria-controls="playground-timing-details" hidden><span data-playground-timing-headline></span><span class="playground__timing-chevron" aria-hidden="true">▾</span></button></div><div id="playground-timing-details" class="playground__timing-details" data-playground-timing-details hidden><div class="playground__timing-phases" data-playground-timing-phases role="group" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}"></div><p class="playground__timing-description" data-playground-timing-description aria-live="polite"></p><p class="playground__timing-summary"><span data-playground-timing-pipeline></span><span data-playground-timing-total></span></p></div><div class="playground__output-body" data-playground-output role="status" aria-live="polite"><span class="playground__placeholder">${escapeHtml(t(locale, bundle, 'Placeholder'))}</span></div></div></div>
+  <div class="playground__body"><div class="playground__editor"><div id="playground-editor" class="playground__cm-container"><textarea class="playground__fallback-editor" data-playground-editor spellcheck="false" aria-label="TypeScript source">${escapeHtml(defaultCode)}</textarea></div></div><div class="playground__output"><div class="playground__output-header"><span>${escapeHtml(t(locale, bundle, 'Output'))}</span><button type="button" class="playground__timing" data-playground-timing data-timing-compiled="${escapeHtml(t(locale, bundle, 'TimingCompiled'))}" data-timing-executed="${escapeHtml(t(locale, bundle, 'TimingExecuted'))}" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}" aria-expanded="false" aria-controls="playground-timing-details" hidden><span data-playground-timing-headline></span><span class="playground__timing-chevron" aria-hidden="true">▾</span></button></div><div id="playground-timing-details" class="playground__timing-details" data-playground-timing-details hidden><div class="playground__timing-phases" data-playground-timing-phases role="group" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}"></div><p class="playground__timing-description" data-playground-timing-description aria-live="polite"></p><p class="playground__timing-summary"><span data-playground-timing-pipeline></span><span data-playground-timing-total></span></p></div><div class="playground__output-body" data-playground-output role="status" aria-live="polite"><span class="playground__placeholder">${escapeHtml(t(locale, bundle, 'Placeholder'))}</span></div></div></div>
 </div></div></section>`;
 }
 
 function renderComparison(locale: Locale): string {
-    const bundle = 'Components.Sections.FeatureComparison';
+    const bundle = 'home.comparison';
     const badgeKey: { [status: string]: string } = { done: 'Badge_Implemented', partial: 'Badge_Partial', missing: 'Badge_Missing' };
     const badgeClass: { [status: string]: string } = { done: 'badge-green', partial: 'badge-yellow', missing: 'badge-red' };
     const groups = comparisonGroups.map(group => {
@@ -234,7 +249,7 @@ function renderComparison(locale: Locale): string {
 }
 
 function renderFaq(locale: Locale): string {
-    const bundle = 'Components.Sections.FaqSection';
+    const bundle = 'home.faq';
     const items: string[] = [];
     for (let index = 1; index <= 5; index++) {
         let link = '';
@@ -258,7 +273,7 @@ const gettingStartedWriteCode = [
 ].join('\n');
 
 function renderGettingStarted(locale: Locale): string {
-    const bundle = 'Components.Sections.GettingStarted';
+    const bundle = 'home.gettingStarted';
     const codes = ['dotnet tool install -g SharpTS', gettingStartedWriteCode, t(locale, bundle, 'RunCode')];
     const titles = [t(locale, bundle, 'Terminal'), 'hello.ts', t(locale, bundle, 'Terminal')];
     const languages = ['bash', 'typescript', 'bash'];
@@ -275,12 +290,12 @@ export function renderHome(locale: Locale): string {
 const architectureStages = ['Lexer', 'Parser', 'TypeChecker', 'Interpreter', 'ILCompiler'];
 
 function architectureButton(locale: Locale, stage: string, modifier: string, icon: string): string {
-    const bundle = 'Components.Sections.ArchitectureDiagram';
+    const bundle = 'how-it-works.architecture';
     return `<button type="button" class="pipeline__box${modifier}" data-architecture-stage="${stage}" aria-pressed="false"><span class="pipeline__icon" aria-hidden="true">${icon}</span><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_' + stage))}</span><span class="pipeline__detail">${escapeHtml(t(locale, bundle, 'Detail_' + stage))}</span></button>`;
 }
 
 function renderArchitectureDiagram(locale: Locale): string {
-    const bundle = 'Components.Sections.ArchitectureDiagram';
+    const bundle = 'how-it-works.architecture';
     const explanations = architectureStages.map(stage => `<div class="pipeline__detail-content" data-architecture-detail="${stage}" hidden><h3 class="pipeline__detail-title">${escapeHtml(t(locale, bundle, 'Label_' + stage))}</h3><p class="pipeline__detail-body">${escapeHtml(t(locale, bundle, 'Explain_' + stage))}</p></div>`).join('\n');
     return `<section class="section"><div class="container"><h1 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="architecture reveal" data-architecture>
   <div class="pipeline"><div class="pipeline__step"><div class="pipeline__box pipeline__box--input"><span class="pipeline__icon" aria-hidden="true">📄</span><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_Source'))}</span></div><div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'Lexer', '', '🔤')}<div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'Parser', '', '🌳')}<div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'TypeChecker', ' pipeline__box--accent', '🔍')}<div class="pipeline__arrow pipeline__arrow--fork"></div></div></div>
@@ -305,7 +320,7 @@ const dotNetExample = [
 ].join('\n');
 
 export function renderGuide(locale: Locale): string {
-    const bundle = 'Components.Pages.HowItWorks';
+    const bundle = 'how-it-works';
     const capabilities = [
         ['🔌', 'Cap1_Title', 'Cap1_Body'], ['🤝', 'Cap2_Title', 'Cap2_Body'],
         ['📦', 'Cap3_Title', 'Cap3_Body'], ['🛠️', 'Cap4_Title', 'Cap4_Body'],
@@ -324,7 +339,7 @@ export function renderGuide(locale: Locale): string {
 
 function conformanceName(locale: Locale, node: ConformanceNode): string {
     return node.localizationKey
-        ? t(locale, 'Components.Pages.Conformance', node.localizationKey)
+        ? t(locale, 'conformance', node.localizationKey)
         : node.name;
 }
 
@@ -392,14 +407,15 @@ function conformanceDataAttributes(mode: 'interpreted' | 'compiled', counts: Res
 }
 
 function renderConformanceBar(locale: Locale, counts: ResultCounts): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const eligible = eligibleResults(counts);
     const percentage = passPercentage(counts);
     const formattedPercentage = percentage.toFixed(1);
-    const aria = t(locale, bundle, 'BarAria')
-        .replace('{0}', String(counts.Pass))
-        .replace('{1}', String(eligible))
-        .replace('{2}', formattedPercentage);
+    const aria = tf(locale, 'conformance.barAria', {
+        passed: counts.Pass,
+        eligible,
+        percentage: formattedPercentage
+    });
     const total = totalResults(counts);
     const segmentValues: string[] = [];
     const outcomeDescriptions: string[] = [];
@@ -419,7 +435,7 @@ function renderConformanceBar(locale: Locale, counts: ResultCounts): string {
 
 function renderConformanceMode(locale: Locale, counts: ResultCounts | null,
     mode: 'interpreted' | 'compiled', comparison: ResultCounts | null = null): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const modeClass = ` conformance__metric--${mode}`;
     if (!counts)
         return `<div class="conformance__metric${modeClass}" data-conformance-metric="${mode}"><span class="conformance__unavailable" aria-label="${escapeHtml(t(locale, bundle, 'NotAvailable'))}">—</span></div>`;
@@ -450,7 +466,7 @@ function renderConformanceRow(locale: Locale, node: ConformanceNode, depth: numb
 }
 
 function renderOutcomeLegend(locale: Locale, buckets: string[]): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const itemValues: string[] = [];
     for (const bucket of buckets)
         itemValues.push(`<li><span class="conformance__legend-swatch conformance__bar-segment--${bucket.toLowerCase()}" aria-hidden="true"></span>${escapeHtml(t(locale, bundle, 'Outcome_' + bucket))}</li>`);
@@ -460,20 +476,20 @@ function renderOutcomeLegend(locale: Locale, buckets: string[]): string {
 
 function renderSummaryCard(locale: Locale, titleKey: string, descriptionKey: string,
     counts: ResultCounts | null, modifier: string): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     if (!counts)
         return '';
     return `<article class="conformance-summary__card conformance-summary__card--${modifier}"><p>${escapeHtml(t(locale, bundle, titleKey))}</p><strong>${passPercentage(counts).toFixed(1)}%</strong><span>${counts.Pass} / ${eligibleResults(counts)} ${escapeHtml(t(locale, bundle, 'Eligible'))}</span>${renderConformanceBar(locale, counts)}<small>${escapeHtml(t(locale, bundle, descriptionKey))}</small></article>`;
 }
 
 function renderSuiteControls(locale: Locale, suite: 'test262' | 'typescript'): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const mode = suite === 'test262' ? `<label>${escapeHtml(t(locale, bundle, 'Mode_Label'))}<select data-conformance-mode><option value="compare">${escapeHtml(t(locale, bundle, 'Mode_Compare'))}</option><option value="interpreted">${escapeHtml(t(locale, bundle, 'Interpreted'))}</option><option value="compiled">${escapeHtml(t(locale, bundle, 'Compiled'))}</option></select></label>` : '';
     return `<div class="conformance-suite__controls" data-conformance-suite-controls hidden>${mode}<label>${escapeHtml(t(locale, bundle, 'Status_Label'))}<select data-conformance-status><option value="all">${escapeHtml(t(locale, bundle, 'Status_All'))}</option><option value="passing">${escapeHtml(t(locale, bundle, 'Status_Passing'))}</option><option value="partial">${escapeHtml(t(locale, bundle, 'Status_Partial'))}</option><option value="zero">${escapeHtml(t(locale, bundle, 'Status_Zero'))}</option><option value="no-eligible">${escapeHtml(t(locale, bundle, 'Status_NoEligible'))}</option></select></label></div>`;
 }
 
 function renderConformanceSuite(locale: Locale, suite: 'test262' | 'typescript', nodes: ConformanceNode[]): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const test262 = suite === 'test262';
     const titleKey = test262 ? 'Test262_Title' : 'TypeScript_Title';
     const descriptionKey = test262 ? 'Test262_Description' : 'TypeScript_Description';
@@ -488,7 +504,7 @@ function renderConformanceSuite(locale: Locale, suite: 'test262' | 'typescript',
 }
 
 export function renderConformance(locale: Locale, data: ConformanceData): string {
-    const bundle = 'Components.Pages.Conformance';
+    const bundle = 'conformance';
     const test262Roots = data.roots.filter(node => node.compiled !== null);
     const typeScriptRoots = data.roots.filter(node => node.compiled === null);
     const test262Interpreted = sumConformanceCounts(test262Roots, 'interpreted');
@@ -510,14 +526,14 @@ function alternateLinks(page: PageKind): string {
 
 export function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAssets,
     conformanceData: ConformanceData): string {
-    const appBundle = 'Components.App';
+    const appBundle = 'home';
     const pagePath = routePath(locale.culture, page);
     const canonical = siteOrigin + pagePath;
-    const pageBundle = page === 'guide' ? 'Components.Pages.HowItWorks' : 'Components.Pages.Conformance';
+    const pageBundle = page === 'guide' ? 'how-it-works' : 'conformance';
     const title = page === 'home' ? t(locale, appBundle, 'Meta_Title') : t(locale, pageBundle, 'Meta_Title');
     const ogTitle = page === 'home' ? t(locale, appBundle, 'Og_Title') : title;
     const description = page === 'conformance'
-        ? t(locale, 'Components.Pages.Conformance', 'Meta_Description')
+        ? t(locale, 'conformance', 'Meta_Description')
         : t(locale, appBundle, 'Meta_Description');
     const ogDescription = page === 'conformance'
         ? description

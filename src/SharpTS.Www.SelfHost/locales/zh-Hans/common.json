@@ -1,0 +1,41 @@
+{
+  "footer": {
+    "tagline": "一个完全用 C# 为 .NET 运行时构建的 TypeScript 解释器和 AOT 编译器。",
+    "col": {
+      "resources": "资源",
+      "community": "社区",
+      "onThisPage": "本页内容"
+    },
+    "link": {
+      "nuGet": "NuGet 包",
+      "status": "实现状态",
+      "architecture": "架构指南",
+      "reportIssue": "报告问题",
+      "contributing": "参与贡献",
+      "license": "MIT 许可证",
+      "features": "功能",
+      "codeExamples": "代码示例",
+      "useCases": "适用场景",
+      "playground": "演练场",
+      "faq": "常见问题",
+      "documentation": "文档"
+    },
+    "builtWith": "使用 SharpTS、TypeScript 和大量 ☕ 构建"
+  },
+  "navigation": {
+    "features": "功能",
+    "examples": "示例",
+    "howItWorks": "工作原理",
+    "conformance": "规范一致性",
+    "playground": "演练场",
+    "documentation": "文档",
+    "toggleAriaLabel": "切换导航"
+  },
+  "copyButton": {
+    "copy": "复制",
+    "copied": "已复制！"
+  },
+  "languageSelector": {
+    "changeLanguage": "更改语言"
+  }
+}
