@@ -56,6 +56,17 @@ describe('shared documentation and site controls', () => {
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith('sample');
     });
 
+    it('highlights TypeScript code in documentation pages', () => {
+        document.body.innerHTML = '<pre><code class="language-typescript">const answer: number = 42;</code></pre>';
+
+        initializeDocs(document, window);
+
+        const code = document.querySelector('code')!;
+        expect(code.classList).toContain('language-typescript');
+        expect(code.querySelector('.token.keyword')?.textContent).toBe('const');
+        expect(code.querySelector('.token.builtin')?.textContent).toBe('number');
+    });
+
     it('does not initialize the DOM when reusable browser modules are imported', async () => {
         vi.resetModules();
         document.body.innerHTML = '<main data-conformance-explorer><div data-conformance-controls hidden></div></main>';

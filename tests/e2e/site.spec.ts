@@ -314,6 +314,7 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
 
     await page.goto('/docs/compiler-concepts/javascript-semantics-on-dotnet');
     await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('JavaScript Semantics on .NET');
+    await expect(page.locator('.docs-code code.language-typescript .token.keyword').first()).toHaveText('const');
     await expect(page.locator('.docs-outline a').first()).toHaveAttribute(
         'href',
         '#preserve-the-javascript-value-model'

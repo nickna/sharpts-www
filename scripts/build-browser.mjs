@@ -17,7 +17,10 @@ if (fs.existsSync(outputRoot)) {
 }
 
 const result = await build({
-    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'site-entry.ts')],
+    entryPoints: [
+        path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'site-entry.ts'),
+        path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'docs-entry.ts')
+    ],
     outdir: outputRoot,
     bundle: true,
     format: 'esm',
@@ -52,25 +55,7 @@ const conformanceResult = await build({
     metafile: true
 });
 
-const docsResult = await build({
-    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'docs-entry.ts')],
-    outdir: outputRoot,
-    bundle: true,
-    format: 'esm',
-    platform: 'browser',
-    target: ['es2022'],
-    minify: true,
-    sourcemap: false,
-    legalComments: 'none',
-    entryNames: '[name]-[hash]',
-    metafile: true
-});
-
-const outputs = [
-    ...Object.entries(result.metafile.outputs),
-    ...Object.entries(conformanceResult.metafile.outputs),
-    ...Object.entries(docsResult.metafile.outputs)
-];
+const outputs = [...Object.entries(result.metafile.outputs), ...Object.entries(conformanceResult.metafile.outputs)];
 const entryOutput = outputs.find(
     ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/site-entry.ts')
 );
