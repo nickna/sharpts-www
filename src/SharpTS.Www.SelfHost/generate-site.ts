@@ -173,32 +173,53 @@ function renderArchitecturePreview(locale: Locale): string {
     return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="arch-preview reveal"><div class="arch-preview__flow">${node('Label_Source')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Lexer')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Parser')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_TypeChecker', ' arch-preview__node--accent')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Interpreter', ' arch-preview__node--interpret')}<span class="arch-preview__sep arch-preview__sep--or" aria-hidden="true">/</span>${node('Label_ILCompiler', ' arch-preview__node--compile')}</div><a href="${routePath(locale.culture, 'guide')}" class="btn btn-primary arch-preview__cta">${escapeHtml(t(locale, bundle, 'Cta_LearnMore'))}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></div></div></section>`;
 }
 
+const playgroundTimingPhases = [
+    ['tokenize', 'Tokenize'],
+    ['parse', 'Parse'],
+    ['validate-modules', 'ValidateModules'],
+    ['type-check', 'TypeCheck'],
+    ['prepare-interpreter', 'PrepareInterpreter'],
+    // Retained for rolling deployments and responses from older workers.
+    ['compile', 'Compile'],
+    ['analyze-dead-code', 'AnalyzeDeadCode'],
+    ['initialize-compiler', 'InitializeCompiler'],
+    ['prepare-compilation', 'PrepareCompilation'],
+    ['extract-namespaces', 'ExtractNamespaces'],
+    ['emit-runtime-types', 'EmitRuntimeTypes'],
+    ['analyze-closures', 'AnalyzeClosures'],
+    ['define-program-structure', 'DefineProgramStructure'],
+    ['analyze-module-bindings', 'AnalyzeModuleBindings'],
+    ['define-declarations', 'DefineDeclarations'],
+    ['collect-functions', 'CollectFunctions'],
+    ['emit-function-bodies', 'EmitFunctionBodies'],
+    ['emit-method-bodies', 'EmitMethodBodies'],
+    ['emit-entry-point', 'EmitEntryPoint'],
+    ['finalize-types', 'FinalizeTypes'],
+    ['serialize-assembly', 'SerializeAssembly'],
+    ['load', 'Load'],
+    ['execute', 'Execute']
+] as const;
+
 function renderPlayground(locale: Locale): string {
     const bundle = 'Components.Sections.PlaygroundSection';
     const options = presets.map(preset => `<option value="${escapeHtml(preset.name)}">${escapeHtml(preset.name)}</option>`).join('\n');
-    const timingData = [
-        ['timing-headline', 'TimingHeadline'],
-        ['timing-failed-headline', 'TimingFailedHeadline'],
-        ['timing-sharp-ts-pipeline', 'TimingSharpTSPipeline'],
-        ['timing-end-to-end', 'TimingEndToEnd'],
-        ['timing-status-completed', 'TimingStatusCompleted'],
-        ['timing-status-failed', 'TimingStatusFailed'],
-        ['phase-tokenize-name', 'TimingPhaseTokenizeName'],
-        ['phase-tokenize-description', 'TimingPhaseTokenizeDescription'],
-        ['phase-parse-name', 'TimingPhaseParseName'],
-        ['phase-parse-description', 'TimingPhaseParseDescription'],
-        ['phase-type-check-name', 'TimingPhaseTypeCheckName'],
-        ['phase-type-check-description', 'TimingPhaseTypeCheckDescription'],
-        ['phase-prepare-interpreter-name', 'TimingPhasePrepareInterpreterName'],
-        ['phase-prepare-interpreter-description', 'TimingPhasePrepareInterpreterDescription'],
-        ['phase-compile-name', 'TimingPhaseCompileName'],
-        ['phase-compile-description', 'TimingPhaseCompileDescription'],
-        ['phase-load-name', 'TimingPhaseLoadName'],
-        ['phase-load-description', 'TimingPhaseLoadDescription'],
-        ['phase-execute-name', 'TimingPhaseExecuteName'],
-        ['phase-execute-description', 'TimingPhaseExecuteDescription']
-    ].map(([attribute, key]) => `data-${attribute}="${escapeHtml(t(locale, bundle, key))}"`).join(' ');
-    return `<section class="section" id="playground"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="playground reveal" data-playground data-running="false" data-placeholder="${escapeHtml(t(locale, bundle, 'Placeholder'))}" data-request-failed="${escapeHtml(t(locale, bundle, 'RequestFailed'))}" data-invalid-response="${escapeHtml(t(locale, bundle, 'InvalidResponse'))}" ${timingData}>
+    const timingData: Array<{ attribute: string; key: string }> = [
+        { attribute: 'timing-headline', key: 'TimingHeadline' },
+        { attribute: 'timing-failed-headline', key: 'TimingFailedHeadline' },
+        { attribute: 'timing-sharp-ts-pipeline', key: 'TimingSharpTSPipeline' },
+        { attribute: 'timing-end-to-end', key: 'TimingEndToEnd' },
+        { attribute: 'timing-status-completed', key: 'TimingStatusCompleted' },
+        { attribute: 'timing-status-failed', key: 'TimingStatusFailed' }
+    ];
+    for (const [attribute, key] of playgroundTimingPhases) {
+        timingData.push(
+            { attribute: `phase-${attribute}-name`, key: `TimingPhase${key}Name` },
+            { attribute: `phase-${attribute}-description`, key: `TimingPhase${key}Description` });
+    }
+    const timingAttributes = timingData
+        .map(item => `data-${item.attribute}="${escapeHtml(t(locale, bundle, item.key))}"`)
+        .join(' ');
+    return `<section class="section" id="playground"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="playground reveal" data-playground data-running="false" data-placeholder="${escapeHtml(t(locale, bundle, 'Placeholder'))}" data-request-failed="${escapeHtml(t(locale, bundle, 'RequestFailed'))}" data-invalid-response="${escapeHtml(t(locale, bundle, 'InvalidResponse'))}" ${timingAttributes}>
   <div class="playground__toolbar"><div class="playground__toolbar-left"><select class="playground__preset" data-playground-preset aria-label="${escapeHtml(t(locale, bundle, 'SelectPreset'))}"><option value="">${escapeHtml(t(locale, bundle, 'SelectPreset'))}</option>${options}</select><div class="playground__mode" role="group" aria-label="${escapeHtml(t(locale, bundle, 'ModeLabel'))}"><button type="button" class="playground__mode-btn playground__mode-btn--active" data-playground-mode="interpret" aria-pressed="true">${escapeHtml(t(locale, bundle, 'ModeInterpret'))}</button><button type="button" class="playground__mode-btn" data-playground-mode="compile" aria-pressed="false">${escapeHtml(t(locale, bundle, 'ModeCompile'))}</button></div></div><div class="playground__toolbar-right"><button type="button" class="btn btn-sm btn-secondary" data-playground-clear>${escapeHtml(t(locale, bundle, 'Clear'))}</button><button type="button" id="playground-run-btn" class="btn btn-sm btn-primary" data-playground-run aria-busy="false"><span class="playground__spinner" aria-hidden="true"></span><span class="playground__run-label--idle">${escapeHtml(t(locale, bundle, 'Run'))}</span><span class="playground__run-label--running">${escapeHtml(t(locale, bundle, 'Running'))}</span><kbd class="playground__kbd">${escapeHtml(t(locale, bundle, 'RunShortcut'))}</kbd></button></div></div>
   <div class="playground__body"><div class="playground__editor"><div id="playground-editor" class="playground__cm-container"><textarea class="playground__fallback-editor" data-playground-editor spellcheck="false" aria-label="TypeScript source">${escapeHtml(t(locale, bundle, 'DefaultCode'))}</textarea></div></div><div class="playground__output"><div class="playground__output-header"><span>${escapeHtml(t(locale, bundle, 'Output'))}</span><button type="button" class="playground__timing" data-playground-timing data-timing-compiled="${escapeHtml(t(locale, bundle, 'TimingCompiled'))}" data-timing-executed="${escapeHtml(t(locale, bundle, 'TimingExecuted'))}" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}" aria-expanded="false" aria-controls="playground-timing-details" hidden><span data-playground-timing-headline></span><span class="playground__timing-chevron" aria-hidden="true">▾</span></button></div><div id="playground-timing-details" class="playground__timing-details" data-playground-timing-details hidden><div class="playground__timing-phases" data-playground-timing-phases role="group" aria-label="${escapeHtml(t(locale, bundle, 'TimingJourneyLabel'))}"></div><p class="playground__timing-description" data-playground-timing-description aria-live="polite"></p><p class="playground__timing-summary"><span data-playground-timing-pipeline></span><span data-playground-timing-total></span></p></div><div class="playground__output-body" data-playground-output role="status" aria-live="polite"><span class="playground__placeholder">${escapeHtml(t(locale, bundle, 'Placeholder'))}</span></div></div></div>
 </div></div></section>`;

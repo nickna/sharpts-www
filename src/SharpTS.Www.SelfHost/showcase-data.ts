@@ -121,7 +121,7 @@ export interface ComparisonGroup {
 }
 
 /** SharpTS revision against which this human-reviewed matrix was verified. */
-export const featureMatrixRevision = '686eb28dc1ea25f00efd4906d70be0de186be140';
+export const featureMatrixRevision = '3a694e500cde098c62b7bd4178f20d49d04aa87b';
 
 export const comparisonGroups: ComparisonGroup[] = [
     { key: 'Group_TypeSystem', features: [

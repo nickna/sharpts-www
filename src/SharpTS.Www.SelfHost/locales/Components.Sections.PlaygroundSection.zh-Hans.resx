@@ -87,12 +87,44 @@ console.log(greet(developer));</value>
   <data name="TimingPhaseTokenizeDescription" xml:space="preserve"><value>将源代码文本转换为词法标记。</value></data>
   <data name="TimingPhaseParseName" xml:space="preserve"><value>语法分析</value></data>
   <data name="TimingPhaseParseDescription" xml:space="preserve"><value>根据词法标记构建程序结构。</value></data>
+  <data name="TimingPhaseValidateModulesName" xml:space="preserve"><value>验证模块</value></data>
+  <data name="TimingPhaseValidateModulesDescription" xml:space="preserve"><value>拒绝单源执行无法加载的模块语法。</value></data>
   <data name="TimingPhaseTypeCheckName" xml:space="preserve"><value>类型检查</value></data>
   <data name="TimingPhaseTypeCheckDescription" xml:space="preserve"><value>检查 TypeScript 类型并报告静态错误。</value></data>
   <data name="TimingPhasePrepareInterpreterName" xml:space="preserve"><value>准备解释器</value></data>
   <data name="TimingPhasePrepareInterpreterDescription" xml:space="preserve"><value>创建运行时环境并解析变量。</value></data>
   <data name="TimingPhaseCompileName" xml:space="preserve"><value>编译</value></data>
   <data name="TimingPhaseCompileDescription" xml:space="preserve"><value>分析后在内存中生成 .NET 程序集。</value></data>
+  <data name="TimingPhaseAnalyzeDeadCodeName" xml:space="preserve"><value>分析无效代码</value></data>
+  <data name="TimingPhaseAnalyzeDeadCodeDescription" xml:space="preserve"><value>在生成 IL 前查找不可达代码。</value></data>
+  <data name="TimingPhaseInitializeCompilerName" xml:space="preserve"><value>初始化编译器</value></data>
+  <data name="TimingPhaseInitializeCompilerDescription" xml:space="preserve"><value>创建 IL 编译器和输出程序集。</value></data>
+  <data name="TimingPhasePrepareCompilationName" xml:space="preserve"><value>准备编译</value></data>
+  <data name="TimingPhasePrepareCompilationDescription" xml:space="preserve"><value>为已分析的程序初始化编译器状态。</value></data>
+  <data name="TimingPhaseExtractNamespacesName" xml:space="preserve"><value>提取命名空间</value></data>
+  <data name="TimingPhaseExtractNamespacesDescription" xml:space="preserve"><value>收集 TypeScript 命名空间声明。</value></data>
+  <data name="TimingPhaseEmitRuntimeTypesName" xml:space="preserve"><value>生成运行时类型</value></data>
+  <data name="TimingPhaseEmitRuntimeTypesDescription" xml:space="preserve"><value>生成 SharpTS 运行时所需的辅助类型。</value></data>
+  <data name="TimingPhaseAnalyzeClosuresName" xml:space="preserve"><value>分析闭包</value></data>
+  <data name="TimingPhaseAnalyzeClosuresDescription" xml:space="preserve"><value>确定捕获的变量和闭包布局。</value></data>
+  <data name="TimingPhaseDefineProgramStructureName" xml:space="preserve"><value>定义程序结构</value></data>
+  <data name="TimingPhaseDefineProgramStructureDescription" xml:space="preserve"><value>定义生成的模块、类和程序容器。</value></data>
+  <data name="TimingPhaseAnalyzeModuleBindingsName" xml:space="preserve"><value>分析模块绑定</value></data>
+  <data name="TimingPhaseAnalyzeModuleBindingsDescription" xml:space="preserve"><value>解析生成的模块代码使用的绑定。</value></data>
+  <data name="TimingPhaseDefineDeclarationsName" xml:space="preserve"><value>定义声明</value></data>
+  <data name="TimingPhaseDefineDeclarationsDescription" xml:space="preserve"><value>定义字段、方法和其他生成的声明。</value></data>
+  <data name="TimingPhaseCollectFunctionsName" xml:space="preserve"><value>收集函数</value></data>
+  <data name="TimingPhaseCollectFunctionsDescription" xml:space="preserve"><value>注册需要生成方法的函数。</value></data>
+  <data name="TimingPhaseEmitFunctionBodiesName" xml:space="preserve"><value>生成函数体</value></data>
+  <data name="TimingPhaseEmitFunctionBodiesDescription" xml:space="preserve"><value>为独立函数和嵌套函数生成 IL。</value></data>
+  <data name="TimingPhaseEmitMethodBodiesName" xml:space="preserve"><value>生成方法体</value></data>
+  <data name="TimingPhaseEmitMethodBodiesDescription" xml:space="preserve"><value>为类和对象的方法生成 IL。</value></data>
+  <data name="TimingPhaseEmitEntryPointName" xml:space="preserve"><value>生成入口点</value></data>
+  <data name="TimingPhaseEmitEntryPointDescription" xml:space="preserve"><value>生成程序入口点。</value></data>
+  <data name="TimingPhaseFinalizeTypesName" xml:space="preserve"><value>完成类型</value></data>
+  <data name="TimingPhaseFinalizeTypesDescription" xml:space="preserve"><value>完成生成的 .NET 类型定义。</value></data>
+  <data name="TimingPhaseSerializeAssemblyName" xml:space="preserve"><value>序列化程序集</value></data>
+  <data name="TimingPhaseSerializeAssemblyDescription" xml:space="preserve"><value>将生成的 PE 和 PDB 映像写入内存。</value></data>
   <data name="TimingPhaseLoadName" xml:space="preserve"><value>加载</value></data>
   <data name="TimingPhaseLoadDescription" xml:space="preserve"><value>加载生成的程序集并查找入口点。</value></data>
   <data name="TimingPhaseExecuteName" xml:space="preserve"><value>执行</value></data>

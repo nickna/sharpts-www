@@ -11,6 +11,7 @@ import {
     shutdownExecutionQueue
 } from './execution-queue';
 import {
+    calculateSharpTsPipelineDuration,
     isWorkerResponsePayload,
     normalizeExecutionMode,
     normalizeExecutionTimeout,
@@ -104,28 +105,29 @@ function finiteDuration(value: number): number {
 }
 
 /**
- * Combine exclusive website-host overhead with the worker's additive pipeline phases.
+ * Combine exclusive website-host overhead with the worker's granular pipeline phases.
  * The isolated-worker phase is process startup, IPC, serialization, and shutdown time,
- * excluding the SharpTS phases reported by the worker itself.
+ * excluding the most complete SharpTS aggregate reported by the worker.
  */
 export function aggregateTimings(
     workerPhases: ExecutionPhaseTiming[],
     queueDurationMs: number,
     isolatedWorkerDurationMs: number,
-    isolatedWorkerStatus: 'completed' | 'failed' = 'completed'
+    isolatedWorkerStatus: 'completed' | 'failed' = 'completed',
+    sharpTsDurationMs?: number
 ): ExecutionTimings {
     const queueDuration = finiteDuration(queueDurationMs);
     const isolatedDuration = finiteDuration(isolatedWorkerDurationMs);
-    let measuredWorkerDuration = 0;
-    for (const phase of workerPhases)
-        measuredWorkerDuration += finiteDuration(phase.durationMs);
+    const sharpTsDuration = sharpTsDurationMs === undefined
+        ? workerPhases.reduce((total, phase) => total + finiteDuration(phase.durationMs), 0)
+        : finiteDuration(sharpTsDurationMs);
 
     return {
         phases: [
             { name: 'queue', durationMs: queueDuration, status: 'completed' },
             {
                 name: 'isolatedWorker',
-                durationMs: Math.max(0, isolatedDuration - measuredWorkerDuration),
+                durationMs: Math.max(0, isolatedDuration - sharpTsDuration),
                 status: isolatedWorkerStatus
             },
             ...workerPhases
@@ -166,6 +168,10 @@ export function normalizeWorkerResponse(
         durationMs: timing.DurationMs,
         status: timing.Status
     }));
+    const sharpTsDurationMs = calculateSharpTsPipelineDuration(
+        workerPhases,
+        worker.ExecutionTimeMs,
+        worker.CompileTimeMs);
     return {
         success: worker.Success === true,
         output: sanitizeNetworkBlock(String(worker.Output || '')),
@@ -175,7 +181,9 @@ export function normalizeWorkerResponse(
         timings: aggregateTimings(
             workerPhases,
             queueDurationMs,
-            isolatedWorkerDurationMs)
+            isolatedWorkerDurationMs,
+            'completed',
+            sharpTsDurationMs)
     };
 }
 

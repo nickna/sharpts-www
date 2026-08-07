@@ -31,6 +31,21 @@ export interface ExecutionTimings {
     serverDurationMs: number;
 }
 
+/**
+ * Return the most complete SharpTS wall-clock duration exposed by the embedding API.
+ * Compiled aggregates intentionally do not equal the sum of their instrumented phases.
+ */
+export function calculateSharpTsPipelineDuration(
+    phases: ExecutionPhaseTiming[],
+    executionTimeMs: number,
+    compileTimeMs: number | null
+): number {
+    if (compileTimeMs !== null)
+        return Math.max(0, compileTimeMs) + Math.max(0, executionTimeMs);
+
+    return phases.reduce((total, phase) => total + Math.max(0, phase.durationMs), 0);
+}
+
 export interface ExecutionResponse {
     success: boolean;
     output: string;

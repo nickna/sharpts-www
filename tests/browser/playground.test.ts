@@ -11,8 +11,11 @@ function playgroundMarkup(): HTMLElement {
       data-timing-status-completed="completed" data-timing-status-failed="failed"
       data-phase-tokenize-name="Tokenize" data-phase-tokenize-description="Tokenize details"
       data-phase-parse-name="Parse" data-phase-parse-description="Parse details"
+      data-phase-validate-modules-name="Validate modules" data-phase-validate-modules-description="Validate details"
       data-phase-type-check-name="Type check" data-phase-type-check-description="Type details"
       data-phase-compile-name="Compile" data-phase-compile-description="Compile details"
+      data-phase-analyze-dead-code-name="Analyze dead code" data-phase-analyze-dead-code-description="Dead code details"
+      data-phase-serialize-assembly-name="Serialize assembly" data-phase-serialize-assembly-description="Serialize details"
       data-phase-load-name="Load" data-phase-load-description="Load details"
       data-phase-execute-name="Execute" data-phase-execute-description="Execute details">
       <select data-playground-preset><option value="">Preset</option></select>
@@ -73,10 +76,25 @@ describe('playground controller', () => {
                                 { name: 'isolatedWorker', durationMs: 3, status: 'completed' },
                                 { name: 'tokenize', durationMs: 0.4, status: 'completed' },
                                 { name: 'parse', durationMs: 4.26, status: 'completed' },
+                                { name: 'validateModules', durationMs: 0.3, status: 'completed' },
                                 { name: 'typeCheck', durationMs: 10.4, status: 'completed' },
-                                { name: 'compile', durationMs: 20.2, status: 'completed' },
+                                { name: 'analyzeDeadCode', durationMs: 0.1, status: 'completed' },
+                                { name: 'initializeCompiler', durationMs: 0.1, status: 'completed' },
+                                { name: 'prepareCompilation', durationMs: 0.1, status: 'completed' },
+                                { name: 'extractNamespaces', durationMs: 0.1, status: 'completed' },
+                                { name: 'emitRuntimeTypes', durationMs: 0.1, status: 'completed' },
+                                { name: 'analyzeClosures', durationMs: 0.1, status: 'completed' },
+                                { name: 'defineProgramStructure', durationMs: 0.1, status: 'completed' },
+                                { name: 'analyzeModuleBindings', durationMs: 0.1, status: 'completed' },
+                                { name: 'defineDeclarations', durationMs: 0.1, status: 'completed' },
+                                { name: 'collectFunctions', durationMs: 0.1, status: 'completed' },
+                                { name: 'emitFunctionBodies', durationMs: 0.1, status: 'completed' },
+                                { name: 'emitMethodBodies', durationMs: 0.1, status: 'completed' },
+                                { name: 'emitEntryPoint', durationMs: 0.1, status: 'completed' },
+                                { name: 'finalizeTypes', durationMs: 0.1, status: 'completed' },
+                                { name: 'serializeAssembly', durationMs: 0.1, status: 'completed' },
                                 { name: 'load', durationMs: 0.6, status: 'completed' },
-                                { name: 'execute', durationMs: 12.2, status: 'completed' }
+                                { name: 'execute', durationMs: 2.2, status: 'completed' }
                             ]
                         }
                     }),
@@ -112,10 +130,14 @@ describe('playground controller', () => {
         expect(root.querySelector('[data-playground-timing-phase="execute"]')?.getAttribute('aria-pressed')).toBe(
             'true'
         );
-        expect(root.querySelectorAll('[data-playground-timing-phase]')).toHaveLength(6);
+        expect(root.querySelectorAll('[data-playground-timing-phase]')).toHaveLength(21);
         expect(root.querySelector('[data-playground-timing-phase="queue"]')).toBeNull();
         expect(root.querySelector('[data-playground-timing-phase="isolatedWorker"]')).toBeNull();
-        expect(root.querySelector('[data-playground-timing-pipeline]')?.textContent).toBe('SharpTS pipeline: 48 ms');
+        expect(root.querySelector('[data-playground-timing-phase="compile"]')).toBeNull();
+        expect(root.querySelector('[data-playground-timing-phase="serializeAssembly"]')?.textContent).toContain(
+            'Serialize assembly'
+        );
+        expect(root.querySelector('[data-playground-timing-pipeline]')?.textContent).toBe('SharpTS pipeline: 32 ms');
         expect(root.querySelector('[data-playground-timing-total]')?.textContent).toBe('End to end: 100 ms');
 
         root.querySelector<HTMLButtonElement>('[data-playground-timing-phase="parse"]')!.click();
@@ -176,6 +198,7 @@ describe('playground controller', () => {
                                   { name: 'isolatedWorker', durationMs: 2, status: 'completed' },
                                   { name: 'tokenize', durationMs: 1, status: 'completed' },
                                   { name: 'parse', durationMs: 2, status: 'completed' },
+                                  { name: 'validateModules', durationMs: 1, status: 'completed' },
                                   { name: 'typeCheck', durationMs: 4, status: 'failed' }
                               ]
                             : [
@@ -213,7 +236,7 @@ describe('playground controller', () => {
         await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
         await vi.waitFor(() => expect(root.dataset.running).toBe('false'));
         expect(root.querySelector('[data-playground-timing-headline]')?.textContent).toBe('Type check failed');
-        expect(root.querySelectorAll('[data-playground-timing-phase]')).toHaveLength(3);
+        expect(root.querySelectorAll('[data-playground-timing-phase]')).toHaveLength(4);
         expect(root.querySelector('[data-playground-timing-phase="execute"]')).toBeNull();
         expect(root.querySelector('[data-playground-timing-phase="typeCheck"]')?.getAttribute('aria-pressed')).toBe(
             'true'

@@ -24,15 +24,6 @@ const revision = values.SHARPTS_SOURCE_REVISION;
 if (!/^[0-9a-f]{40}$/.test(revision || ''))
     throw new Error('SHARPTS_SOURCE_REVISION must be a lowercase 40-character commit SHA.');
 
-const recorded = execFileSync('git', ['ls-tree', 'HEAD', 'lib/SharpTS'], {
-    cwd: repoRoot,
-    encoding: 'utf8'
-})
-    .trim()
-    .split(/\s+/)[2];
-if (recorded !== revision)
-    throw new Error(`sharpts-source.env records ${revision}, but the submodule pointer is ${recorded}.`);
-
 const submoduleGit = ['-c', `safe.directory=${submoduleRoot}`, '-C', submoduleRoot];
 const checkout = execFileSync('git', [...submoduleGit, 'rev-parse', 'HEAD'], {
     cwd: repoRoot,

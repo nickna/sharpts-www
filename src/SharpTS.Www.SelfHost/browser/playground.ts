@@ -1,5 +1,6 @@
 import { createEditor, type EditorAdapter } from './editor';
 import {
+    calculateSharpTsPipelineDuration,
     isExecutionResponse,
     isPresetArray,
     type ExecutionPhaseTiming,
@@ -187,7 +188,7 @@ export async function initializePlayground(
             button.setAttribute('aria-pressed', 'false');
             button.setAttribute('aria-label', `${name}, ${duration}, ${status}`);
             button.tabIndex = -1;
-            button.style.setProperty('--phase-index', String(index));
+            button.style.setProperty('--phase-index', String(Math.min(index, 8)));
 
             const nameElement = doc.createElement('span');
             nameElement.className = 'playground__timing-phase-name';
@@ -227,7 +228,7 @@ export async function initializePlayground(
         if (executionPhase) {
             timingHeadline.textContent = replaceTiming(
                 root.dataset.timingHeadline || 'Executed in {0}',
-                formatDuration(executionPhase.durationMs, locale));
+                formatDuration(body.executionTimeMs, locale));
         } else if (failedPhase) {
             timingHeadline.textContent = replaceTiming(
                 root.dataset.timingFailedHeadline || '{0} failed',
@@ -239,7 +240,10 @@ export async function initializePlayground(
         }
         timing.setAttribute('aria-label', timingHeadline.textContent || 'Execution phases');
 
-        const pipelineDuration = phases.reduce((total, phase) => total + phase.durationMs, 0);
+        const pipelineDuration = calculateSharpTsPipelineDuration(
+            phases,
+            body.executionTimeMs,
+            body.compileTimeMs);
         timingPipeline.textContent = replaceTiming(
             root.dataset.timingSharpTsPipeline || 'SharpTS pipeline: {0}',
             formatDuration(pipelineDuration, locale));

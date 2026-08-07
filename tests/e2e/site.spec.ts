@@ -103,7 +103,8 @@ test('playground presets execute in both modes and localized assets stay local',
     await expect(page.locator('.playground__stdout')).toContainText('Hello from SharpTS');
     await expect(page.locator('[data-playground-timing-headline]')).toContainText('Exécuté');
     await page.locator('[data-playground-timing]').click();
-    await expect(page.locator('[data-playground-timing-phase="compile"]')).toBeVisible();
+    await expect(page.locator('[data-playground-timing-phase="serializeAssembly"]')).toBeVisible();
+    await expect(page.locator('[data-playground-timing-phase="compile"]')).toHaveCount(0);
     await expect(page.locator('[data-playground-timing-phase="prepareInterpreter"]')).toHaveCount(0);
 
     await page.locator('[data-playground-timing-phase="execute"]').focus();
@@ -111,13 +112,24 @@ test('playground presets execute in both modes and localized assets stay local',
     await expect(page.locator('[data-playground-timing-phase="load"]')).toBeFocused();
 
     await page.setViewportSize({ width: 390, height: 844 });
-    expect(
-        await page.locator('[data-playground-timing-details]').evaluate((element) => {
-            const details = element as HTMLElement;
-            const bounds = details.getBoundingClientRect();
-            return bounds.left >= 0 && bounds.right <= window.innerWidth && details.scrollWidth <= details.clientWidth;
-        })
-    ).toBe(true);
+    const timingLayout = await page.locator('[data-playground-timing-details]').evaluate((element) => {
+        const details = element as HTMLElement;
+        const bounds = details.getBoundingClientRect();
+        const widest = Array.from(details.querySelectorAll<HTMLElement>('*'))
+            .map((candidate) => ({
+                name: candidate.className || candidate.dataset.playgroundTimingPhase || candidate.tagName,
+                right: candidate.getBoundingClientRect().right
+            }))
+            .sort((left, right) => right.right - left.right)[0];
+        return {
+            inViewport: bounds.left >= 0 && bounds.right <= window.innerWidth,
+            noOverflow: details.scrollWidth <= details.clientWidth,
+            clientWidth: details.clientWidth,
+            scrollWidth: details.scrollWidth,
+            widest
+        };
+    });
+    expect(timingLayout).toMatchObject({ inViewport: true, noOverflow: true });
 
     const accessibility = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -142,6 +154,7 @@ test('execution timing contract reports mode-specific and partial phase sequence
         'isolatedWorker',
         'tokenize',
         'parse',
+        'validateModules',
         'typeCheck',
         'prepareInterpreter',
         'execute'
@@ -153,8 +166,23 @@ test('execution timing contract reports mode-specific and partial phase sequence
         'isolatedWorker',
         'tokenize',
         'parse',
+        'validateModules',
         'typeCheck',
-        'compile',
+        'analyzeDeadCode',
+        'initializeCompiler',
+        'prepareCompilation',
+        'extractNamespaces',
+        'emitRuntimeTypes',
+        'analyzeClosures',
+        'defineProgramStructure',
+        'analyzeModuleBindings',
+        'defineDeclarations',
+        'collectFunctions',
+        'emitFunctionBodies',
+        'emitMethodBodies',
+        'emitEntryPoint',
+        'finalizeTypes',
+        'serializeAssembly',
         'load',
         'execute'
     ]);
@@ -166,6 +194,7 @@ test('execution timing contract reports mode-specific and partial phase sequence
         'isolatedWorker',
         'tokenize',
         'parse',
+        'validateModules',
         'typeCheck'
     ]);
     expect(failed.timings?.phases.at(-1)?.status).toBe('failed');
@@ -183,6 +212,10 @@ test('execution journey labels are available in every locale and reduced motion 
         await page.goto(route);
         await expect(page.locator('[data-playground]')).toHaveAttribute('data-phase-execute-name', executeLabel);
         await expect(page.locator('[data-playground]')).toHaveAttribute('data-timing-sharp-ts-pipeline', pipelineLabel);
+        await expect(page.locator('[data-playground]')).toHaveAttribute(
+            'data-phase-serialize-assembly-description',
+            /.+/
+        );
     }
 
     await page.emulateMedia({ reducedMotion: 'reduce' });

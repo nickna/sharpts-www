@@ -19,37 +19,43 @@ describe('worker protocol serialization', () => {
 });
 
 describe('worker response normalization', () => {
-    it('maps a valid worker payload without coercion', () => {
+    it('maps the expanded worker payload and uses outer aggregates for compiled overhead', () => {
         expect(
             normalizeWorkerResponse(
                 {
                     Success: true,
                     Output: 'hello\n',
                     Errors: [],
-                    ExecutionTimeMs: 0,
-                    CompileTimeMs: 4,
+                    ExecutionTimeMs: 3,
+                    CompileTimeMs: 40,
                     Timings: [
                         { Name: 'tokenize', DurationMs: 1.25, Status: 'completed' },
-                        { Name: 'compile', DurationMs: 4.5, Status: 'completed' },
+                        { Name: 'validateModules', DurationMs: 0.5, Status: 'completed' },
+                        { Name: 'analyzeDeadCode', DurationMs: 4.5, Status: 'completed' },
+                        { Name: 'serializeAssembly', DurationMs: 5, Status: 'completed' },
+                        { Name: 'load', DurationMs: 0.5, Status: 'completed' },
                         { Name: 'execute', DurationMs: 0.25, Status: 'completed' }
                     ]
                 },
-                10,
+                60,
                 2
             )
         ).toEqual({
             success: true,
             output: 'hello\n',
             errors: [],
-            executionTimeMs: 0,
-            compileTimeMs: 4,
+            executionTimeMs: 3,
+            compileTimeMs: 40,
             timings: {
-                serverDurationMs: 12,
+                serverDurationMs: 62,
                 phases: [
                     { name: 'queue', durationMs: 2, status: 'completed' },
-                    { name: 'isolatedWorker', durationMs: 4, status: 'completed' },
+                    { name: 'isolatedWorker', durationMs: 17, status: 'completed' },
                     { name: 'tokenize', durationMs: 1.25, status: 'completed' },
-                    { name: 'compile', durationMs: 4.5, status: 'completed' },
+                    { name: 'validateModules', durationMs: 0.5, status: 'completed' },
+                    { name: 'analyzeDeadCode', durationMs: 4.5, status: 'completed' },
+                    { name: 'serializeAssembly', durationMs: 5, status: 'completed' },
+                    { name: 'load', durationMs: 0.5, status: 'completed' },
                     { name: 'execute', durationMs: 0.25, status: 'completed' }
                 ]
             }
@@ -112,7 +118,7 @@ describe('worker response normalization', () => {
         expect(response.errors[0].message).not.toContain('invalid');
     });
 
-    it('keeps aggregate server time additive when worker phases consume the lifecycle', () => {
+    it('uses an explicit SharpTS aggregate without requiring granular phases to add up', () => {
         expect(
             aggregateTimings(
                 [
@@ -120,13 +126,15 @@ describe('worker response normalization', () => {
                     { name: 'execute', durationMs: 9, status: 'completed' }
                 ],
                 3,
-                20
+                20,
+                'completed',
+                15
             )
         ).toEqual({
             serverDurationMs: 23,
             phases: [
                 { name: 'queue', durationMs: 3, status: 'completed' },
-                { name: 'isolatedWorker', durationMs: 7, status: 'completed' },
+                { name: 'isolatedWorker', durationMs: 5, status: 'completed' },
                 { name: 'tokenize', durationMs: 4, status: 'completed' },
                 { name: 'execute', durationMs: 9, status: 'completed' }
             ]

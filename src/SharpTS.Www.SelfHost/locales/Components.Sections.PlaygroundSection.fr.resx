@@ -87,12 +87,44 @@ console.log(greet(developer));</value>
   <data name="TimingPhaseTokenizeDescription" xml:space="preserve"><value>Transforme le code source en jetons.</value></data>
   <data name="TimingPhaseParseName" xml:space="preserve"><value>Analyse syntaxique</value></data>
   <data name="TimingPhaseParseDescription" xml:space="preserve"><value>Construit la structure du programme à partir des jetons.</value></data>
+  <data name="TimingPhaseValidateModulesName" xml:space="preserve"><value>Validation des modules</value></data>
+  <data name="TimingPhaseValidateModulesDescription" xml:space="preserve"><value>Rejette la syntaxe de module incompatible avec l’exécution d’une source unique.</value></data>
   <data name="TimingPhaseTypeCheckName" xml:space="preserve"><value>Vérification des types</value></data>
   <data name="TimingPhaseTypeCheckDescription" xml:space="preserve"><value>Vérifie les types TypeScript et signale les erreurs statiques.</value></data>
   <data name="TimingPhasePrepareInterpreterName" xml:space="preserve"><value>Préparation de l’interpréteur</value></data>
   <data name="TimingPhasePrepareInterpreterDescription" xml:space="preserve"><value>Crée l’environnement d’exécution et résout les variables.</value></data>
   <data name="TimingPhaseCompileName" xml:space="preserve"><value>Compilation</value></data>
   <data name="TimingPhaseCompileDescription" xml:space="preserve"><value>Émet l’assembly .NET en mémoire après l’analyse.</value></data>
+  <data name="TimingPhaseAnalyzeDeadCodeName" xml:space="preserve"><value>Analyse du code mort</value></data>
+  <data name="TimingPhaseAnalyzeDeadCodeDescription" xml:space="preserve"><value>Repère le code inaccessible avant la génération IL.</value></data>
+  <data name="TimingPhaseInitializeCompilerName" xml:space="preserve"><value>Initialisation du compilateur</value></data>
+  <data name="TimingPhaseInitializeCompilerDescription" xml:space="preserve"><value>Crée le compilateur IL et l’assembly de sortie.</value></data>
+  <data name="TimingPhasePrepareCompilationName" xml:space="preserve"><value>Préparation de la compilation</value></data>
+  <data name="TimingPhasePrepareCompilationDescription" xml:space="preserve"><value>Initialise l’état du compilateur pour le programme analysé.</value></data>
+  <data name="TimingPhaseExtractNamespacesName" xml:space="preserve"><value>Extraction des espaces de noms</value></data>
+  <data name="TimingPhaseExtractNamespacesDescription" xml:space="preserve"><value>Collecte les déclarations d’espaces de noms TypeScript.</value></data>
+  <data name="TimingPhaseEmitRuntimeTypesName" xml:space="preserve"><value>Émission des types d’exécution</value></data>
+  <data name="TimingPhaseEmitRuntimeTypesDescription" xml:space="preserve"><value>Émet les types auxiliaires requis par l’environnement SharpTS.</value></data>
+  <data name="TimingPhaseAnalyzeClosuresName" xml:space="preserve"><value>Analyse des fermetures</value></data>
+  <data name="TimingPhaseAnalyzeClosuresDescription" xml:space="preserve"><value>Détermine les variables capturées et la structure des fermetures.</value></data>
+  <data name="TimingPhaseDefineProgramStructureName" xml:space="preserve"><value>Définition de la structure</value></data>
+  <data name="TimingPhaseDefineProgramStructureDescription" xml:space="preserve"><value>Définit les modules, classes et conteneurs générés.</value></data>
+  <data name="TimingPhaseAnalyzeModuleBindingsName" xml:space="preserve"><value>Analyse des liaisons de modules</value></data>
+  <data name="TimingPhaseAnalyzeModuleBindingsDescription" xml:space="preserve"><value>Résout les liaisons utilisées par le code de module généré.</value></data>
+  <data name="TimingPhaseDefineDeclarationsName" xml:space="preserve"><value>Définition des déclarations</value></data>
+  <data name="TimingPhaseDefineDeclarationsDescription" xml:space="preserve"><value>Définit les champs, méthodes et autres déclarations émises.</value></data>
+  <data name="TimingPhaseCollectFunctionsName" xml:space="preserve"><value>Collecte des fonctions</value></data>
+  <data name="TimingPhaseCollectFunctionsDescription" xml:space="preserve"><value>Enregistre les fonctions qui nécessitent des méthodes générées.</value></data>
+  <data name="TimingPhaseEmitFunctionBodiesName" xml:space="preserve"><value>Émission des corps de fonctions</value></data>
+  <data name="TimingPhaseEmitFunctionBodiesDescription" xml:space="preserve"><value>Génère l’IL des fonctions autonomes et imbriquées.</value></data>
+  <data name="TimingPhaseEmitMethodBodiesName" xml:space="preserve"><value>Émission des corps de méthodes</value></data>
+  <data name="TimingPhaseEmitMethodBodiesDescription" xml:space="preserve"><value>Génère l’IL des méthodes de classes et d’objets.</value></data>
+  <data name="TimingPhaseEmitEntryPointName" xml:space="preserve"><value>Émission du point d’entrée</value></data>
+  <data name="TimingPhaseEmitEntryPointDescription" xml:space="preserve"><value>Génère le point d’entrée du programme.</value></data>
+  <data name="TimingPhaseFinalizeTypesName" xml:space="preserve"><value>Finalisation des types</value></data>
+  <data name="TimingPhaseFinalizeTypesDescription" xml:space="preserve"><value>Achève les définitions de types .NET générées.</value></data>
+  <data name="TimingPhaseSerializeAssemblyName" xml:space="preserve"><value>Sérialisation de l’assembly</value></data>
+  <data name="TimingPhaseSerializeAssemblyDescription" xml:space="preserve"><value>Écrit en mémoire les images PE et PDB générées.</value></data>
   <data name="TimingPhaseLoadName" xml:space="preserve"><value>Chargement</value></data>
   <data name="TimingPhaseLoadDescription" xml:space="preserve"><value>Charge l’assembly généré et trouve son point d’entrée.</value></data>
   <data name="TimingPhaseExecuteName" xml:space="preserve"><value>Exécution</value></data>
