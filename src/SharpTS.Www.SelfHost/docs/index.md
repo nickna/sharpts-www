@@ -61,3 +61,9 @@ The compiled program prints the same output.
 
 - Review SDK and self-contained choices in [Installation](/docs/getting-started/installation).
 - Learn the four everyday execution modes in [CLI basics](/docs/getting-started/cli-basics).
+- Follow the compiler from TypeScript source to .NET IL in [Compilation and Native AOT](/docs/compiler-concepts/compilation-and-native-aot).
+- See how generated programs stay smaller in [Tree shaking](/docs/compiler-concepts/tree-shaking).
+- Learn how type information accelerates hot paths in [Performance](/docs/compiler-concepts/performance).
+- Understand how JavaScript behavior survives the move to .NET in [JavaScript Semantics on .NET](/docs/compiler-concepts/javascript-semantics-on-dotnet).
+- Follow calls and suspended execution in [Functions, Closures, and State Machines](/docs/compiler-concepts/functions-closures-and-state-machines).
+- See how an entry point becomes a compiled graph in [Modules and Dependency Compilation](/docs/compiler-concepts/modules-and-dependency-compilation).

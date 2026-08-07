@@ -3,79 +3,103 @@
   "files": [
     {
       "path": "index.html",
-      "sha256": "4b5069c245d220353ff7260cdc4c04370808af3c66700f0bd6df585112a3fdd3"
+      "sha256": "b68b5b63faef1ceb6b2b43811145e0b83ffc933ccb8d56f3e75f82f1c238e7cf"
     },
     {
       "path": "how-it-works/index.html",
-      "sha256": "ccb98d2a908f63e3d5a742cc261ce1768b376d441c7e87bcbbbc154a2283f8f6"
+      "sha256": "1541e788325336a7e381b45c27fea2ad67cfe82bf7e48f64c7942efc129b67eb"
     },
     {
       "path": "conformance/index.html",
-      "sha256": "1ad160646a5fd151c352fdc592e59482693e63890a5126032304bb4fbb611c8a"
+      "sha256": "66bcb251b94b133a82506ea6627ed4aa4ad6041b4cdd8bcb9df4c147a2565f15"
     },
     {
       "path": "zh-Hans/index.html",
-      "sha256": "4914f134937d6b628af94e646e6612bfe4004692831d148a7b3970d6b0f1bb84"
+      "sha256": "fce8e8ad8df1153421b4f0cba00257230382c5ede4915bc922707334e1ccb4dd"
     },
     {
       "path": "zh-Hans/how-it-works/index.html",
-      "sha256": "ae185f07ddd4cb3514b32cb7296f915cddb29f4b85460846d8f1c761c92ba10d"
+      "sha256": "a022ae313be3a81bc68739e58c3f0f9cd816cd594fe8d890ef49d1ebb73058c7"
     },
     {
       "path": "zh-Hans/conformance/index.html",
-      "sha256": "e153bdc3d6e6e43a79e2a63e1b1faa2d4f573dd69ec930988831be30e80706c9"
+      "sha256": "c1ae6385036442a2cfbcb1a2a8f12706de08adb240b2708f47b6ce63815607ca"
     },
     {
       "path": "fr/index.html",
-      "sha256": "2c5deb23795e7a7772812bbd4a9770d5e4b67613a968947fdf1321ad8e1b7121"
+      "sha256": "7953dc490600ba43bc3753239667d44ef79f193f3b0c1d9f31f7a8430f858ca1"
     },
     {
       "path": "fr/how-it-works/index.html",
-      "sha256": "f295819cb58e9075a11fc80ecc89e973944530696c74b84b41dff514b5c9cb79"
+      "sha256": "1ab1cd5e2536eb6b8b0a7222dac79158612e6090384c2fb1eb82df144267436b"
     },
     {
       "path": "fr/conformance/index.html",
-      "sha256": "532204e34fb862b42990d2dfc131304485b974a2a238556cc1c983767524df7a"
+      "sha256": "63d660f1378272a391575da107b048aa9d8ddd702fc1ec3629bedec652c9679e"
     },
     {
       "path": "es/index.html",
-      "sha256": "e97272130e1300738fa807160f27df3450f0caf29ce5233b730d8143f13e4b6e"
+      "sha256": "3ba3c7b981b6b84ab5a6014581462dd87967a1c80cd209e4b8641d3977759003"
     },
     {
       "path": "es/how-it-works/index.html",
-      "sha256": "beab6c64b4be595d58baa738b4248e7c0c848b12c66bcfcdd4ae25d39e987c16"
+      "sha256": "7c66d7888b098a3d3b8c995873043a096a2d0a00b0e96f30540254e9d7eeb45b"
     },
     {
       "path": "es/conformance/index.html",
-      "sha256": "3e087bd42e4e0c5c010f85d0a72d1485ad20ffad989618da7798fb985c1e5305"
+      "sha256": "f74ddcee81143a2cb39c48b6ac00c0d949203742d481f5347cbf0dd1c6ee1328"
     },
     {
       "path": "de/index.html",
-      "sha256": "21834794222e357389c3a60fb77ecc7d268cd4195dc73b8f2588973faba346f0"
+      "sha256": "e7dd96a96f231ef7e7bdd6be12e5649161ad8676936c2d5a6409605948cb067d"
     },
     {
       "path": "de/how-it-works/index.html",
-      "sha256": "d2ed4376f75392a49971106cd2a7a5823d0fd3c2b2a8c97357acf245f9be14a1"
+      "sha256": "52531b87ec5fe7d12ebdd23fe5085551ab3161a1e18c0a674ff2de7504793cd7"
     },
     {
       "path": "de/conformance/index.html",
-      "sha256": "df1201ce7e5648eb3b32cbf9087994ddd93fe5abe11a0869d2b766933e08b97b"
+      "sha256": "8fb8988592c56259072bb2580e4cef5769d5f892799d24fa62408abd44ee49d6"
     },
     {
       "path": "docs/index.html",
-      "sha256": "aa4683c0fccfe51750206e9c0ab83c1269a22d2163ff37e9fc2a807a461a6ca9"
+      "sha256": "3c3b61b852f5b9f3d02b6535771dacd79425cfe33db5195dae57694a19e4aec0"
     },
     {
       "path": "docs/getting-started/installation/index.html",
-      "sha256": "02c023f834a821a5fe4296bfb1af77deb6b5f9d2db8f7bf4eed46b5f5f61aa32"
+      "sha256": "3adceeee6900dae96e5051008e3f1722acb115239e6f677681ccd93b793d1241"
     },
     {
       "path": "docs/getting-started/cli-basics/index.html",
-      "sha256": "ec6ca755ea16c41533407a769246982d8b9cfaa6877e42eb19063fcfe727b757"
+      "sha256": "804b0347945877d3c9e65c212b1d2a67043974f93cda2317594612663c0f4304"
     },
     {
-      "path": "css/site-695de54d.css",
-      "sha256": "2819aa4cd2c63fcfc9cb63ea9de532fe18e3151ef707f16be8feb06c364e5519"
+      "path": "docs/compiler-concepts/compilation-and-native-aot/index.html",
+      "sha256": "84e0f0330d6ca23fa5afd860e5f115f2bc5135e2d78b3a45e1e3ce48b1c0e5fd"
+    },
+    {
+      "path": "docs/compiler-concepts/tree-shaking/index.html",
+      "sha256": "0a30dc3c6fa68339b3e2a33c5ba8701c16465c94e93dd6d5418337aea3dae10b"
+    },
+    {
+      "path": "docs/compiler-concepts/performance/index.html",
+      "sha256": "86f691a0e1b207122309954469245707b8e9c9691292d7051431e8a012c4d7ea"
+    },
+    {
+      "path": "docs/compiler-concepts/javascript-semantics-on-dotnet/index.html",
+      "sha256": "ff4c334e46b1a6e82a9b35a234e86013855acac1ee4d2c906ad1656623652f42"
+    },
+    {
+      "path": "docs/compiler-concepts/functions-closures-and-state-machines/index.html",
+      "sha256": "639489452f22ff0df681fa02c59f29bdcc0519be5fdb0261a3144099d4fcf233"
+    },
+    {
+      "path": "docs/compiler-concepts/modules-and-dependency-compilation/index.html",
+      "sha256": "9ad7a01c8968863215d674411bf3db1bbcc2fd4ccff2cc902c59c4479ca46784"
+    },
+    {
+      "path": "css/site-815ad351.css",
+      "sha256": "d60050017bca36dc0099c4cd3d599b39e1a593b75e1494cb61ba642d093f3a39"
     },
     {
       "path": "assets/browser/chunks/chunk-RYKCZ5D5.js",

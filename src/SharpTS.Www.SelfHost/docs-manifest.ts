@@ -1,4 +1,6 @@
-export type DocumentationSection = 'Getting Started';
+export const documentationSections = ['Getting Started', 'Compiler Concepts'] as const;
+
+export type DocumentationSection = (typeof documentationSections)[number];
 
 export interface DocumentationArticle {
     slug: string;
@@ -49,6 +51,54 @@ export const documentationManifest: DocumentationArticle[] = [
         description: 'Run portable TypeScript scripts directly from a shell.',
         order: 4,
         published: false
+    },
+    {
+        slug: 'compiler-concepts/compilation-and-native-aot',
+        section: 'Compiler Concepts',
+        title: 'Compilation and Native AOT',
+        description: 'Follow TypeScript through the SharpTS compiler and understand what Native AOT changes.',
+        order: 0,
+        published: true
+    },
+    {
+        slug: 'compiler-concepts/tree-shaking',
+        section: 'Compiler Concepts',
+        title: 'Tree shaking',
+        description: 'See how SharpTS removes unreachable code and omits unused runtime features.',
+        order: 1,
+        published: true
+    },
+    {
+        slug: 'compiler-concepts/performance',
+        section: 'Compiler Concepts',
+        title: 'Performance',
+        description: 'Learn how SharpTS specializes common TypeScript hot paths while preserving JavaScript behavior.',
+        order: 2,
+        published: true
+    },
+    {
+        slug: 'compiler-concepts/javascript-semantics-on-dotnet',
+        section: 'Compiler Concepts',
+        title: 'JavaScript Semantics on .NET',
+        description: 'See how SharpTS preserves JavaScript values, objects, and operators on the .NET runtime.',
+        order: 3,
+        published: true
+    },
+    {
+        slug: 'compiler-concepts/functions-closures-and-state-machines',
+        section: 'Compiler Concepts',
+        title: 'Functions, Closures, and State Machines',
+        description: 'Follow calls, captured variables, async functions, and generators through SharpTS lowering.',
+        order: 4,
+        published: true
+    },
+    {
+        slug: 'compiler-concepts/modules-and-dependency-compilation',
+        section: 'Compiler Concepts',
+        title: 'Modules and Dependency Compilation',
+        description: 'Learn how SharpTS resolves, checks, and emits a TypeScript module graph as one .NET program.',
+        order: 5,
+        published: true
     }
 ];
 
@@ -56,6 +106,8 @@ export function validateDocumentationManifest(manifest: DocumentationArticle[]):
     const slugs: { [slug: string]: boolean } = {};
     const positions: { [position: string]: boolean } = {};
     for (const article of manifest) {
+        if (!(documentationSections as readonly string[]).includes(article.section))
+            throw new Error('Unknown documentation section: ' + article.section);
         if (!/^(index|[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*)$/.test(article.slug))
             throw new Error('Invalid documentation slug: ' + article.slug);
         if (slugs[article.slug])
@@ -78,5 +130,8 @@ export function publishedDocumentation(
     manifest: DocumentationArticle[] = documentationManifest
 ): DocumentationArticle[] {
     validateDocumentationManifest(manifest);
-    return manifest.filter(article => article.published).slice().sort((left, right) => left.order - right.order);
+    return manifest.filter(article => article.published).slice().sort((left, right) => {
+        const sectionOrder = documentationSections.indexOf(left.section) - documentationSections.indexOf(right.section);
+        return sectionOrder || left.order - right.order;
+    });
 }

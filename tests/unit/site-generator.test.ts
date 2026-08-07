@@ -118,8 +118,18 @@ describe('static site primitives', () => {
     });
 
     it('validates metadata ordering and excludes unpublished documentation', () => {
-        expect(publishedDocumentation()).toHaveLength(3);
-        expect(publishedDocumentation().map((article) => article.order)).toEqual([0, 1, 2]);
+        expect(publishedDocumentation()).toHaveLength(9);
+        expect(publishedDocumentation().map((article) => article.title)).toEqual([
+            'Start using SharpTS',
+            'Installation',
+            'CLI basics',
+            'Compilation and Native AOT',
+            'Tree shaking',
+            'Performance',
+            'JavaScript Semantics on .NET',
+            'Functions, Closures, and State Machines',
+            'Modules and Dependency Compilation'
+        ]);
         expect(publishedDocumentation().some((article) => article.slug.endsWith('/scripting'))).toBe(false);
         expect(() =>
             validateDocumentationManifest([documentationManifest[0], { ...documentationManifest[1], slug: 'index' }])
@@ -132,10 +142,12 @@ describe('static site primitives', () => {
     it('loads every source for validation but emits examples only from published articles', () => {
         const repoRoot = path.resolve('.');
         const docs = loadDocumentation(repoRoot, path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'docs'));
-        expect(docs.all).toHaveLength(5);
-        expect(docs.published).toHaveLength(3);
+        expect(docs.all).toHaveLength(11);
+        expect(docs.published).toHaveLength(9);
         expect(docs.examples).toEqual([
-            expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] })
+            expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] }),
+            expect.objectContaining({ key: 'semantic-parity', modes: ['interpret', 'compile'] }),
+            expect.objectContaining({ key: 'closure-parity', modes: ['interpret', 'compile'] })
         ]);
         expect(docs.all.find((article) => article.metadata.slug.endsWith('/scripting'))?.rendered.html).toContain(
             '#!/usr/bin/env sharpts'

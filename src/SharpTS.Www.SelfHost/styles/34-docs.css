@@ -73,7 +73,7 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     list-style: none;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: 0.8125rem;
 }
 

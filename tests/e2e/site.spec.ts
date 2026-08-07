@@ -131,6 +131,9 @@ test('playground presets execute in both modes and localized assets stay local',
     });
     expect(timingLayout).toMatchObject({ inViewport: true, noOverflow: true });
 
+    const architectureHeading = page.locator('#architecture .section-title');
+    await architectureHeading.scrollIntoViewIfNeeded();
+    await expect(architectureHeading).toHaveCSS('opacity', '1');
     const accessibility = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();
@@ -264,7 +267,15 @@ test('every advertised example and playground preset executes in both modes', as
 });
 
 test('representative localized pages meet automated WCAG checks', async ({ page }) => {
-    for (const route of ['/', '/how-it-works', '/conformance', '/fr', '/fr/how-it-works', '/fr/conformance']) {
+    for (const route of [
+        '/',
+        '/how-it-works',
+        '/conformance',
+        '/docs/compiler-concepts/performance',
+        '/fr',
+        '/fr/how-it-works',
+        '/fr/conformance'
+    ]) {
         await page.goto(route);
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
         expect(results.violations, `${route}: ${JSON.stringify(results.violations, null, 2)}`).toEqual([]);
@@ -286,9 +297,13 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await expect(page.locator('link[rel="alternate"]')).toHaveCount(0);
     await expect(page.locator('.nav__link[aria-current="page"]')).toHaveText('Documentation');
     await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('CLI basics');
+    await expect(page.locator('.docs-sidebar .docs-sidebar__section')).toHaveText([
+        'Getting Started',
+        'Compiler Concepts'
+    ]);
     await expect(page.locator('.docs-outline a').first()).toHaveAttribute('href', '#open-the-repl');
     await expect(page.locator('.docs-pagination__previous')).toContainText('Installation');
-    await expect(page.locator('.docs-pagination__next')).toHaveCount(0);
+    await expect(page.locator('.docs-pagination__next')).toContainText('Compilation and Native AOT');
 
     const copy = page.locator('.docs-code [data-copy-button]').first();
     await copy.focus();
@@ -296,12 +311,21 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await page.keyboard.press('Enter');
     await expect(copy).toHaveClass(/copied/);
     expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toBe('sharpts');
+
+    await page.goto('/docs/compiler-concepts/javascript-semantics-on-dotnet');
+    await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('JavaScript Semantics on .NET');
+    await expect(page.locator('.docs-outline a').first()).toHaveAttribute(
+        'href',
+        '#preserve-the-javascript-value-model'
+    );
+    await expect(page.locator('.docs-pagination__previous')).toContainText('Performance');
+    await expect(page.locator('.docs-pagination__next')).toContainText('Functions, Closures, and State Machines');
     expect(externalRequests).toEqual([]);
 });
 
 test('documentation mobile menus are keyboard accessible and fit the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/docs');
+    await page.goto('/docs/compiler-concepts/modules-and-dependency-compilation');
 
     const globalMenu = page.locator('[data-nav-toggle]');
     await globalMenu.click();
@@ -313,12 +337,12 @@ test('documentation mobile menus are keyboard accessible and fit the viewport', 
     await documentationMenu.locator('summary').focus();
     await page.keyboard.press('Enter');
     await expect(documentationMenu).toHaveAttribute('open', '');
-    await expect(documentationMenu.locator('a[aria-current="page"]')).toHaveText('Start using SharpTS');
+    await expect(documentationMenu.locator('a[aria-current="page"]')).toHaveText('Modules and Dependency Compilation');
 
     const outline = page.locator('.docs-mobile-outline');
     await outline.locator('summary').click();
     await expect(outline).toHaveAttribute('open', '');
-    await expect(outline.locator('a').first()).toHaveText('Choose your first workflow');
+    await expect(outline.locator('a').first()).toHaveText('Discover the program from its entry point');
     expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
     ).toBe(true);

@@ -67,6 +67,42 @@ export function renderDocumentationFigure(name: string): string {
             box(290, 180, 'env finds sharpts', 'using PATH', ' docs-figure__node--accent') + arrow(470, 555) +
             box(555, 180, 'SharpTS runs file', 'arguments in process.argv'),
         'The shell delegates to env, which finds SharpTS on PATH and passes the script path and arguments to it.');
+    if (name === 'compilation-pipeline')
+        return diagram('SharpTS compilation pipeline', box(10, 150, 'TypeScript', 'source modules') + arrow(160, 195) +
+            box(195, 165, 'Front end', 'parse + type check', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Execution path', 'interpret or compile') + arrow(565, 600) +
+            box(600, 150, 'Result', 'output or .NET IL'),
+        'Both execution paths share the front end; compilation persists a managed .NET assembly instead of running the tree walker.');
+    if (name === 'tree-shaking')
+        return diagram('Tree-shaking flow', box(10, 150, 'Typed AST', 'program features') + arrow(160, 195) +
+            box(195, 165, 'Detect features', 'conservative scan', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Close dependencies', 'required helpers') + arrow(565, 600) +
+            box(600, 150, 'Emit runtime', 'omit unused groups'),
+        'SharpTS retains every plausibly required feature and emits only the corresponding runtime groups plus the core runtime.');
+    if (name === 'performance-paths')
+        return diagram('Compiler specialization', box(10, 150, 'Type information', 'number[] or any') + arrow(160, 195) +
+            box(195, 165, 'Choose lowering', 'safe specialization', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Generated IL', 'direct fast path') + arrow(565, 600) +
+            box(600, 150, 'Fallback', 'dynamic semantics'),
+        'The compiler selects specialized IL when types prove it safe and preserves a dynamic fallback where JavaScript behavior requires one.');
+    if (name === 'semantic-lowering')
+        return diagram('JavaScript semantic lowering', box(10, 150, 'TypeScript value', 'static + dynamic facts') + arrow(160, 195) +
+            box(195, 165, 'Semantic operation', 'equality or property', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Chosen lowering', 'direct IL or helper') + arrow(565, 600) +
+            box(600, 150, 'Observable result', 'JavaScript behavior'),
+        'Static types can select a direct IL operation, while dynamic cases use generated helpers that preserve the same observable JavaScript result.');
+    if (name === 'function-lowering')
+        return diagram('Function and state-machine lowering', box(10, 150, 'Function syntax', 'call + lexical scope') + arrow(160, 195) +
+            box(195, 165, 'Capture analysis', 'locals + this', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Generated shape', 'method or state machine') + arrow(565, 600) +
+            box(600, 150, 'Invocation', 'run or resume'),
+        'Ordinary calls become methods and callable wrappers; captured or suspended state moves into generated objects that survive after the original frame.');
+    if (name === 'module-graph')
+        return diagram('Module dependency compilation', box(10, 150, 'Entry module', 'app.ts') + arrow(160, 195) +
+            box(195, 165, 'ModuleResolver', 'load dependency graph', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Type checking', 'imports + exports') + arrow(565, 600) +
+            box(600, 150, 'One assembly', 'module types + cache'),
+        'SharpTS starts from an entry point, resolves and checks its reachable modules, then emits their initialization and exports into one managed assembly.');
     throw new Error('Unknown documentation figure: ' + name);
 }
 

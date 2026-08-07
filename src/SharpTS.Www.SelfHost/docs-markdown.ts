@@ -105,7 +105,7 @@ function codeBlock(language: string, code: string, output: boolean, labels: Copy
     const button = output ? '' : renderCopyButton(labels);
     const label = output ? 'Expected output' : safeLanguage;
     return '<div class="code-block docs-code"><div class="code-block__header"><span>' +
-        escapeHtml(label) + '</span>' + button + '</div><div class="code-block__content"><pre><code class="language-' +
+        escapeHtml(label) + '</span>' + button + '</div><div class="code-block__content" tabindex="0"><pre><code class="language-' +
         safeLanguage + '">' + escapeHtml(code) + '</code></pre></div></div>';
 }
 
