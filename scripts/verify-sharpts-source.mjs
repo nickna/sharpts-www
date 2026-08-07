@@ -5,7 +5,6 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const submoduleRoot = path.join(repoRoot, 'lib', 'SharpTS');
 const sourceFile = path.join(repoRoot, 'sharpts-source.env');
-const showcaseFile = path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'showcase-data.ts');
 const allowDirtySharpTS = process.argv.includes('--allow-dirty-sharpts');
 const values = Object.fromEntries(
     fs
@@ -37,12 +36,5 @@ const status = execFileSync('git', [...submoduleGit, 'status', '--porcelain'], {
 }).trim();
 if (status && !allowDirtySharpTS) throw new Error('The checked-out SharpTS submodule contains uncommitted changes.');
 if (status) console.warn('Using a modified SharpTS checkout for this local development build.');
-
-const showcaseSource = fs.readFileSync(showcaseFile, 'utf8');
-const matrixRevision = showcaseSource.match(/featureMatrixRevision\s*=\s*'([0-9a-f]{40})'/)?.[1];
-if (matrixRevision !== revision)
-    throw new Error(
-        `The feature matrix was reviewed against ${matrixRevision || 'no recorded revision'}; expected ${revision}.`
-    );
 
 console.log(`Verified SharpTS at ${revision}.`);

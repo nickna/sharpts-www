@@ -55,7 +55,7 @@
     "body": "Un pont LSP expose le propre vérificateur de types de SharpTS à VS Code via l'extension vscode-sharpts — l'éditeur et le runtime ne peuvent pas se contredire. La génération de déclarations fait le chemin inverse et transforme les types .NET en fichiers .d.ts : la surface d'interop est typée elle aussi."
   },
   "matrix": {
-    "link": "Une fonctionnalité précise vous intéresse ? Consultez la matrice de prise en charge complète →"
+    "link": "Une fonctionnalité précise vous intéresse ? Consultez l’aperçu de compatibilité →"
   },
   "cta": {
     "title": "Essayez par vous-même",

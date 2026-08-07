@@ -41,6 +41,14 @@ describe('static site primitives', () => {
                 page === 'conformance' ? '/assets/browser/conformance.js' : '/assets/browser/site.js'
             );
         }
+        const homeHtml = renderDocument(english, 'home', assets, conformance);
+        expect(homeHtml).toContain('<div id="support">');
+        expect(homeHtml.match(/<article class="card support-card">/g)).toHaveLength(4);
+        expect(homeHtml).toContain('href="/conformance"');
+        expect(homeHtml).toContain('href="https://github.com/nickna/SharpTS/blob/main/STATUS-NODE.md"');
+        expect(homeHtml).not.toContain('comparison__table');
+        expect(homeHtml).not.toContain('badge-green');
+        expect(renderDocument(french, 'home', assets, conformance)).toContain('href="/fr/conformance"');
         expect(renderDocument(french, 'guide', assets, conformance)).toContain('<html lang="fr">');
 
         const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);

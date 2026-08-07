@@ -3,103 +3,107 @@
   "files": [
     {
       "path": "index.html",
-      "sha256": "c76dfeea2ec15bc936de21f734b98526a6f2f02b56dfe75e7a7f4111cfa37a9c"
+      "sha256": "9b5d5bb7d9dbfbbb2604cc51da502d1167ac9e6ecd5b91f3ab36b19dc34808d8"
     },
     {
       "path": "how-it-works/index.html",
-      "sha256": "05ce40b4b06bcb3de899054a09a7b6ad8a689bf593e92b906fc696a4ecb825d0"
+      "sha256": "f3fa699d8963f3199934363c602cb98167e448caf1e0bcd6e1f29c7de3e17c42"
     },
     {
       "path": "conformance/index.html",
-      "sha256": "fe19311218bedd545c8765bf2abfb73fc146dddbce11fd55be1cca86ba062d4e"
+      "sha256": "608a7e79d80edf06d7fd3f87e050bb9aa7a79e0c77da781b1715483d2851f6f3"
     },
     {
       "path": "zh-Hans/index.html",
-      "sha256": "e2d45b13bf4a995b6c42283b944d5c2fe870b0b99bf981a06505f7002ad8a377"
+      "sha256": "78d1fc9126715ba3baedb065dfc69e88358c778cdac0fd9003cbf6afed3e0118"
     },
     {
       "path": "zh-Hans/how-it-works/index.html",
-      "sha256": "48785b9ca2ffde16f475bac380cd0c942259af770878df304ca04588b60ccd38"
+      "sha256": "60d8a9ee4f371ee6c6f1e8ad7fbfd9d0e24a9dd7f45760cd4ab06dff00ed984f"
     },
     {
       "path": "zh-Hans/conformance/index.html",
-      "sha256": "0a15d9779c7df7d6e644cfdd562039d39e304884d63fc6089d46299c33f1472d"
+      "sha256": "747d3483f2baca9526a28fba3a374937b53509cb22c57bc6eb4f8b1a5fab30e8"
     },
     {
       "path": "fr/index.html",
-      "sha256": "9ae1d46d6b407756f514416b6fb7e17e33354909917fe5cb76e45bba063354c2"
+      "sha256": "27ea67560e70b16ebd9a2feec293f18f09edac06688b3e325c9079ccde811ba9"
     },
     {
       "path": "fr/how-it-works/index.html",
-      "sha256": "5b22a6e4e02f3f81bb0ea56223a06c426adb5f1b99a9a1d92398dfcb74887754"
+      "sha256": "d7e3be81dcab01f6069a1053413e86cac9232fe160be359239ec9ca7d8a509de"
     },
     {
       "path": "fr/conformance/index.html",
-      "sha256": "2c30daeabab0c7934c3cbf1edb398f008230c9623500543d2a16289757b3dff9"
+      "sha256": "f17314bd71ffaa7f75fd611075186cd591dcc6552a696054f038cab0553c7fd1"
     },
     {
       "path": "es/index.html",
-      "sha256": "06864cddf42fbeed87215ab4cda294ea561d122f8e476183591b29ad6f0d5fad"
+      "sha256": "08776f64cc44f266b19b846009a49580a69212f17b9e545101251f29b64cd3c2"
     },
     {
       "path": "es/how-it-works/index.html",
-      "sha256": "2cdfe3484472cae398a7a128b77e48e1e9d7bf8d8af0e3d2d1fa99968e5d8c7d"
+      "sha256": "07606576d793c015219dd908d494c2906b141f3c27857a08d2db78fa4c32f006"
     },
     {
       "path": "es/conformance/index.html",
-      "sha256": "29296ba7f33ae90c6023476498b31facf55edcae8539e72c5626810118dd573f"
+      "sha256": "599306cbbcbda696fba8f5ecbf53ac34c43933e21e04674bc743cd3792955aae"
     },
     {
       "path": "de/index.html",
-      "sha256": "2c68e6d4aee979f3c2a015aad3bf44a4f9b948352c554e8385f7b4fd3a19c105"
+      "sha256": "6fca076307bd47ac00100cd9f6e55eb52fe5211e0d264fa8dc8fe598ee9e22f0"
     },
     {
       "path": "de/how-it-works/index.html",
-      "sha256": "8b896a0a54592af911f2e71dd97dc1224f4bc67e0d6c34338bb975d0968e6b8d"
+      "sha256": "fcd121b9f82d281aea90ddf18ba3a3d3474d5e2787feb9779d99e25442f756da"
     },
     {
       "path": "de/conformance/index.html",
-      "sha256": "f3a5aa5f23963dfbf177482d6a3788b4ef29150377e0f9fa582ccae2ed95afd4"
+      "sha256": "c8145c4f3bfa432b0f0277c6e7e1023dfc3daca5a8f7dbfe5ff5e6b4be8e2dda"
     },
     {
       "path": "docs/index.html",
-      "sha256": "3c3b61b852f5b9f3d02b6535771dacd79425cfe33db5195dae57694a19e4aec0"
+      "sha256": "adace70379f6a44ae310f784c1079b1b64aa57b2ad5444819bc957dc91515fa9"
     },
     {
       "path": "docs/getting-started/installation/index.html",
-      "sha256": "3adceeee6900dae96e5051008e3f1722acb115239e6f677681ccd93b793d1241"
+      "sha256": "8fcd8324847ff018006e027c121d3f046cfe2b150fe5011f70a4cf7eb4cf7214"
     },
     {
       "path": "docs/getting-started/cli-basics/index.html",
-      "sha256": "804b0347945877d3c9e65c212b1d2a67043974f93cda2317594612663c0f4304"
+      "sha256": "22e66af63b5cdad6edbf9c596bf286b843086351c93c1238e0cd16e79dfc3b99"
     },
     {
       "path": "docs/compiler-concepts/compilation-and-native-aot/index.html",
-      "sha256": "84e0f0330d6ca23fa5afd860e5f115f2bc5135e2d78b3a45e1e3ce48b1c0e5fd"
+      "sha256": "d79ad8d5e4fa7997a7bb65deae4f9da93560c9eeeb3e2d48905d65bf068a0f2a"
     },
     {
       "path": "docs/compiler-concepts/tree-shaking/index.html",
-      "sha256": "0a30dc3c6fa68339b3e2a33c5ba8701c16465c94e93dd6d5418337aea3dae10b"
+      "sha256": "aa5d004fd9e25fb0c23cf956a51dab93c9a3d42d2ef29dbdd60b655233415b9a"
     },
     {
       "path": "docs/compiler-concepts/performance/index.html",
-      "sha256": "86f691a0e1b207122309954469245707b8e9c9691292d7051431e8a012c4d7ea"
+      "sha256": "35e372c76321ceeafb544d41e2ef77992d735717106dc6fb2ab908e3bc653dbd"
     },
     {
       "path": "docs/compiler-concepts/javascript-semantics-on-dotnet/index.html",
-      "sha256": "ff4c334e46b1a6e82a9b35a234e86013855acac1ee4d2c906ad1656623652f42"
+      "sha256": "d450f2198cb7cd8db797e098c8f71963323dd23f09fc29d42e4127bd8fda0b1b"
     },
     {
       "path": "docs/compiler-concepts/functions-closures-and-state-machines/index.html",
-      "sha256": "639489452f22ff0df681fa02c59f29bdcc0519be5fdb0261a3144099d4fcf233"
+      "sha256": "332bb4ada2a91ed2ea5ef07ce244a3cc882573e02aed687177a63c7e5d730917"
     },
     {
       "path": "docs/compiler-concepts/modules-and-dependency-compilation/index.html",
-      "sha256": "9ad7a01c8968863215d674411bf3db1bbcc2fd4ccff2cc902c59c4479ca46784"
+      "sha256": "ad17a4b4126dbb09c58ec070d235db90f0945cd72d58ae028b97bb52119d1fbb"
     },
     {
-      "path": "css/site-815ad351.css",
-      "sha256": "d60050017bca36dc0099c4cd3d599b39e1a593b75e1494cb61ba642d093f3a39"
+      "path": "css/site-024b437a.css",
+      "sha256": "f7b6fbb004e82dd8e4d00469d0305541ef8844f4939cd8a8ab4d2c69282406de"
+    },
+    {
+      "path": "assets/browser/chunks/chunk-P27LB7WK.js",
+      "sha256": "ba02211e7f8094dd07598f59d5437b3144fb8662c0ff59358e4d0b25d5c12bde"
     },
     {
       "path": "assets/browser/chunks/chunk-RYKCZ5D5.js",
@@ -114,16 +118,16 @@
       "sha256": "c5214b0e195d9e3ffdd4ea739bacae818e6423daaea67de24ac24f8681724446"
     },
     {
-      "path": "assets/browser/docs-entry-IH25YIO6.js",
-      "sha256": "11b7d0f2a85dca67374d417d9baedf1d5c98e3086a2f5e00923a6800ee40c92e"
-    },
-    {
-      "path": "assets/browser/site-entry-3ATMBWND.js",
-      "sha256": "f77b27dff718e8d003d7766885308c999e8dabee5e97542b340575e80837a297"
+      "path": "assets/browser/docs-entry-C756ALK4.js",
+      "sha256": "99c8ab17541d2a78974e99baddae1e35416e7bbe6331c42ee74fc278d31f9ec5"
     },
     {
       "path": "assets/browser/site-entry-CRD5WPTW.css",
       "sha256": "36d0ab95ca02e40a4196f45209b7646dff66172eee4a89158434ca18ba8c4fd9"
+    },
+    {
+      "path": "assets/browser/site-entry-P7N3TMMY.js",
+      "sha256": "4ae404c7990110349202b1aa66f83b89e6735f49ea565b6d2303afce5170dd09"
     }
   ]
 }

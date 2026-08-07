@@ -15,7 +15,7 @@
     "q2": "Why not embed a JavaScript engine like Jint or ClearScript?",
     "a2": "Those projects run plain, untyped JavaScript inside a .NET host — a great fit for small embedded scripts. SharpTS runs TypeScript itself, type-checked before execution, and adds what an embedded JS engine can't: ahead-of-time compilation to IL, NuGet packaging, and typed interop in both directions between TypeScript and C#.",
     "q3": "Can I use npm packages?",
-    "a3": "Partially. Bare imports resolve through node_modules, so packages that ship TypeScript source can work, and a growing set of Node built-ins — fs, path, process, buffer, events, streams — is implemented natively on .NET. Packages that ship plain JavaScript or rely on package.json exports maps aren't supported yet.",
+    "a3": "Partially. Bare imports resolve through node_modules, and supported module-resolution modes can apply package exports/imports and conditional targets. Packages can still fail when they rely on unsupported syntax, native add-ons, browser globals, or missing runtime APIs. Packages that ship TypeScript source are the strongest fit.",
     "link": {
       "nodeStatus": "See the Node.js compatibility tracker →",
       "status": "Follow progress in STATUS.md →"
@@ -23,96 +23,32 @@
     "q4": "Is it fast?",
     "a4": "Each mode answers differently. The interpreter is a tree-walker tuned for instant startup — right for scripts and the REPL, not for number crunching. Compiled mode emits IL that the CLR JIT-compiles like any C# assembly, so it runs as native .NET code. In both modes, types are checked up front and then erased — they cost nothing at runtime.",
     "q5": "How mature is SharpTS?",
-    "a5": "It's a young, MIT-licensed project under active development. The support matrix above is the honest picture: most of the modern language works, and the gaps — like Proxy and WeakRef — are listed rather than hidden."
+    "a5": "It's a young, MIT-licensed project under active development. The compatibility overview above summarizes common capabilities, measured Conformance publishes the detailed evidence, and STATUS.md tracks implementation gaps."
   },
-  "comparison": {
+  "support": {
     "title": "What's Supported",
-    "subtitle": "The TypeScript you already write — feature by feature.",
-    "th": {
-      "feature": "Feature",
-      "status": "Status",
-      "notes": "Notes"
-    },
-    "badge": {
-      "implemented": "Implemented",
-      "partial": "Partial",
-      "missing": "Missing"
-    },
-    "group": {
-      "typeSystem": "Type System",
-      "classes": "Classes & OOP",
-      "functions": "Functions & Async",
-      "modules": "Modules",
-      "builtinApis": "Built-in APIs",
-      "advanced": "Advanced"
-    },
-    "feat": {
-      "primitiveTypes": "Primitive types",
-      "generics": "Generics",
-      "unionIntersection": "Union & Intersection types",
-      "literalTypes": "Literal types",
-      "tupleTypes": "Tuple types",
-      "conditionalTypes": "Conditional types",
-      "mappedTypes": "Mapped types",
-      "templateLiteralTypes": "Template literal types",
-      "utilityTypes": "Utility types",
-      "classesInheritance": "Classes & inheritance",
-      "accessModifiers": "Access modifiers",
-      "abstractClasses": "Abstract classes",
-      "gettersSetters": "Getters/Setters",
-      "privateFields": "Private fields (#field)",
-      "staticBlocks": "Static blocks",
-      "decorators": "Decorators",
-      "methodOverloading": "Method overloading",
-      "arrowFunctions": "Arrow functions",
-      "restSpread": "Rest/spread",
-      "closures": "Closures",
-      "asyncAwait": "async/await",
-      "promiseCombinators": "Promise.all/race/any",
-      "generators": "Generators (function*)",
-      "asyncGenerators": "Async generators",
-      "forAwaitOf": "for await...of",
-      "importExport": "import/export",
-      "defaultExports": "Default exports",
-      "namespaceImports": "Namespace imports",
-      "dynamicImports": "Dynamic imports",
-      "typeScriptNamespaces": "TypeScript namespaces",
-      "importType": "import type",
-      "moduleAugmentation": "Module augmentation",
-      "consoleLog": "console.log",
-      "mathObject": "Math object",
-      "stringMethods": "String methods",
-      "arrayMethods": "Array methods",
-      "mapSet": "Map/Set",
-      "regExp": "RegExp",
-      "date": "Date",
-      "json": "JSON",
-      "promise": "Promise",
-      "symbol": "Symbol",
-      "proxy": "Proxy",
-      "weakRef": "WeakRef",
-      "usingAwaitUsing": "using/await using",
-      "satisfiesOperator": "satisfies operator",
-      "constTypeParameters": "Const type parameters",
-      "bigintType": "bigint type",
-      "typedArrays": "TypedArrays",
-      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
-    },
-    "note": {
-      "generics": "Full support with constraints",
-      "tupleTypes": "Optional, rest, and named elements",
-      "conditionalTypes": "infer keyword, distribution",
-      "mappedTypes": "keyof, indexed access",
-      "utilityTypes": "Partial, Required, Pick, Omit, etc.",
-      "decorators": "Legacy & TC39 Stage 3",
-      "consoleLog": "Printf-style format specifiers",
-      "stringMethods": "40+ methods",
-      "arrayMethods": "50+ methods",
-      "mapSet": "ES2025 Set operations",
-      "usingAwaitUsing": "TS 5.2+ resource management"
+    "subtitle": "A practical overview of the TypeScript and runtime surface you can use today. For measured detail, explore Conformance.",
+    "card": {
+      "everydayTypeScript": {
+        "title": "Everyday TypeScript",
+        "body": "Classes, generics, unions, decorators, modules, async/await, and modern type-system features are supported across SharpTS workflows."
+      },
+      "standardRuntime": {
+        "title": "Standard runtime",
+        "body": "Common Array, String, collection, Promise, Date, RegExp, JSON, Symbol, and typed-array APIs are available."
+      },
+      "packagesNode": {
+        "title": "Packages & Node.js",
+        "body": "Bare imports and package exports/imports can resolve, but packages still depend on SharpTS-compatible syntax and runtime APIs. TypeScript-source packages are the strongest fit."
+      },
+      "knownLimitations": {
+        "title": "Known limitations",
+        "body": "Proxy and WeakRef are not implemented. Interpreter and AOT results can also differ on specification edge cases."
+      }
     },
     "link": {
-      "conformance": "See live spec conformance →"
+      "conformance": "Explore measured conformance →",
+      "nodeStatus": "See Node.js compatibility →"
     }
   },
   "features": {
@@ -131,8 +67,8 @@
       "desc": "Call .NET libraries from TypeScript with <code>@DotNetType</code>, and use your compiled TypeScript from C#. Reuse the BCL, NuGet packages, and code you already have."
     },
     "card4": {
-      "title": "Real TypeScript",
-      "desc": "Not a subset — the real language: generics, classes, decorators, async, modules, and more, all type-checked before your code runs. See the full support matrix below."
+      "title": "Broad TypeScript support",
+      "desc": "Use familiar TypeScript — generics, classes, decorators, async, modules, and more — with types checked before your code runs. See the practical compatibility overview below."
     },
     "card5": {
       "title": "Fits your .NET build",

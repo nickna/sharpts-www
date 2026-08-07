@@ -55,7 +55,7 @@
     "body": "An LSP bridge exposes SharpTS' own type checker to VS Code through the vscode-sharpts extension, so the editor and the runtime can't disagree. Declaration generation goes the other way, turning .NET types into .d.ts files — the interop surface is typed too."
   },
   "matrix": {
-    "link": "Wondering about a specific feature? See the full support matrix →"
+    "link": "Wondering about a specific feature? See the compatibility overview →"
   },
   "cta": {
     "title": "Try it yourself",

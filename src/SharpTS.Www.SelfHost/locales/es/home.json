@@ -15,7 +15,7 @@
     "q2": "¿Por qué no integrar un motor JavaScript como Jint o ClearScript?",
     "a2": "Esos proyectos ejecutan JavaScript plano y sin tipos dentro de un host .NET — perfectos para pequeños scripts embebidos. SharpTS ejecuta TypeScript en sí, con tipos comprobados antes de la ejecución, y añade lo que un motor JS embebido no puede: compilación anticipada a IL, empaquetado NuGet e interoperabilidad tipada en ambos sentidos entre TypeScript y C#.",
     "q3": "¿Puedo usar paquetes de npm?",
-    "a3": "Parcialmente. Los imports sin ruta se resuelven a través de node_modules, así que los paquetes que distribuyen su código TypeScript pueden funcionar, y un conjunto creciente de módulos integrados de Node — fs, path, process, buffer, events, streams — está implementado de forma nativa sobre .NET. Los paquetes que distribuyen JavaScript plano o dependen del campo «exports» de package.json aún no están soportados.",
+    "a3": "Parcialmente. Los imports sin ruta se resuelven mediante node_modules, y los modos de resolución compatibles pueden aplicar los campos exports/imports y los destinos condicionales de los paquetes. Aun así, un paquete puede fallar si depende de sintaxis no compatible, complementos nativos, variables globales del navegador o API de runtime ausentes. Los paquetes que distribuyen código fuente TypeScript son los más adecuados.",
     "link": {
       "nodeStatus": "Ver el seguimiento de compatibilidad con Node.js →",
       "status": "Sigue el progreso en STATUS.md →"
@@ -23,96 +23,32 @@
     "q4": "¿Es rápido?",
     "a4": "Cada modo responde de forma distinta. El intérprete recorre el árbol sintáctico y está afinado para arrancar al instante — ideal para scripts y el REPL, no para cálculo intensivo. El modo compilado emite IL que el CLR compila al vuelo como cualquier ensamblado C#, así que se ejecuta como código .NET nativo. En ambos modos, los tipos se comprueban por adelantado y luego se borran — no cuestan nada en tiempo de ejecución.",
     "q5": "¿Qué madurez tiene SharpTS?",
-    "a5": "Es un proyecto joven, con licencia MIT y en desarrollo activo. La matriz de soporte de arriba es la imagen honesta: la mayor parte del lenguaje moderno funciona, y los huecos — como Proxy y WeakRef — están listados en lugar de ocultos."
+    "a5": "Es un proyecto joven, con licencia MIT y en desarrollo activo. El resumen de compatibilidad de arriba presenta las funciones habituales, la Conformidad medida publica las pruebas detalladas y STATUS.md registra las carencias de implementación."
   },
-  "comparison": {
+  "support": {
     "title": "Qué es compatible",
-    "subtitle": "El TypeScript que ya escribes — función por función.",
-    "th": {
-      "feature": "Característica",
-      "status": "Estado",
-      "notes": "Notas"
-    },
-    "badge": {
-      "implemented": "Implementado",
-      "partial": "Parcial",
-      "missing": "Ausente"
-    },
-    "group": {
-      "typeSystem": "Sistema de tipos",
-      "classes": "Clases y POO",
-      "functions": "Funciones y async",
-      "modules": "Módulos",
-      "builtinApis": "API integradas",
-      "advanced": "Avanzado"
-    },
-    "feat": {
-      "primitiveTypes": "Tipos primitivos",
-      "generics": "Genéricos",
-      "unionIntersection": "Tipos unión e intersección",
-      "literalTypes": "Tipos literales",
-      "tupleTypes": "Tipos tupla",
-      "conditionalTypes": "Tipos condicionales",
-      "mappedTypes": "Tipos mapeados",
-      "templateLiteralTypes": "Tipos de plantilla literal",
-      "utilityTypes": "Tipos utilitarios",
-      "classesInheritance": "Clases y herencia",
-      "accessModifiers": "Modificadores de acceso",
-      "abstractClasses": "Clases abstractas",
-      "gettersSetters": "Getters/Setters",
-      "privateFields": "Campos privados (#field)",
-      "staticBlocks": "Bloques estáticos",
-      "decorators": "Decoradores",
-      "methodOverloading": "Sobrecarga de métodos",
-      "arrowFunctions": "Funciones flecha",
-      "restSpread": "Rest/spread",
-      "closures": "Clausuras",
-      "asyncAwait": "async/await",
-      "promiseCombinators": "Promise.all/race/any",
-      "generators": "Generadores (function*)",
-      "asyncGenerators": "Generadores asíncronos",
-      "forAwaitOf": "for await...of",
-      "importExport": "import/export",
-      "defaultExports": "Exportaciones por defecto",
-      "namespaceImports": "Importaciones de espacio de nombres",
-      "dynamicImports": "Importaciones dinámicas",
-      "typeScriptNamespaces": "Espacios de nombres de TypeScript",
-      "importType": "import type",
-      "moduleAugmentation": "Aumento de módulos",
-      "consoleLog": "console.log",
-      "mathObject": "Objeto Math",
-      "stringMethods": "Métodos de String",
-      "arrayMethods": "Métodos de Array",
-      "mapSet": "Map/Set",
-      "regExp": "RegExp",
-      "date": "Date",
-      "json": "JSON",
-      "promise": "Promise",
-      "symbol": "Symbol",
-      "proxy": "Proxy",
-      "weakRef": "WeakRef",
-      "usingAwaitUsing": "using/await using",
-      "satisfiesOperator": "Operador satisfies",
-      "constTypeParameters": "Parámetros de tipo const",
-      "bigintType": "Tipo bigint",
-      "typedArrays": "TypedArrays",
-      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
-    },
-    "note": {
-      "generics": "Compatibilidad completa con restricciones",
-      "tupleTypes": "Elementos opcionales, rest y con nombre",
-      "conditionalTypes": "Palabra clave infer, distribución",
-      "mappedTypes": "keyof, acceso indexado",
-      "utilityTypes": "Partial, Required, Pick, Omit, etc.",
-      "decorators": "Heredado y TC39 Stage 3",
-      "consoleLog": "Especificadores de formato estilo printf",
-      "stringMethods": "Más de 40 métodos",
-      "arrayMethods": "Más de 50 métodos",
-      "mapSet": "Operaciones Set de ES2025",
-      "usingAwaitUsing": "Gestión de recursos de TS 5.2+"
+    "subtitle": "Un resumen práctico de las funciones de TypeScript y del runtime disponibles hoy. Para consultar resultados medidos, explora Conformidad.",
+    "card": {
+      "everydayTypeScript": {
+        "title": "TypeScript cotidiano",
+        "body": "Las clases, los genéricos, las uniones, los decoradores, los módulos, async/await y las funciones modernas del sistema de tipos son compatibles en los flujos de SharpTS."
+      },
+      "standardRuntime": {
+        "title": "Runtime estándar",
+        "body": "Están disponibles las API comunes de Array, String, colecciones, Promise, Date, RegExp, JSON, Symbol y arrays tipados."
+      },
+      "packagesNode": {
+        "title": "Paquetes y Node.js",
+        "body": "Los imports sin ruta y los campos exports/imports de los paquetes se pueden resolver, pero los paquetes siguen dependiendo de sintaxis y API de runtime compatibles con SharpTS. Los paquetes que distribuyen código fuente TypeScript son los más adecuados."
+      },
+      "knownLimitations": {
+        "title": "Limitaciones conocidas",
+        "body": "Proxy y WeakRef no están implementados. Los resultados del intérprete y AOT también pueden diferir en casos límite de la especificación."
+      }
     },
     "link": {
-      "conformance": "Ver la conformidad real con la especificación →"
+      "conformance": "Explorar la conformidad medida →",
+      "nodeStatus": "Ver la compatibilidad con Node.js →"
     }
   },
   "features": {
@@ -131,8 +67,8 @@
       "desc": "Llama a bibliotecas .NET desde TypeScript con <code>@DotNetType</code>, y usa tu TypeScript compilado desde C#. Reutiliza la BCL, los paquetes NuGet y el código que ya tienes."
     },
     "card4": {
-      "title": "TypeScript de verdad",
-      "desc": "No es un subconjunto — el lenguaje real: genéricos, clases, decoradores, async, módulos y más, todos con comprobación de tipos antes de que se ejecute tu código. Consulta la matriz completa más abajo."
+      "title": "Amplio soporte de TypeScript",
+      "desc": "Usa el TypeScript que conoces — genéricos, clases, decoradores, async, módulos y más — con comprobación de tipos antes de ejecutar el código. Consulta el resumen práctico de compatibilidad más abajo."
     },
     "card5": {
       "title": "Encaja en tu build de .NET",

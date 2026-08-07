@@ -66,6 +66,22 @@ test('static interactions work without Blazor or external browser assets', async
     await expect(page.locator('[data-example-panel="2"]')).toBeVisible();
     await expect(page.locator('[data-example-tab="2"]')).toHaveAttribute('aria-selected', 'true');
 
+    const support = page.locator('#support');
+    await support.scrollIntoViewIfNeeded();
+    await expect(support.locator('.support-card')).toHaveCount(4);
+    await expect(support.locator('.support-overview__actions a').first()).toHaveAttribute('href', '/conformance');
+    const supportFitsViewport = await support.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const cards = Array.from(element.querySelectorAll<HTMLElement>('.support-card'));
+        return (
+            bounds.left >= 0 &&
+            bounds.right <= window.innerWidth &&
+            cards.every((card) => card.getBoundingClientRect().right <= window.innerWidth) &&
+            (element as HTMLElement).scrollWidth <= (element as HTMLElement).clientWidth
+        );
+    });
+    expect(supportFitsViewport).toBe(true);
+
     await page.goto('/how-it-works');
     await page.locator('[data-architecture-stage="Lexer"]').click();
     await expect(page.locator('[data-architecture-stage="Lexer"]')).toHaveAttribute('aria-pressed', 'true');

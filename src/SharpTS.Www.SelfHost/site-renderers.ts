@@ -5,7 +5,7 @@ import { t as lookupMessage, tf } from './i18n';
 import { cultures, siteOrigin } from './site-model';
 import type { BrowserAssets, Locale, PageKind } from './site-model';
 import { docsRoutePath, routePath } from './site-paths';
-import { comparisonGroups, showcaseExamples } from './showcase-data';
+import { showcaseExamples } from './showcase-data';
 import { presets } from './presets';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 import { documentationSections } from './docs-manifest';
@@ -237,15 +237,12 @@ function renderPlayground(locale: Locale): string {
 </div></div></section>`;
 }
 
-function renderComparison(locale: Locale): string {
-    const bundle = 'home.comparison';
-    const badgeKey: { [status: string]: string } = { done: 'Badge_Implemented', partial: 'Badge_Partial', missing: 'Badge_Missing' };
-    const badgeClass: { [status: string]: string } = { done: 'badge-green', partial: 'badge-yellow', missing: 'badge-red' };
-    const groups = comparisonGroups.map(group => {
-        const rows = group.features.map(feature => `<tr><td class="comparison__feature">${escapeHtml(t(locale, bundle, feature.key))}</td><td><span class="badge ${badgeClass[feature.status]}">${escapeHtml(t(locale, bundle, badgeKey[feature.status]))}</span></td><td class="comparison__notes">${feature.note ? escapeHtml(t(locale, bundle, feature.note)) : ''}</td></tr>`).join('\n');
-        return `<div class="comparison__group"><h3 class="comparison__group-title">${escapeHtml(t(locale, bundle, group.key))}</h3><table class="comparison__table"><thead><tr><th>${escapeHtml(t(locale, bundle, 'Th_Feature'))}</th><th>${escapeHtml(t(locale, bundle, 'Th_Status'))}</th><th>${escapeHtml(t(locale, bundle, 'Th_Notes'))}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-    }).join('\n');
-    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="comparison reveal">${groups}</div><p class="comparison__conformance-link reveal"><a href="${routePath(locale.culture, 'conformance')}">${escapeHtml(t(locale, bundle, 'Link_Conformance'))}</a></p></div></section>`;
+function renderSupportOverview(locale: Locale): string {
+    const bundle = 'home.support';
+    const cards = ['EverydayTypeScript', 'StandardRuntime', 'PackagesNode', 'KnownLimitations']
+        .map(key => `<article class="card support-card"><h3 class="support-card__title">${escapeHtml(t(locale, bundle, `Card_${key}_Title`))}</h3><p class="support-card__body">${escapeHtml(t(locale, bundle, `Card_${key}_Body`))}</p></article>`)
+        .join('\n');
+    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="support-overview reveal">${cards}</div><div class="support-overview__actions reveal"><a class="btn btn-primary" href="${routePath(locale.culture, 'conformance')}">${escapeHtml(t(locale, bundle, 'Link_Conformance'))}</a><a class="btn btn-secondary" href="https://github.com/nickna/SharpTS/blob/main/STATUS-NODE.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_NodeStatus'))}</a></div></div></section>`;
 }
 
 function renderFaq(locale: Locale): string {
@@ -284,7 +281,7 @@ function renderGettingStarted(locale: Locale): string {
 }
 
 export function renderHome(locale: Locale): string {
-    return `<main class="landing">${renderHero(locale)}<div id="features">${renderFeatures(locale)}</div><div id="examples">${renderExamples(locale)}</div><div id="use-cases">${renderUseCases(locale)}</div><div id="architecture">${renderArchitecturePreview(locale)}</div>${renderPlayground(locale)}<div id="support">${renderComparison(locale)}</div><div id="faq">${renderFaq(locale)}</div><div id="get-started">${renderGettingStarted(locale)}</div>${renderFooter(locale)}</main>`;
+    return `<main class="landing">${renderHero(locale)}<div id="features">${renderFeatures(locale)}</div><div id="examples">${renderExamples(locale)}</div><div id="use-cases">${renderUseCases(locale)}</div><div id="architecture">${renderArchitecturePreview(locale)}</div>${renderPlayground(locale)}<div id="support">${renderSupportOverview(locale)}</div><div id="faq">${renderFaq(locale)}</div><div id="get-started">${renderGettingStarted(locale)}</div>${renderFooter(locale)}</main>`;
 }
 
 const architectureStages = ['Lexer', 'Parser', 'TypeChecker', 'Interpreter', 'ILCompiler'];

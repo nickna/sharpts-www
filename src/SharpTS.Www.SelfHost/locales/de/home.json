@@ -15,7 +15,7 @@
     "q2": "Warum nicht eine JavaScript-Engine wie Jint oder ClearScript einbetten?",
     "a2": "Diese Projekte führen reines, untypisiertes JavaScript in einem .NET-Host aus — gut geeignet für kleine eingebettete Skripte. SharpTS führt TypeScript selbst aus, typgeprüft vor der Ausführung, und bietet, was eine eingebettete JS-Engine nicht kann: vorzeitige Kompilierung zu IL, NuGet-Paketierung und typisierte Interop in beide Richtungen zwischen TypeScript und C#.",
     "q3": "Kann ich npm-Pakete verwenden?",
-    "a3": "Teilweise. Importe ohne Pfad werden über node_modules aufgelöst, daher können Pakete funktionieren, die TypeScript-Quellcode ausliefern, und eine wachsende Zahl von Node-Built-ins — fs, path, process, buffer, events, streams — ist nativ auf .NET implementiert. Pakete, die reines JavaScript ausliefern oder auf die „exports“-Einträge in package.json angewiesen sind, werden noch nicht unterstützt.",
+    "a3": "Teilweise. Importe ohne Pfad werden über node_modules aufgelöst; unterstützte Modulauflösungsmodi können außerdem die exports/imports-Felder und bedingte Ziele von Paketen anwenden. Pakete können dennoch scheitern, wenn sie nicht unterstützte Syntax, native Add-ons, Browser-Globals oder fehlende Laufzeit-APIs voraussetzen. Pakete mit TypeScript-Quellcode eignen sich am besten.",
     "link": {
       "nodeStatus": "Zur Node.js-Kompatibilitätsübersicht →",
       "status": "Fortschritt in STATUS.md verfolgen →"
@@ -23,96 +23,32 @@
     "q4": "Ist es schnell?",
     "a4": "Jeder Modus antwortet anders. Der Interpreter durchläuft den Syntaxbaum und ist auf sofortigen Start ausgelegt — richtig für Skripte und die REPL, nicht für Zahlenakrobatik. Der kompilierte Modus erzeugt IL, das der CLR-JIT wie jede C#-Assembly kompiliert: Es läuft als nativer .NET-Code. In beiden Modi werden die Typen vorab geprüft und dann entfernt — zur Laufzeit kosten sie nichts.",
     "q5": "Wie ausgereift ist SharpTS?",
-    "a5": "Es ist ein junges, MIT-lizenziertes Projekt in aktiver Entwicklung. Die Übersicht oben zeigt das ehrliche Bild: Der größte Teil der modernen Sprache funktioniert, und die Lücken — etwa Proxy und WeakRef — sind aufgelistet statt versteckt."
+    "a5": "SharpTS ist ein junges, MIT-lizenziertes Projekt in aktiver Entwicklung. Der Kompatibilitätsüberblick oben fasst gängige Funktionen zusammen, die gemessene Konformität liefert detaillierte Nachweise und STATUS.md verfolgt Implementierungslücken."
   },
-  "comparison": {
+  "support": {
     "title": "Was unterstützt wird",
-    "subtitle": "Das TypeScript, das Sie ohnehin schreiben — Funktion für Funktion.",
-    "th": {
-      "feature": "Funktion",
-      "status": "Status",
-      "notes": "Anmerkungen"
-    },
-    "badge": {
-      "implemented": "Implementiert",
-      "partial": "Teilweise",
-      "missing": "Fehlt"
-    },
-    "group": {
-      "typeSystem": "Typsystem",
-      "classes": "Klassen & OOP",
-      "functions": "Funktionen & Async",
-      "modules": "Module",
-      "builtinApis": "Integrierte APIs",
-      "advanced": "Erweitert"
-    },
-    "feat": {
-      "primitiveTypes": "Primitive Typen",
-      "generics": "Generics",
-      "unionIntersection": "Union- & Intersection-Typen",
-      "literalTypes": "Literal-Typen",
-      "tupleTypes": "Tupel-Typen",
-      "conditionalTypes": "Conditional Types",
-      "mappedTypes": "Mapped Types",
-      "templateLiteralTypes": "Template-Literal-Typen",
-      "utilityTypes": "Utility-Typen",
-      "classesInheritance": "Klassen & Vererbung",
-      "accessModifiers": "Zugriffsmodifizierer",
-      "abstractClasses": "Abstrakte Klassen",
-      "gettersSetters": "Getter/Setter",
-      "privateFields": "Private Felder (#field)",
-      "staticBlocks": "Statische Blöcke",
-      "decorators": "Dekoratoren",
-      "methodOverloading": "Methodenüberladung",
-      "arrowFunctions": "Pfeilfunktionen",
-      "restSpread": "Rest/Spread",
-      "closures": "Closures",
-      "asyncAwait": "async/await",
-      "promiseCombinators": "Promise.all/race/any",
-      "generators": "Generatoren (function*)",
-      "asyncGenerators": "Asynchrone Generatoren",
-      "forAwaitOf": "for await...of",
-      "importExport": "import/export",
-      "defaultExports": "Standard-Exporte",
-      "namespaceImports": "Namespace-Importe",
-      "dynamicImports": "Dynamische Importe",
-      "typeScriptNamespaces": "TypeScript-Namespaces",
-      "importType": "import type",
-      "moduleAugmentation": "Modulerweiterung",
-      "consoleLog": "console.log",
-      "mathObject": "Math-Objekt",
-      "stringMethods": "String-Methoden",
-      "arrayMethods": "Array-Methoden",
-      "mapSet": "Map/Set",
-      "regExp": "RegExp",
-      "date": "Date",
-      "json": "JSON",
-      "promise": "Promise",
-      "symbol": "Symbol",
-      "proxy": "Proxy",
-      "weakRef": "WeakRef",
-      "usingAwaitUsing": "using/await using",
-      "satisfiesOperator": "satisfies-Operator",
-      "constTypeParameters": "const-Typparameter",
-      "bigintType": "bigint-Typ",
-      "typedArrays": "TypedArrays",
-      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
-    },
-    "note": {
-      "generics": "Vollständige Unterstützung mit Constraints",
-      "tupleTypes": "Optionale, Rest- und benannte Elemente",
-      "conditionalTypes": "infer-Schlüsselwort, Distribution",
-      "mappedTypes": "keyof, indizierter Zugriff",
-      "utilityTypes": "Partial, Required, Pick, Omit usw.",
-      "decorators": "Legacy & TC39 Stage 3",
-      "consoleLog": "Formatangaben im printf-Stil",
-      "stringMethods": "Über 40 Methoden",
-      "arrayMethods": "Über 50 Methoden",
-      "mapSet": "ES2025-Set-Operationen",
-      "usingAwaitUsing": "TS 5.2+ Ressourcenverwaltung"
+    "subtitle": "Ein praktischer Überblick über die heute verfügbaren TypeScript- und Laufzeitfunktionen. Messbare Details finden Sie unter Konformität.",
+    "card": {
+      "everydayTypeScript": {
+        "title": "TypeScript im Alltag",
+        "body": "Klassen, Generics, Union-Typen, Dekoratoren, Module, async/await und moderne Typsystemfunktionen werden in SharpTS-Workflows unterstützt."
+      },
+      "standardRuntime": {
+        "title": "Standardlaufzeit",
+        "body": "Gängige APIs für Array, String, Collections, Promise, Date, RegExp, JSON, Symbol und typisierte Arrays sind verfügbar."
+      },
+      "packagesNode": {
+        "title": "Pakete und Node.js",
+        "body": "Importe ohne Pfad sowie die exports/imports-Felder von Paketen können aufgelöst werden, Pakete benötigen aber weiterhin SharpTS-kompatible Syntax und Laufzeit-APIs. Pakete mit TypeScript-Quellcode eignen sich am besten."
+      },
+      "knownLimitations": {
+        "title": "Bekannte Einschränkungen",
+        "body": "Proxy und WeakRef sind nicht implementiert. Bei Grenzfällen der Spezifikation können sich die Ergebnisse von Interpreter und AOT ebenfalls unterscheiden."
+      }
     },
     "link": {
-      "conformance": "Live-Spezifikationskonformität ansehen →"
+      "conformance": "Messbare Konformität erkunden →",
+      "nodeStatus": "Node.js-Kompatibilität ansehen →"
     }
   },
   "features": {
@@ -131,8 +67,8 @@
       "desc": "Rufen Sie .NET-Bibliotheken aus TypeScript mit <code>@DotNetType</code> auf und nutzen Sie Ihr kompiliertes TypeScript aus C#. Verwenden Sie die BCL, NuGet-Pakete und vorhandenen Code weiter."
     },
     "card4": {
-      "title": "Echtes TypeScript",
-      "desc": "Keine Teilmenge — die echte Sprache: Generics, Klassen, Decorators, Async, Module und mehr, alle typgeprüft, bevor Ihr Code läuft. Die vollständige Übersicht finden Sie unten."
+      "title": "Breite TypeScript-Unterstützung",
+      "desc": "Verwenden Sie vertrautes TypeScript — Generics, Klassen, Dekoratoren, Async, Module und mehr — mit Typprüfung vor der Ausführung. Den praktischen Kompatibilitätsüberblick finden Sie weiter unten."
     },
     "card5": {
       "title": "Passt in Ihren .NET-Build",

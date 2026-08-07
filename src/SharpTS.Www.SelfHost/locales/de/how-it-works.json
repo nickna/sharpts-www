@@ -55,7 +55,7 @@
     "body": "Eine LSP-Brücke stellt SharpTS' eigenen Typprüfer über die Erweiterung vscode-sharpts in VS Code bereit — Editor und Laufzeit können sich nicht widersprechen. Die Deklarationsgenerierung geht den umgekehrten Weg und macht aus .NET-Typen .d.ts-Dateien: Auch die Interop-Oberfläche ist typisiert."
   },
   "matrix": {
-    "link": "Interessiert Sie ein bestimmtes Feature? Zur vollständigen Support-Übersicht →"
+    "link": "Sie fragen sich, ob eine bestimmte Funktion verfügbar ist? Zum Kompatibilitätsüberblick →"
   },
   "cta": {
     "title": "Probieren Sie es selbst aus",

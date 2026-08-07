@@ -180,8 +180,8 @@ $snapshotPath = Join-Path $repoRoot "src/SharpTS.Www.SelfHost/site.snapshot.json
 Assert-True (Test-Path -LiteralPath $snapshotPath -PathType Leaf) "Generated-site snapshot is missing."
 $snapshot = Get-Content -Raw -LiteralPath $snapshotPath | ConvertFrom-Json
 Assert-True ($snapshot.version -eq 2) "Unsupported generated-site snapshot version."
-Assert-True (@($snapshot.files).Count -eq 31) `
-    "Expected thirty-one reviewed generated snapshots."
+Assert-True (@($snapshot.files).Count -eq 32) `
+    "Expected thirty-two reviewed generated snapshots."
 foreach ($entry in $snapshot.files) {
     $snapshotFile = [IO.Path]::GetFullPath((Join-Path $resolvedRoot $entry.path))
     Assert-True ($snapshotFile.StartsWith($allowedRoot, [StringComparison]::OrdinalIgnoreCase)) `

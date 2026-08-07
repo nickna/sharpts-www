@@ -15,7 +15,7 @@
     "q2": "为什么不嵌入 Jint 或 ClearScript 这样的 JavaScript 引擎？",
     "a2": "那些项目在 .NET 宿主中运行的是无类型的纯 JavaScript——非常适合小型嵌入式脚本。SharpTS 运行的是 TypeScript 本身，执行前经过类型检查，并提供嵌入式 JS 引擎做不到的能力：预先编译为 IL、打包 NuGet，以及 TypeScript 与 C# 之间的双向类型化互操作。",
     "q3": "可以使用 npm 包吗？",
-    "a3": "部分可以。裸导入会通过 node_modules 解析，因此随包提供 TypeScript 源码的包可以工作；同时越来越多的 Node 内置模块——fs、path、process、buffer、events、streams——已在 .NET 上原生实现。只提供纯 JavaScript 或依赖 package.json「exports」映射的包暂不支持。",
+    "a3": "部分支持。裸导入通过 node_modules 解析；在受支持的模块解析模式下，也可处理软件包的 exports/imports 和条件目标。但软件包仍可能因 SharpTS 不支持的语法、原生插件、浏览器全局变量或缺失的运行时 API 而无法运行。提供 TypeScript 源码的软件包最适合。",
     "link": {
       "nodeStatus": "查看 Node.js 兼容性进度 →",
       "status": "在 STATUS.md 中关注进展 →"
@@ -23,96 +23,32 @@
     "q4": "它快吗？",
     "a4": "两种模式的答案不同。解释器以遍历语法树的方式执行，为即时启动而调优——适合脚本和 REPL，不适合数值密集计算。编译模式生成的 IL 由 CLR 像任何 C# 程序集一样即时编译，作为原生 .NET 代码运行。两种模式下，类型都在前期检查后被擦除——运行时零开销。",
     "q5": "SharpTS 有多成熟？",
-    "a5": "这是一个年轻的项目，采用 MIT 许可证，正在积极开发中。上方的支持对照表就是真实情况：现代语言的绝大部分已经可用，而缺口——比如 Proxy 和 WeakRef——是公开列出的，而不是被藏起来。"
+    "a5": "这是一个采用 MIT 许可证、正在积极开发的年轻项目。上方的兼容性概览总结了常用功能，实测规范一致性提供详细依据，STATUS.md 则跟踪实现缺口。"
   },
-  "comparison": {
-    "title": "支持哪些特性",
-    "subtitle": "你平时编写的 TypeScript——逐项列出。",
-    "th": {
-      "feature": "特性",
-      "status": "状态",
-      "notes": "备注"
-    },
-    "badge": {
-      "implemented": "已实现",
-      "partial": "部分",
-      "missing": "缺失"
-    },
-    "group": {
-      "typeSystem": "类型系统",
-      "classes": "类与面向对象",
-      "functions": "函数与异步",
-      "modules": "模块",
-      "builtinApis": "内置 API",
-      "advanced": "高级"
-    },
-    "feat": {
-      "primitiveTypes": "基本类型",
-      "generics": "泛型",
-      "unionIntersection": "联合类型与交叉类型",
-      "literalTypes": "字面量类型",
-      "tupleTypes": "元组类型",
-      "conditionalTypes": "条件类型",
-      "mappedTypes": "映射类型",
-      "templateLiteralTypes": "模板字面量类型",
-      "utilityTypes": "工具类型",
-      "classesInheritance": "类与继承",
-      "accessModifiers": "访问修饰符",
-      "abstractClasses": "抽象类",
-      "gettersSetters": "Getter/Setter",
-      "privateFields": "私有字段 (#field)",
-      "staticBlocks": "静态块",
-      "decorators": "装饰器",
-      "methodOverloading": "方法重载",
-      "arrowFunctions": "箭头函数",
-      "restSpread": "Rest/展开",
-      "closures": "闭包",
-      "asyncAwait": "async/await",
-      "promiseCombinators": "Promise.all/race/any",
-      "generators": "生成器 (function*)",
-      "asyncGenerators": "异步生成器",
-      "forAwaitOf": "for await...of",
-      "importExport": "import/export",
-      "defaultExports": "默认导出",
-      "namespaceImports": "命名空间导入",
-      "dynamicImports": "动态导入",
-      "typeScriptNamespaces": "TypeScript 命名空间",
-      "importType": "import type",
-      "moduleAugmentation": "模块扩充",
-      "consoleLog": "console.log",
-      "mathObject": "Math 对象",
-      "stringMethods": "字符串方法",
-      "arrayMethods": "数组方法",
-      "mapSet": "Map/Set",
-      "regExp": "RegExp",
-      "date": "Date",
-      "json": "JSON",
-      "promise": "Promise",
-      "symbol": "Symbol",
-      "proxy": "Proxy",
-      "weakRef": "WeakRef",
-      "usingAwaitUsing": "using/await using",
-      "satisfiesOperator": "satisfies 运算符",
-      "constTypeParameters": "const 类型参数",
-      "bigintType": "bigint 类型",
-      "typedArrays": "TypedArrays",
-      "sharedArrayBufferAtomics": "SharedArrayBuffer/Atomics"
-    },
-    "note": {
-      "generics": "完整支持，包含约束",
-      "tupleTypes": "可选、剩余和具名元素",
-      "conditionalTypes": "infer 关键字、分发",
-      "mappedTypes": "keyof、索引访问",
-      "utilityTypes": "Partial、Required、Pick、Omit 等",
-      "decorators": "旧版与 TC39 Stage 3",
-      "consoleLog": "Printf 风格的格式说明符",
-      "stringMethods": "40+ 个方法",
-      "arrayMethods": "50+ 个方法",
-      "mapSet": "ES2025 Set 操作",
-      "usingAwaitUsing": "TS 5.2+ 资源管理"
+  "support": {
+    "title": "支持范围",
+    "subtitle": "简要了解目前可用的 TypeScript 语言和运行时功能。有关实测详情，请查看规范一致性。",
+    "card": {
+      "everydayTypeScript": {
+        "title": "日常 TypeScript",
+        "body": "SharpTS 工作流支持类、泛型、联合类型、装饰器、模块、async/await 以及现代类型系统功能。"
+      },
+      "standardRuntime": {
+        "title": "标准运行时",
+        "body": "可使用常见的 Array、String、集合、Promise、Date、RegExp、JSON、Symbol 和类型化数组 API。"
+      },
+      "packagesNode": {
+        "title": "软件包与 Node.js",
+        "body": "裸导入以及软件包的 exports/imports 可以解析，但软件包仍需使用 SharpTS 兼容的语法和运行时 API。提供 TypeScript 源码的软件包最适合。"
+      },
+      "knownLimitations": {
+        "title": "已知限制",
+        "body": "Proxy 和 WeakRef 尚未实现。在规范边缘用例中，解释器与 AOT 的结果也可能不同。"
+      }
     },
     "link": {
-      "conformance": "查看实时规范一致性 →"
+      "conformance": "探索实测规范一致性 →",
+      "nodeStatus": "查看 Node.js 兼容性 →"
     }
   },
   "features": {
@@ -131,8 +67,8 @@
       "desc": "通过 <code>@DotNetType</code> 从 TypeScript 调用 .NET 库，并从 C# 使用你编译后的 TypeScript。复用 BCL、NuGet 包以及你已有的代码。"
     },
     "card4": {
-      "title": "真正的 TypeScript",
-      "desc": "并非子集——而是完整的语言：泛型、类、装饰器、异步、模块等等，在代码运行前全部经过类型检查。完整支持情况见下方对照表。"
+      "title": "广泛的 TypeScript 支持",
+      "desc": "使用熟悉的 TypeScript，包括泛型、类、装饰器、异步、模块等；代码运行前会进行类型检查。请参阅下方的实用兼容性概览。"
     },
     "card5": {
       "title": "融入你的 .NET 构建",
