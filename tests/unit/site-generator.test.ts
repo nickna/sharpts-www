@@ -12,9 +12,46 @@ import {
 } from '../../src/SharpTS.Www.SelfHost/docs-manifest';
 import { renderDocumentationMarkdown } from '../../src/SharpTS.Www.SelfHost/docs-markdown';
 import { loadDocumentation } from '../../src/SharpTS.Www.SelfHost/documentation';
+import { loadConformanceData } from '../../src/SharpTS.Www.SelfHost/conformance-data';
+import { loadLocale } from '../../src/SharpTS.Www.SelfHost/site-localization';
+import { loadSitePaths } from '../../src/SharpTS.Www.SelfHost/site-config';
+import { renderDocument, renderDocumentationDocument } from '../../src/SharpTS.Www.SelfHost/site-renderers';
+import type { BrowserAssets } from '../../src/SharpTS.Www.SelfHost/site-model';
 import path from 'node:path';
 
 describe('static site primitives', () => {
+    it('renders every page kind, an alternate locale, and documentation with stable metadata and assets', () => {
+        const paths = loadSitePaths();
+        const conformance = loadConformanceData(paths.repoRoot);
+        const assets: BrowserAssets = {
+            script: 'site.js',
+            style: 'browser.css',
+            conformanceScript: 'conformance.js',
+            docsScript: 'docs.js',
+            siteStyle: 'site.css',
+            files: []
+        };
+        const english = loadLocale(paths.localeRoot, cultures[0]);
+        const french = loadLocale(paths.localeRoot, cultures[2]);
+        for (const page of ['home', 'guide', 'conformance'] as const) {
+            const html = renderDocument(english, page, assets, conformance);
+            expect(html).toContain(`<link rel="canonical" href="https://sharpts.dev${routePath(cultures[0], page)}">`);
+            expect(html).toContain('hreflang="fr"');
+            expect(html).toContain('/assets/browser/browser.css');
+            expect(html).toContain(
+                page === 'conformance' ? '/assets/browser/conformance.js' : '/assets/browser/site.js'
+            );
+        }
+        expect(renderDocument(french, 'guide', assets, conformance)).toContain('<html lang="fr">');
+
+        const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
+        const article = documentation.published[1];
+        const docsHtml = renderDocumentationDocument(english, article, documentation, assets);
+        expect(docsHtml).toContain(`href="${docsRoutePath(documentation.published[0].metadata.slug)}"`);
+        expect(docsHtml).toContain('/assets/browser/docs.js');
+        expect(docsHtml).not.toContain('rel="alternate" hreflang=');
+    });
+
     it('escapes text by default', () => {
         expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
     });

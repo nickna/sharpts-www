@@ -324,7 +324,7 @@ export async function initializePlayground(
             const response = await fetchRequest('/api/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ source: editor.getValue(), timeoutMs: 5000, mode }),
+                body: JSON.stringify({ source: editor.getValue(), mode }),
                 signal: activeRequest.signal
             });
             if (!response.ok)

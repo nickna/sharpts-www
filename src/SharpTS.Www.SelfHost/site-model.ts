@@ -16,8 +16,6 @@ export interface DocumentationRoute {
     slug: string;
 }
 
-export type SiteRoute = PageKind | DocumentationRoute;
-
 export interface GeneratedRoute {
     culture: string;
     page: PageKind | 'docs';

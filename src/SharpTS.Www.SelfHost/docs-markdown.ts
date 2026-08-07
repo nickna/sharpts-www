@@ -1,4 +1,5 @@
 import { escapeHtml, normalizeNewlines } from './site-html';
+import { renderCopyButton, type CopyButtonLabels } from './site-components';
 
 export interface DocumentationHeading {
     level: 2 | 3;
@@ -24,6 +25,7 @@ export interface RenderedMarkdown {
 export interface MarkdownOptions {
     articleSlug: string;
     renderFigure(name: string): string;
+    copyButtonLabels?: CopyButtonLabels;
 }
 
 function headingId(value: string): string {
@@ -98,9 +100,9 @@ function parseFenceInfo(info: string): { language: string; example?: string; out
     return result;
 }
 
-function codeBlock(language: string, code: string, output: boolean): string {
+function codeBlock(language: string, code: string, output: boolean, labels: CopyButtonLabels): string {
     const safeLanguage = /^[a-z0-9-]+$/.test(language) ? language : 'text';
-    const button = output ? '' : '<button type="button" class="copy-btn" data-copy-button data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy code"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy</span></button>';
+    const button = output ? '' : renderCopyButton(labels);
     const label = output ? 'Expected output' : safeLanguage;
     return '<div class="code-block docs-code"><div class="code-block__header"><span>' +
         escapeHtml(label) + '</span>' + button + '</div><div class="code-block__content"><pre><code class="language-' +
@@ -149,7 +151,8 @@ export function renderDocumentationMarkdown(markdown: string, options: MarkdownO
                 if (exampleOutputs[info.output]) throw new Error('Duplicate example output: ' + info.output);
                 exampleOutputs[info.output] = value;
             }
-            html.push(codeBlock(info.language, value, Boolean(info.output)));
+            html.push(codeBlock(info.language, value, Boolean(info.output),
+                options.copyButtonLabels || { copy: 'Copy', copied: 'Copied', ariaLabel: 'Copy code' }));
             continue;
         }
         const figure = /^:::figure ([a-z0-9-]+)$/.exec(line);

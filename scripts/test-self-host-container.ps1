@@ -334,7 +334,7 @@ try {
         -Identity "203.0.113.21" -TimeoutMs 10000
     Assert-True ($memory.Body.success -eq $false) "RSS limit probe unexpectedly succeeded."
     Assert-True ($memory.Body.errors[0].message -eq `
-        "Execution terminated: memory limit exceeded (150MB).") `
+        "Execution terminated: memory limit exceeded (150 MiB).") `
         "Linux /proc RSS enforcement did not return the expected error."
 
     $rateStatuses = @()
@@ -485,7 +485,7 @@ try {
         presets = @($presetBody).Count
         executionModes = @("interpret", "compile")
         concurrency = "3 admitted / 4 rejected"
-        rssLimit = "150MB enforced"
+        rssLimit = "150 MiB enforced"
         rateLimit = "10 admitted / 1 rejected"
         malformedWorker = "stable error / host survived"
         forcedShutdownSeconds = [Math]::Round($shutdownWatch.Elapsed.TotalSeconds, 2)

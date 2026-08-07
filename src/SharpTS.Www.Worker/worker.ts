@@ -5,6 +5,7 @@ import {
     type WorkerRequestPayload,
     type WorkerResponsePayload
 } from '../SharpTS.Www.Shared/execution-contract';
+import { networkBlockProxyUrl } from '../SharpTS.Www.Shared/execution-policy';
 
 const maxOutputLength = 100 * 1024;
 
@@ -26,7 +27,7 @@ interface SourceExecutionResult {
 // Single-source playground programs cannot import networking modules. Their one
 // remaining network surface, global fetch(), routes through HttpClient's default
 // proxy and therefore fails against this deliberately unreachable sentinel.
-configureUntrustedProcess('http://sharpts-network-blocked.invalid:9');
+configureUntrustedProcess(networkBlockProxyUrl);
 
 function exitInvalidRequest(): never {
     process.exit(1);

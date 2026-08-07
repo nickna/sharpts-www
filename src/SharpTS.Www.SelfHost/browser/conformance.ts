@@ -201,8 +201,3 @@ export function initializeConformanceExplorer(doc: Document = document, win: Win
 
     apply();
 }
-
-if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', () => initializeConformanceExplorer(), { once: true });
-else
-    initializeConformanceExplorer();

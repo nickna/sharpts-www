@@ -17,7 +17,7 @@ if (fs.existsSync(outputRoot)) {
 }
 
 const result = await build({
-    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'site.ts')],
+    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'site-entry.ts')],
     outdir: outputRoot,
     bundle: true,
     format: 'esm',
@@ -39,7 +39,7 @@ const result = await build({
 });
 
 const conformanceResult = await build({
-    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'conformance.ts')],
+    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'conformance-entry.ts')],
     outdir: outputRoot,
     bundle: true,
     format: 'esm',
@@ -53,7 +53,7 @@ const conformanceResult = await build({
 });
 
 const docsResult = await build({
-    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'docs.ts')],
+    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'docs-entry.ts')],
     outdir: outputRoot,
     bundle: true,
     format: 'esm',
@@ -72,18 +72,19 @@ const outputs = [
     ...Object.entries(docsResult.metafile.outputs)
 ];
 const entryOutput = outputs.find(
-    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/site.ts')
+    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/site-entry.ts')
 );
 if (!entryOutput) throw new Error('Browser build did not emit the site JavaScript entry.');
 const [entryScriptPath, entryMetadata] = entryOutput;
 if (!entryMetadata.cssBundle) throw new Error('Browser build did not emit the site CSS entry.');
 const conformanceOutput = outputs.find(
-    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/conformance.ts')
+    ([outputPath, metadata]) =>
+        outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/conformance-entry.ts')
 );
 if (!conformanceOutput) throw new Error('Browser build did not emit the conformance JavaScript entry.');
 const [conformanceScriptPath] = conformanceOutput;
 const docsOutput = outputs.find(
-    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/docs.ts')
+    ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/docs-entry.ts')
 );
 if (!docsOutput) throw new Error('Browser build did not emit the documentation JavaScript entry.');
 const [docsScriptPath] = docsOutput;

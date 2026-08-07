@@ -1,3 +1,5 @@
+import { executionTimeoutPolicy } from './execution-policy';
+
 export type ExecutionMode = 'interpret' | 'compile';
 
 export interface Preset {
@@ -99,10 +101,6 @@ export function serializeWorkerMessage(value: unknown): string {
     );
 }
 
-const defaultTimeoutMs = 5_000;
-const minimumTimeoutMs = 100;
-const maximumTimeoutMs = 10_000;
-
 /** Convert untrusted JSON into the narrow input accepted by the supervisor. */
 export function parseRunRequest(value: unknown): RunRequest {
     if (!value || typeof value !== 'object') return { source: '' };
@@ -128,8 +126,8 @@ export function normalizeExecutionMode(value: string | undefined): ExecutionMode
 }
 
 export function normalizeExecutionTimeout(value: number | undefined): number {
-    const timeout = value !== undefined && Number.isFinite(value) ? value : defaultTimeoutMs;
-    return Math.max(minimumTimeoutMs, Math.min(maximumTimeoutMs, timeout));
+    const timeout = value !== undefined && Number.isFinite(value) ? value : executionTimeoutPolicy.defaultMs;
+    return Math.max(executionTimeoutPolicy.minimumMs, Math.min(executionTimeoutPolicy.maximumMs, timeout));
 }
 
 export function isPresetArray(value: unknown): value is Preset[] {

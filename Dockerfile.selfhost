@@ -79,7 +79,7 @@ RUN set -eu; \
       exit 1; \
     fi; \
     cat /tmp/site-generation.log; \
-    grep -q "Generated localized static site with 15 pages" /tmp/site-generation.log; \
+    grep -q "Generated localized static site with 18 pages" /tmp/site-generation.log; \
     test -f /app/public/conformance.json; \
     test -f /app/public/site-manifest.json; \
     cp sharpts-source.env /app/sharpts-source.env
