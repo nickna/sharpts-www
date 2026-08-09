@@ -68,6 +68,7 @@ RUN set -eu; \
     grep -q "IL verification passed." /tmp/worker-compile.log; \
     test -f /app/worker/SharpTS.Www.Worker; \
     test -f /app/worker/SharpTS.dll
+# Route cardinality is enforced by scripts/test-generated-site.ps1.
 RUN set -eu; \
     mkdir -p /app/public; \
     if ! SHARPTS_WWW_SITE_REPO_ROOT=/src \
@@ -79,7 +80,7 @@ RUN set -eu; \
       exit 1; \
     fi; \
     cat /tmp/site-generation.log; \
-    grep -q "Generated localized static site with 18 pages" /tmp/site-generation.log; \
+    grep -Fq "Generated localized static site" /tmp/site-generation.log; \
     test -f /app/public/conformance.json; \
     test -f /app/public/site-manifest.json; \
     cp sharpts-source.env /app/sharpts-source.env
