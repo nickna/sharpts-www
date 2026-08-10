@@ -21,6 +21,17 @@ export function docsOutputPath(outputRoot: string, route: DocumentationRoute | s
     return path.join(outputRoot, ...segments);
 }
 
+export function apiOutputPath(outputRoot: string, route: string): string {
+    if (!route.startsWith('/docs/api')) throw new Error('Invalid API reference route: ' + route);
+    const segments = route.split('/').filter(segment => segment.length > 0);
+    segments.push('index.html');
+    return path.join(outputRoot, ...segments);
+}
+
+export function apiSearchOutputPath(outputRoot: string): string {
+    return path.join(outputRoot, 'docs', 'api', 'search-index.json');
+}
+
 export function outputPath(outputRoot: string, culture: CultureInfo, page: PageKind): string {
     const segments: string[] = [];
     if (culture.code !== 'en')

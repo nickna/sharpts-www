@@ -8,26 +8,36 @@ COPY src/SharpTS.Www.SelfHost/browser/ src/SharpTS.Www.SelfHost/browser/
 COPY src/SharpTS.Www.Shared/ src/SharpTS.Www.Shared/
 RUN SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets npm run build:browser
 
+FROM node:25-bookworm-slim AS api-reference-build
+WORKDIR /src
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY tools/api-docs/package.json tools/api-docs/package-lock.json tools/api-docs/
+RUN npm ci --prefix tools/api-docs
+COPY tools/api-docs/generate-api-reference.mjs tools/api-docs/ambient.d.ts tools/api-docs/tsconfig.json tools/api-docs/
+COPY sharpts-source.env ./
+# API extraction and the compiled runtime use the same exact pinned SharpTS revision.
+RUN set -eu; \
+    . ./sharpts-source.env; \
+    SHARPTS_SOURCE_REVISION="$(printf '%s' "$SHARPTS_SOURCE_REVISION" | tr -d '\r')"; \
+    git init lib/SharpTS; \
+    git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
+    git -C lib/SharpTS fetch --depth 1 origin "$SHARPTS_SOURCE_REVISION"; \
+    git -C lib/SharpTS checkout --detach FETCH_HEAD; \
+    test "$(git -C lib/SharpTS rev-parse HEAD)" = "$SHARPTS_SOURCE_REVISION"; \
+    node tools/api-docs/generate-api-reference.mjs
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY . .
 COPY --from=browser-build /browser-assets /browser-assets
-
-# Production deployments intentionally track the latest SharpTS main commit.
-# Keeping .git lets us record the exact resolved commit in the generated site.
-RUN set -eu; \
-    rm -rf lib/SharpTS; \
-    git init lib/SharpTS; \
-    git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
-    git -C lib/SharpTS fetch --depth 1 origin main; \
-    git -C lib/SharpTS checkout --detach FETCH_HEAD; \
-    sharp_ts_revision="$(git -C lib/SharpTS rev-parse HEAD)"; \
-    test -f lib/SharpTS/SharpTS.csproj; \
-    printf 'SHARPTS_SOURCE_REVISION=%s\n' "$sharp_ts_revision" > sharpts-source.env
+COPY --from=api-reference-build /src/lib/SharpTS /src/lib/SharpTS
+COPY --from=api-reference-build /src/sharpts-source.env /src/sharpts-source.env
+COPY --from=api-reference-build /src/artifacts/api-reference/catalog.json /src/artifacts/api-reference/catalog.json
 
 RUN set -eu; \
     . ./sharpts-source.env; \
+    SHARPTS_SOURCE_REVISION="$(printf '%s' "$SHARPTS_SOURCE_REVISION" | tr -d '\r')"; \
     if ! dotnet build lib/SharpTS/SharpTS.csproj -c Release --nologo \
         -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
@@ -90,7 +100,7 @@ WORKDIR /app
 
 LABEL org.opencontainers.image.source="https://github.com/nickna/sharpts-www" \
       org.opencontainers.image.licenses="MIT" \
-      io.sharpts.runtime.source="https://github.com/nickna/SharpTS/tree/main"
+      io.sharpts.runtime.source="https://github.com/nickna/SharpTS"
 
 COPY --from=build /app/ ./
 

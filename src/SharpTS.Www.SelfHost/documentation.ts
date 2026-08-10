@@ -107,14 +107,16 @@ export function renderDocumentationFigure(name: string): string {
 }
 
 function loadTestedVersion(repoRoot: string): string {
-    const source = String(fs.readFileSync(path.join(repoRoot, 'sharpts-source.env'), 'utf8'));
-    const match = /^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})$/m.exec(source);
+    const source = String(fs.readFileSync(path.join(repoRoot, 'sharpts-source.env'), 'utf8')).trim();
+    const match = /^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})$/.exec(source);
     if (!match) throw new Error('Pinned SharpTS source revision is missing or malformed');
     return '0.0.0-local+' + match[1].slice(0, 8);
 }
 
-export function validateDocumentationLinks(articles: LoadedDocumentationArticle[]): void {
+export function validateDocumentationLinks(articles: LoadedDocumentationArticle[], extraRoutes: string[] = []): void {
     const publishedRoutes: { [route: string]: LoadedDocumentationArticle } = {};
+    const validExtraRoutes: { [route: string]: boolean } = {};
+    for (const route of extraRoutes) validExtraRoutes[route] = true;
     for (const article of articles) {
         if (article.metadata.published)
             publishedRoutes[docsRoutePath(article.metadata.slug)] = article;
@@ -124,15 +126,15 @@ export function validateDocumentationLinks(articles: LoadedDocumentationArticle[
             if (!link.startsWith('/docs')) continue;
             const parts = link.split('#');
             const target = publishedRoutes[parts[0]];
-            if (!target)
+            if (!target && !validExtraRoutes[parts[0]])
                 throw new Error('Broken or unpublished documentation link ' + link + ' in ' + article.metadata.slug);
-            if (parts[1] && !target.rendered.headings.some(heading => heading.id === parts[1]))
+            if (parts[1] && target && !target.rendered.headings.some(heading => heading.id === parts[1]))
                 throw new Error('Unknown documentation heading ' + link + ' in ' + article.metadata.slug);
         }
     }
 }
 
-export function loadDocumentation(repoRoot: string, docsRoot: string): LoadedDocumentation {
+export function loadDocumentation(repoRoot: string, docsRoot: string, extraRoutes: string[] = []): LoadedDocumentation {
     validateDocumentationManifest(documentationManifest);
     const all = documentationManifest.map(metadata => {
         const sourcePath = path.join(docsRoot, ...metadata.slug.split('/')) + (metadata.slug === 'index' ? '.md' : '.md');
@@ -143,7 +145,7 @@ export function loadDocumentation(repoRoot: string, docsRoot: string): LoadedDoc
         });
         return { metadata, rendered };
     });
-    validateDocumentationLinks(all);
+    validateDocumentationLinks(all, extraRoutes);
     const publishedMetadata = publishedDocumentation();
     const published = publishedMetadata.map(metadata => all.find(article => article.metadata.slug === metadata.slug)!);
     const examples: DocumentationExample[] = [];
