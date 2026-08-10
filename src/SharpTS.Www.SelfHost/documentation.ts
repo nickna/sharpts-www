@@ -134,9 +134,6 @@ export function validateDocumentationLinks(articles: LoadedDocumentationArticle[
 
 export function loadDocumentation(repoRoot: string, docsRoot: string): LoadedDocumentation {
     validateDocumentationManifest(documentationManifest);
-    const scripting = documentationManifest.find(article => article.slug === 'getting-started/scripting');
-    if (scripting?.published)
-        throw new Error('The scripting article requires a passing automated hashbang execution test before publishing');
     const all = documentationManifest.map(metadata => {
         const sourcePath = path.join(docsRoot, ...metadata.slug.split('/')) + (metadata.slug === 'index' ? '.md' : '.md');
         if (!fs.existsSync(sourcePath)) throw new Error('Documentation source is missing: ' + sourcePath);

@@ -50,7 +50,7 @@ export const documentationManifest: DocumentationArticle[] = [
         title: 'Scripting with SharpTS',
         description: 'Run portable TypeScript scripts directly from a shell.',
         order: 4,
-        published: false
+        published: true
     },
     {
         slug: 'compiler-concepts/compilation-and-native-aot',

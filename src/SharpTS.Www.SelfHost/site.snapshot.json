@@ -11,7 +11,7 @@
     },
     {
       "path": "conformance/index.html",
-      "sha256": "608a7e79d80edf06d7fd3f87e050bb9aa7a79e0c77da781b1715483d2851f6f3"
+      "sha256": "1b408d156e0cab6724e5d66bd554804c03c445067f0d20436f0b6c7839f71be4"
     },
     {
       "path": "zh-Hans/index.html",
@@ -23,7 +23,7 @@
     },
     {
       "path": "zh-Hans/conformance/index.html",
-      "sha256": "747d3483f2baca9526a28fba3a374937b53509cb22c57bc6eb4f8b1a5fab30e8"
+      "sha256": "451cd2bc30db9b5078d0435f9bfe90e5f849560d1e45fabb58eaaeaca5a9145e"
     },
     {
       "path": "fr/index.html",
@@ -35,7 +35,7 @@
     },
     {
       "path": "fr/conformance/index.html",
-      "sha256": "f17314bd71ffaa7f75fd611075186cd591dcc6552a696054f038cab0553c7fd1"
+      "sha256": "be5c2e38e729e1e0729c80054156d8fc190ebe95ff2e17f41edefbf318b81f4b"
     },
     {
       "path": "es/index.html",
@@ -47,7 +47,7 @@
     },
     {
       "path": "es/conformance/index.html",
-      "sha256": "599306cbbcbda696fba8f5ecbf53ac34c43933e21e04674bc743cd3792955aae"
+      "sha256": "a96c4aaf5f666369ab97739d3254d925fc4d56eb50d1601957ce863ea34993d6"
     },
     {
       "path": "de/index.html",
@@ -59,43 +59,47 @@
     },
     {
       "path": "de/conformance/index.html",
-      "sha256": "c8145c4f3bfa432b0f0277c6e7e1023dfc3daca5a8f7dbfe5ff5e6b4be8e2dda"
+      "sha256": "01c5248030a61bdb44e8fd44d0edeb94e49f774cc9a93072983f55837fbddd94"
     },
     {
       "path": "docs/index.html",
-      "sha256": "adace70379f6a44ae310f784c1079b1b64aa57b2ad5444819bc957dc91515fa9"
+      "sha256": "09f7a6a32748649ddc0b6a9776e091d5a54c666ecd573989fc2bb6c3dcc8f6fe"
     },
     {
       "path": "docs/getting-started/installation/index.html",
-      "sha256": "8fcd8324847ff018006e027c121d3f046cfe2b150fe5011f70a4cf7eb4cf7214"
+      "sha256": "7190cd3ca01c840e7f4eabb45256ef11c495296e2de4bafb07024ebf80100606"
     },
     {
       "path": "docs/getting-started/cli-basics/index.html",
-      "sha256": "22e66af63b5cdad6edbf9c596bf286b843086351c93c1238e0cd16e79dfc3b99"
+      "sha256": "53f7a532f9ca7beb11f4ffc979d1caed9e5eb64d3595d4e94219fbf531471582"
+    },
+    {
+      "path": "docs/getting-started/scripting/index.html",
+      "sha256": "9f5c96998285f5ee4e1a52a4fb55813ec6a833a6f142b89498c45e2952bd0b7c"
     },
     {
       "path": "docs/compiler-concepts/compilation-and-native-aot/index.html",
-      "sha256": "d79ad8d5e4fa7997a7bb65deae4f9da93560c9eeeb3e2d48905d65bf068a0f2a"
+      "sha256": "1d0455f0f4358c76c481e461652a3085907e540dd87c0c299d8b2aaad9b0b2c3"
     },
     {
       "path": "docs/compiler-concepts/tree-shaking/index.html",
-      "sha256": "aa5d004fd9e25fb0c23cf956a51dab93c9a3d42d2ef29dbdd60b655233415b9a"
+      "sha256": "f0b3dc8edfe949e10332219c03c4ff38b9ec507066683dbd6683035973e59737"
     },
     {
       "path": "docs/compiler-concepts/performance/index.html",
-      "sha256": "35e372c76321ceeafb544d41e2ef77992d735717106dc6fb2ab908e3bc653dbd"
+      "sha256": "e437485aa4b11c0d552f3796b33af7f8a031360dbdf39170aff604fc1d5eab90"
     },
     {
       "path": "docs/compiler-concepts/javascript-semantics-on-dotnet/index.html",
-      "sha256": "d450f2198cb7cd8db797e098c8f71963323dd23f09fc29d42e4127bd8fda0b1b"
+      "sha256": "706a6d5b9b1a28e7bfabd044e22a4bd77669f8f7404d63167dd26abbc62dcfa0"
     },
     {
       "path": "docs/compiler-concepts/functions-closures-and-state-machines/index.html",
-      "sha256": "332bb4ada2a91ed2ea5ef07ce244a3cc882573e02aed687177a63c7e5d730917"
+      "sha256": "9806e8a4f2445b0d9644639a74ce29ab541cbbc2ee2028ce95dc140fc0c843cb"
     },
     {
       "path": "docs/compiler-concepts/modules-and-dependency-compilation/index.html",
-      "sha256": "ad17a4b4126dbb09c58ec070d235db90f0945cd72d58ae028b97bb52119d1fbb"
+      "sha256": "56989248a4bee2c180f2eaf653568364fde4ba4c01a247173916cfbf5b20b959"
     },
     {
       "path": "css/site-024b437a.css",

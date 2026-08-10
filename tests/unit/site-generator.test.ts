@@ -110,11 +110,12 @@ describe('static site primitives', () => {
     });
 
     it('validates metadata ordering and excludes unpublished documentation', () => {
-        expect(publishedDocumentation()).toHaveLength(9);
+        expect(publishedDocumentation()).toHaveLength(10);
         expect(publishedDocumentation().map((article) => article.title)).toEqual([
             'Start using SharpTS',
             'Installation',
             'CLI basics',
+            'Scripting with SharpTS',
             'Compilation and Native AOT',
             'Tree shaking',
             'Performance',
@@ -122,7 +123,7 @@ describe('static site primitives', () => {
             'Functions, Closures, and State Machines',
             'Modules and Dependency Compilation'
         ]);
-        expect(publishedDocumentation().some((article) => article.slug.endsWith('/scripting'))).toBe(false);
+        expect(publishedDocumentation().some((article) => article.slug.endsWith('/scripting'))).toBe(true);
         expect(() =>
             validateDocumentationManifest([documentationManifest[0], { ...documentationManifest[1], slug: 'index' }])
         ).toThrow(/Duplicate documentation slug/);
@@ -135,9 +136,10 @@ describe('static site primitives', () => {
         const repoRoot = path.resolve('.');
         const docs = loadDocumentation(repoRoot, path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'docs'));
         expect(docs.all).toHaveLength(11);
-        expect(docs.published).toHaveLength(9);
+        expect(docs.published).toHaveLength(10);
         expect(docs.examples).toEqual([
             expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] }),
+            expect.objectContaining({ key: 'shebang-script', modes: ['interpret', 'compile'] }),
             expect.objectContaining({ key: 'semantic-parity', modes: ['interpret', 'compile'] }),
             expect.objectContaining({ key: 'closure-parity', modes: ['interpret', 'compile'] })
         ]);

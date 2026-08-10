@@ -287,6 +287,7 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
         '/',
         '/how-it-works',
         '/conformance',
+        '/docs/getting-started/scripting',
         '/docs/compiler-concepts/performance',
         '/fr',
         '/fr/how-it-works',
@@ -319,7 +320,7 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     ]);
     await expect(page.locator('.docs-outline a').first()).toHaveAttribute('href', '#open-the-repl');
     await expect(page.locator('.docs-pagination__previous')).toContainText('Installation');
-    await expect(page.locator('.docs-pagination__next')).toContainText('Compilation and Native AOT');
+    await expect(page.locator('.docs-pagination__next')).toContainText('Scripting with SharpTS');
 
     const copy = page.locator('.docs-code [data-copy-button]').first();
     await copy.focus();
@@ -327,6 +328,17 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await page.keyboard.press('Enter');
     await expect(copy).toHaveClass(/copied/);
     expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toBe('sharpts');
+
+    await page.goto('/docs/getting-started/scripting');
+    await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('Scripting with SharpTS');
+    await expect(page.locator('.docs-outline a').first()).toHaveAttribute(
+        'href',
+        '#create-an-executable-typescript-script'
+    );
+    await expect(page.locator('.docs-figure')).toHaveAttribute('aria-label', 'Scripting execution path');
+    await expect(page.locator('.docs-code code.language-typescript')).toContainText('#!/usr/bin/env sharpts');
+    await expect(page.locator('.docs-pagination__previous')).toContainText('CLI basics');
+    await expect(page.locator('.docs-pagination__next')).toContainText('Compilation and Native AOT');
 
     await page.goto('/docs/compiler-concepts/javascript-semantics-on-dotnet');
     await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('JavaScript Semantics on .NET');
