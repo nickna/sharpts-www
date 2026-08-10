@@ -14,7 +14,16 @@ import { loadDocumentation } from '../../src/SharpTS.Www.SelfHost/documentation'
 import { loadConformanceData } from '../../src/SharpTS.Www.SelfHost/conformance-data';
 import { loadLocale } from '../../src/SharpTS.Www.SelfHost/i18n';
 import { loadSitePaths } from '../../src/SharpTS.Www.SelfHost/site-config';
-import { renderDocument, renderDocumentationDocument } from '../../src/SharpTS.Www.SelfHost/site-renderers';
+import {
+    renderApiReferenceDocument,
+    renderDocument,
+    renderDocumentationDocument
+} from '../../src/SharpTS.Www.SelfHost/site-renderers';
+import {
+    apiReferencePages,
+    createApiSearchIndex,
+    loadApiReferenceCatalog
+} from '../../src/SharpTS.Www.SelfHost/api-reference';
 import type { BrowserAssets } from '../../src/SharpTS.Www.SelfHost/site-model';
 import path from 'node:path';
 
@@ -57,6 +66,19 @@ describe('static site primitives', () => {
         expect(docsHtml).toContain(`href="${docsRoutePath(documentation.published[0].metadata.slug)}"`);
         expect(docsHtml).toContain('/assets/browser/docs.js');
         expect(docsHtml).not.toContain('rel="alternate" hreflang=');
+
+        const apiCatalog = loadApiReferenceCatalog(paths.apiCatalog);
+        const apiPages = apiReferencePages(apiCatalog);
+        const buttonPage = apiPages.find((page) => page.kind === 'symbol' && page.symbol.name === 'Button')!;
+        const apiHtml = renderApiReferenceDocument(english, buttonPage, apiCatalog, documentation, assets);
+        expect(apiCatalog.symbols).toHaveLength(174);
+        expect(apiPages).toHaveLength(184);
+        expect(apiHtml).toContain('<link rel="canonical" href="https://sharpts.dev/docs/api/gui/button">');
+        expect(apiHtml).toContain('data-api-search');
+        expect(apiHtml).toContain('id="control-metadata"');
+        expect(apiHtml).toContain('Default:');
+        expect(apiHtml).toContain(apiCatalog.package.revision);
+        expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(174);
     });
 
     it('escapes text by default', () => {

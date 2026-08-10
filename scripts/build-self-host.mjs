@@ -23,14 +23,14 @@ function loadSourceSettings() {
     );
 }
 
-function run(command, args, environment = {}, input = undefined) {
+function run(command, args, environment = {}, input = undefined, workingDirectory = repoRoot) {
     const windowsNpm = process.platform === 'win32' && command === 'npm';
     if (windowsNpm && args.some((argument) => !/^[A-Za-z0-9:_-]+$/.test(argument)))
         throw new Error('Refusing to pass an unsafe npm argument through cmd.exe.');
     const executable = windowsNpm ? process.env.ComSpec || 'cmd.exe' : command;
     const commandArgs = windowsNpm ? ['/d', '/s', '/c', `npm ${args.join(' ')}`] : args;
     const result = spawnSync(executable, commandArgs, {
-        cwd: repoRoot,
+        cwd: workingDirectory,
         encoding: 'utf8',
         env: { ...process.env, ...environment },
         input,
@@ -159,6 +159,15 @@ try {
     if (!fs.existsSync(path.join(repoRoot, 'package-lock.json')))
         throw new Error('Browser dependency lockfile is missing.');
     requireSuccessful(run('npm', ['ci']), 'Browser dependency restore');
+
+    const apiDocsRoot = path.join(repoRoot, 'tools', 'api-docs');
+    requireSuccessful(run('npm', ['ci'], {}, undefined, apiDocsRoot), 'API documentation dependency restore');
+    requireSuccessful(
+        run('node', [path.join(apiDocsRoot, 'generate-api-reference.mjs')]),
+        'API reference extraction and validation',
+        ['Generated'],
+        [path.join(artifactRoot, 'api-reference', 'catalog.json')]
+    );
 
     const browserRoot = path.join(stagingRoot, 'browser-assets');
     requireSuccessful(

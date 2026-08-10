@@ -1,0 +1,13 @@
+{
+  "name": "sharpts-www-api-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate-api-reference.mjs",
+    "test": "node --test generate-api-reference.test.mjs"
+  },
+  "dependencies": {
+    "typedoc": "0.28.20",
+    "typescript": "6.0.3"
+  }
+}

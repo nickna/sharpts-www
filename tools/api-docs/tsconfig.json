@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "files": [
+    "ambient.d.ts",
+    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/index.ts",
+    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/testing.ts",
+    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/devtools.ts"
+  ]
+}

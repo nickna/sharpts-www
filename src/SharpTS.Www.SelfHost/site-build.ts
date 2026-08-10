@@ -16,6 +16,12 @@ import { showcaseExamples } from './showcase-data';
 import type { ConformanceData } from './conformance-data';
 import { loadDocumentation } from './documentation';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
+import {
+    apiReferencePages,
+    createApiSearchIndex,
+    loadApiReferenceCatalog
+} from './api-reference';
+import { apiOutputPath, apiSearchOutputPath } from './site-paths';
 
 function fail(message: string): never {
     throw new Error('Static site generation failed: ' + message);
@@ -136,10 +142,33 @@ export function validateDocumentationDocument(html: string, article: LoadedDocum
         fail('documentation contains an internal SharpTS function representation at ' + route);
 }
 
+export function validateApiReferenceDocument(html: string, page: any,
+    browserAssets: BrowserAssets): void {
+    const required = [
+        '<html lang="en">',
+        `<link rel="canonical" href="${siteOrigin}${page.route}">`,
+        `href="/css/${browserAssets.siteStyle}"`,
+        `href="/assets/browser/${browserAssets.style}"`,
+        `src="/assets/browser/${browserAssets.docsScript}"`,
+        'src="/img/sharpts-logo.png"',
+        'data-docs-sidebar',
+        'data-docs-outline',
+        'data-api-search',
+        '@sharpts/gui'
+    ];
+    for (const marker of required)
+        if (html.indexOf(marker) < 0) fail('missing ' + marker + ' from API reference route ' + page.route);
+    if (html.indexOf('rel="alternate" hreflang=') >= 0)
+        fail('English-only API reference must not emit translated alternates for ' + page.route);
+    if (html.indexOf('&lt;arrow fn&gt;') >= 0 || html.indexOf('<arrow fn>') >= 0)
+        fail('API reference contains an internal SharpTS function representation at ' + page.route);
+}
+
 export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     browserAssets: BrowserAssets) => string,
     renderDocumentationDocument: (locale: Locale, article: LoadedDocumentationArticle, documentation: LoadedDocumentation,
         browserAssets: BrowserAssets) => string,
+    renderApiReferenceDocument: any,
     conformance: ConformanceData): void {
     const paths = loadSitePaths();
     ensureDirectory(paths.outputRoot);
@@ -147,7 +176,10 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     copyTree(paths.browserRoot, path.join(paths.outputRoot, 'assets', 'browser'));
     const stylesheet = buildStyles(paths.stylesRoot, paths.outputRoot);
     const browserAssets = loadBrowserAssets(paths.browserRoot, stylesheet.file);
-    const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
+    const apiCatalog = loadApiReferenceCatalog(paths.apiCatalog);
+    const apiPages = apiReferencePages(apiCatalog);
+    const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot,
+        apiPages.map(page => page.route));
 
     const routes: GeneratedRoute[] = [];
     for (const culture of cultures) {
@@ -181,6 +213,22 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         });
     }
 
+    for (const page of apiPages) {
+        const html = renderApiReferenceDocument(documentationLocale, page, apiCatalog, documentation, browserAssets);
+        validateApiReferenceDocument(html, page, browserAssets);
+        const destination = apiOutputPath(paths.outputRoot, page.route);
+        writeText(destination, html);
+        routes.push({
+            culture: 'en',
+            page: 'api',
+            slug: page.route.slice('/docs/api/'.length),
+            route: page.route,
+            file: path.relative(paths.outputRoot, destination).replace(/\\/g, '/')
+        });
+    }
+    writeText(apiSearchOutputPath(paths.outputRoot),
+        JSON.stringify(createApiSearchIndex(apiCatalog), null, 2) + '\n');
+
     writeText(path.join(paths.outputRoot, 'site-manifest.json'), JSON.stringify({
         generatedBy: 'SharpTS',
         cultures: cultures.map(culture => culture.code),
@@ -213,6 +261,7 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         JSON.stringify(documentation.examples, null, 2) + '\n');
 
     console.log('Generated localized static site with ' + routes.length +
-        ' pages (including ' + documentation.published.length + ' documentation pages) and ' +
+        ' pages (including ' + documentation.published.length + ' editorial documentation pages and ' +
+        apiPages.length + ' API reference pages) and ' +
         stylesheet.sources + ' CSS sources at ' + paths.outputRoot);
 }

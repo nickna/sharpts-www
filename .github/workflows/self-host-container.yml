@@ -32,6 +32,7 @@ on:
       - "src/SharpTS.Www.Shared/**"
       - "src/SharpTS.Www.Worker/**"
       - "tests/**"
+      - "tools/api-docs/**"
       - "tsconfig.json"
       - "vitest.config.ts"
   push:
@@ -66,6 +67,7 @@ on:
       - "src/SharpTS.Www.Shared/**"
       - "src/SharpTS.Www.Worker/**"
       - "tests/**"
+      - "tools/api-docs/**"
       - "tsconfig.json"
       - "vitest.config.ts"
 
@@ -134,8 +136,8 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # The production Dockerfile resolves SharpTS main itself, and lib/SharpTS
-      # is excluded from its build context. Avoid downloading any submodules.
+      # The production Dockerfile resolves the exact SharpTS revision from
+      # sharpts-source.env, and lib/SharpTS is excluded from its build context.
       - name: Check out website source
         uses: actions/checkout@v7
         with:
