@@ -67,6 +67,18 @@ describe('shared documentation and site controls', () => {
         expect(code.querySelector('.token.builtin')?.textContent).toBe('number');
     });
 
+    it('highlights TSX code in documentation pages', () => {
+        document.body.innerHTML =
+            '<pre><code class="language-tsx">const view: JSX.Element = &lt;Window title="Counter" /&gt;;</code></pre>';
+
+        initializeDocs(document, window);
+
+        const code = document.querySelector('code')!;
+        expect(code.classList).toContain('language-tsx');
+        expect(code.querySelector('.token.keyword')?.textContent).toBe('const');
+        expect(code.querySelector('.token.tag')?.textContent).toContain('Window');
+    });
+
     it('does not initialize the DOM when reusable browser modules are imported', async () => {
         vi.resetModules();
         document.body.innerHTML = '<main data-conformance-explorer><div data-conformance-controls hidden></div></main>';

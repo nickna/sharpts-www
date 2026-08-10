@@ -110,11 +110,12 @@ describe('static site primitives', () => {
     });
 
     it('validates metadata ordering and excludes unpublished documentation', () => {
-        expect(publishedDocumentation()).toHaveLength(10);
+        expect(publishedDocumentation()).toHaveLength(11);
         expect(publishedDocumentation().map((article) => article.title)).toEqual([
             'Start using SharpTS',
             'Installation',
             'CLI basics',
+            'Build a desktop GUI application',
             'Scripting with SharpTS',
             'Compilation and Native AOT',
             'Tree shaking',
@@ -135,8 +136,8 @@ describe('static site primitives', () => {
     it('loads every source for validation but emits examples only from published articles', () => {
         const repoRoot = path.resolve('.');
         const docs = loadDocumentation(repoRoot, path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'docs'));
-        expect(docs.all).toHaveLength(11);
-        expect(docs.published).toHaveLength(10);
+        expect(docs.all).toHaveLength(12);
+        expect(docs.published).toHaveLength(11);
         expect(docs.examples).toEqual([
             expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] }),
             expect.objectContaining({ key: 'shebang-script', modes: ['interpret', 'compile'] }),

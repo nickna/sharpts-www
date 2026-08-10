@@ -37,11 +37,19 @@ export const documentationManifest: DocumentationArticle[] = [
         published: true
     },
     {
+        slug: 'getting-started/desktop-gui',
+        section: 'Getting Started',
+        title: 'Build a desktop GUI application',
+        description: 'Create, run, test, and publish a native desktop application written entirely in TypeScript and TSX.',
+        order: 3,
+        published: true
+    },
+    {
         slug: 'getting-started/web-projects',
         section: 'Getting Started',
         title: 'SharpTS for TypeScript web projects',
         description: 'Use SharpTS as a native companion to an existing browser toolchain.',
-        order: 3,
+        order: 4,
         published: false
     },
     {
@@ -49,7 +57,7 @@ export const documentationManifest: DocumentationArticle[] = [
         section: 'Getting Started',
         title: 'Scripting with SharpTS',
         description: 'Run portable TypeScript scripts directly from a shell.',
-        order: 4,
+        order: 5,
         published: true
     },
     {

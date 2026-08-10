@@ -63,43 +63,47 @@
     },
     {
       "path": "docs/index.html",
-      "sha256": "09f7a6a32748649ddc0b6a9776e091d5a54c666ecd573989fc2bb6c3dcc8f6fe"
+      "sha256": "4e931633456de8130ae463e6fad88f1ae06dcb6730065cbc9e49d76a5ca2196b"
     },
     {
       "path": "docs/getting-started/installation/index.html",
-      "sha256": "7190cd3ca01c840e7f4eabb45256ef11c495296e2de4bafb07024ebf80100606"
+      "sha256": "0346abfccf64c941021e51f761d7e27e2afa194864fdf11c77834b3f577c86a3"
     },
     {
       "path": "docs/getting-started/cli-basics/index.html",
-      "sha256": "53f7a532f9ca7beb11f4ffc979d1caed9e5eb64d3595d4e94219fbf531471582"
+      "sha256": "15dc381a963329e3f63040b318552b484f667239453be9aa36a1bae270ebf08a"
+    },
+    {
+      "path": "docs/getting-started/desktop-gui/index.html",
+      "sha256": "35e4daa93d390fc6904d2c2fd14f42fbb17357f61beb22c1f56864427f49daa4"
     },
     {
       "path": "docs/getting-started/scripting/index.html",
-      "sha256": "9f5c96998285f5ee4e1a52a4fb55813ec6a833a6f142b89498c45e2952bd0b7c"
+      "sha256": "0661201b2e8f22bbc7d79a6a5b76e04ec6a5cce144a29f849c6123fbd93ef726"
     },
     {
       "path": "docs/compiler-concepts/compilation-and-native-aot/index.html",
-      "sha256": "1d0455f0f4358c76c481e461652a3085907e540dd87c0c299d8b2aaad9b0b2c3"
+      "sha256": "67ce25a03ca0b37c0123814aeca381a4d368bd055de42ee9da96194553a30814"
     },
     {
       "path": "docs/compiler-concepts/tree-shaking/index.html",
-      "sha256": "f0b3dc8edfe949e10332219c03c4ff38b9ec507066683dbd6683035973e59737"
+      "sha256": "9187c5a3157b76f23f5e94432ac95e2220934c431e92e927e4006c1151ce8b8d"
     },
     {
       "path": "docs/compiler-concepts/performance/index.html",
-      "sha256": "e437485aa4b11c0d552f3796b33af7f8a031360dbdf39170aff604fc1d5eab90"
+      "sha256": "598b05ba599bf9ff966feca2e6d8dcac8cecf857cb854b25d7616ccb6fd2b3c2"
     },
     {
       "path": "docs/compiler-concepts/javascript-semantics-on-dotnet/index.html",
-      "sha256": "706a6d5b9b1a28e7bfabd044e22a4bd77669f8f7404d63167dd26abbc62dcfa0"
+      "sha256": "7ca8db16d40a73efd25cea4aac9b9a119170d63bec1843d0a14b220d85a155b9"
     },
     {
       "path": "docs/compiler-concepts/functions-closures-and-state-machines/index.html",
-      "sha256": "9806e8a4f2445b0d9644639a74ce29ab541cbbc2ee2028ce95dc140fc0c843cb"
+      "sha256": "b2319540ba170c6ac18d3066766996b96afbe1747434802bd6d18d49f361238b"
     },
     {
       "path": "docs/compiler-concepts/modules-and-dependency-compilation/index.html",
-      "sha256": "56989248a4bee2c180f2eaf653568364fde4ba4c01a247173916cfbf5b20b959"
+      "sha256": "941c6ee956246b7762ad7c3ff75297cbc5ffd6ffb00b79faecb18c887ccea05c"
     },
     {
       "path": "css/site-024b437a.css",
@@ -122,8 +126,8 @@
       "sha256": "c5214b0e195d9e3ffdd4ea739bacae818e6423daaea67de24ac24f8681724446"
     },
     {
-      "path": "assets/browser/docs-entry-C756ALK4.js",
-      "sha256": "99c8ab17541d2a78974e99baddae1e35416e7bbe6331c42ee74fc278d31f9ec5"
+      "path": "assets/browser/docs-entry-P22QCRHX.js",
+      "sha256": "aa7746d535b92ec1f26e3c397f9469b785552142f9694af517abb744cb477c73"
     },
     {
       "path": "assets/browser/site-entry-CRD5WPTW.css",

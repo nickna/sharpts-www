@@ -1,5 +1,7 @@
 import Prism from 'prismjs';
 import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
 import { initializeCopyButtons, initializeNavigation } from './navigation-copy';
 
 export function initializeDocs(doc: Document = document, win: Window = window): void {
