@@ -290,6 +290,7 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
         '/docs/getting-started/desktop-gui',
         '/docs/getting-started/scripting',
         '/docs/compiler-concepts/performance',
+        '/docs/api/gui/button',
         '/fr',
         '/fr/how-it-works',
         '/fr/conformance'
@@ -317,7 +318,8 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('CLI basics');
     await expect(page.locator('.docs-sidebar .docs-sidebar__section')).toHaveText([
         'Getting Started',
-        'Compiler Concepts'
+        'Compiler Concepts',
+        'API Reference'
     ]);
     await expect(page.locator('.docs-outline a').first()).toHaveAttribute('href', '#open-the-repl');
     await expect(page.locator('.docs-pagination__previous')).toContainText('Installation');
@@ -370,6 +372,47 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await expect(page.locator('.docs-pagination__previous')).toContainText('Performance');
     await expect(page.locator('.docs-pagination__next')).toContainText('Functions, Closures, and State Machines');
     expect(externalRequests).toEqual([]);
+});
+
+test('API reference renders structured symbols and keyboard-searches the generated index', async ({ page }) => {
+    await page.goto('/docs/api/gui/button');
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        'https://sharpts.dev/docs/api/gui/button'
+    );
+    await expect(page.locator('.docs-sidebar a[aria-current="page"]')).toHaveText('Button');
+    await expect(page.locator('.api-article h1')).toHaveText('Button');
+    await expect(page.locator('#signature')).toBeVisible();
+    await expect(page.locator('#control-metadata + .api-metadata')).toContainText('Avalonia.Controls.Button');
+    await expect(page.locator('#props + .api-table-wrap')).toContainText('onClick');
+    await expect(page.locator('.docs-tested')).toContainText('@sharpts/gui');
+    await expect(page.locator('.docs-tested a')).toHaveAttribute(
+        'href',
+        /github\.com\/nickna\/SharpTS\/tree\/[0-9a-f]{40}/
+    );
+
+    const copy = page.locator('.api-signature [data-copy-button]').first();
+    await copy.click();
+    await expect(copy).toHaveClass(/copied/);
+    expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toContain(
+        'Button(props: ButtonProps): GuiElement'
+    );
+
+    const search = page.locator('[data-api-search-input]');
+    await search.fill('button');
+    const options = page.locator('[data-api-search-results] [role="option"]');
+    const optionCount = await options.count();
+    expect(optionCount).toBeGreaterThan(0);
+    expect(optionCount).toBeLessThanOrEqual(10);
+    await expect(options.first().locator('code')).toHaveText('Button');
+    await search.press('ArrowDown');
+    await expect(search).toHaveAttribute('aria-activedescendant', 'api-search-option-0');
+    await search.press('Enter');
+    await expect(page).toHaveURL(/\/docs\/api\/gui\/button$/);
+
+    await search.fill('no-such-sharpts-symbol');
+    await expect(page.locator('.api-search__empty')).toContainText('No API symbols');
+    expect(await page.content()).toContain('Browse API categories');
 });
 
 test('documentation mobile menus are keyboard accessible and fit the viewport', async ({ page }) => {

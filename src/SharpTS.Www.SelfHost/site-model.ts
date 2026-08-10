@@ -22,7 +22,7 @@ export interface DocumentationRoute {
 
 export interface GeneratedRoute {
     culture: string;
-    page: PageKind | 'docs';
+    page: PageKind | 'docs' | 'api';
     slug?: string;
     route: string;
     file: string;

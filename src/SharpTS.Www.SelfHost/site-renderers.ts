@@ -579,7 +579,7 @@ function renderDocsSidebar(article: LoadedDocumentationArticle, documentation: L
         }).join('\n');
         return items ? `<p class="docs-sidebar__section">${escapeHtml(section)}</p><ul>${items}</ul>` : '';
     }).join('\n');
-    return `<nav class="docs-sidebar__nav" aria-label="Documentation" data-docs-sidebar>${sections}</nav>`;
+    return `<nav class="docs-sidebar__nav" aria-label="Documentation" data-docs-sidebar>${sections}<p class="docs-sidebar__section">API Reference</p><ul><li><a href="/docs/api">API Reference</a></li><li><a href="/docs/api/gui">@sharpts/gui</a></li></ul></nav>`;
 }
 
 function renderDocsOutline(article: LoadedDocumentationArticle, mobile: boolean): string {
@@ -640,6 +640,226 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
         ${renderDocsPagination(article, documentation)}
       </main>
       ${renderDocsOutline(article, false)}
+    </div>
+    ${renderFooter(locale)}
+  </div>
+  <script type="module" src="/assets/browser/${browserAssets.docsScript}"></script>
+</body>
+</html>
+`;
+}
+
+function apiTypeText(parts: any[] | undefined): string {
+    return (parts || []).map(part => part.text).join('');
+}
+
+function renderApiType(parts: any[] | undefined, catalog: any): string {
+    return (parts || []).map(part => {
+        const symbol = part.symbolId ? catalog.symbols.find((candidate: any) => candidate.id === part.symbolId) : null;
+        const text = escapeHtml(part.text);
+        return symbol ? `<a class="api-type-link" href="${symbol.route}">${text}</a>` : text;
+    }).join('');
+}
+
+function apiSlug(value: string): string {
+    return value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/[^A-Za-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '').toLowerCase();
+}
+
+function apiValue(value: unknown): string {
+    if (value === undefined) return '—';
+    return JSON.stringify(value);
+}
+
+function apiSignatureText(symbol: any, signature: any): string {
+    const generics = signature.typeParameters.length ? '<' + signature.typeParameters.map((parameter: any) => {
+        let text = parameter.name;
+        if (parameter.constraint) text += ' extends ' + apiTypeText(parameter.constraint);
+        if (parameter.default) text += ' = ' + apiTypeText(parameter.default);
+        return text;
+    }).join(', ') + '>' : '';
+    const parameters = signature.parameters.map((parameter: any) => {
+        let text = (parameter.rest ? '...' : '') + parameter.name + (parameter.optional ? '?' : '') + ': ' +
+            apiTypeText(parameter.type);
+        if (parameter.default !== undefined) text += ' = ' + parameter.default;
+        return text;
+    }).join(', ');
+    return `${symbol.name}${generics}(${parameters}): ${apiTypeText(signature.returns.type)}`;
+}
+
+function renderApiSearch(catalog: any): string {
+    const fallback = catalog.categories.map((category: any) =>
+        `<li><a href="${category.route}">${escapeHtml(category.title)}</a></li>`).join('');
+    return `<section class="api-search" aria-label="Search API Reference" data-api-search data-search-url="/docs/api/search-index.json">
+  <label for="api-search-input">Search <code>@sharpts/gui</code></label>
+  <div class="api-search__field"><input id="api-search-input" type="search" autocomplete="off" placeholder="Search symbols" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="api-search-results" data-api-search-input></div>
+  <ul id="api-search-results" class="api-search__results" role="listbox" hidden data-api-search-results></ul>
+  <p class="api-search__status" role="status" aria-live="polite" data-api-search-status></p>
+</section><noscript><nav class="api-search-fallback" aria-label="Browse API categories"><p>Browse API categories</p><ul>${fallback}</ul></nav></noscript>`;
+}
+
+function renderApiSymbolList(symbols: any[]): string {
+    if (!symbols.length) return '<p>No public symbols are assigned to this category.</p>';
+    return `<div class="api-symbol-grid">${symbols.map(symbol => `<a class="api-symbol-card" href="${symbol.route}"><span class="api-kind">${escapeHtml(symbol.kind)}</span><strong><code>${escapeHtml(symbol.name)}</code></strong><p>${escapeHtml(symbol.summary)}</p></a>`).join('')}</div>`;
+}
+
+function renderApiCategories(catalog: any): string {
+    return `<div class="api-category-grid">${catalog.categories.map((category: any) => `<a class="api-category-card" href="${category.route}"><strong>${escapeHtml(category.title)}</strong><span>${category.symbolIds.length} symbols</span><p>${escapeHtml(category.summary)}</p></a>`).join('')}</div>`;
+}
+
+function renderApiSignature(locale: Locale, symbol: any, signature: any,
+    index: number, catalog: any): string {
+    const suffix = symbol.signatures.length > 1 ? ` ${index + 1}` : '';
+    const parameters = signature.parameters.length ? `<h3 id="parameters${index || ''}">Parameters${suffix}</h3><div class="api-table-wrap"><table class="api-table"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>${signature.parameters.map((parameter: any) => `<tr><td><code>${escapeHtml(parameter.name)}</code>${parameter.optional ? ' <span class="api-optional">optional</span>' : ''}</td><td><code>${renderApiType(parameter.type, catalog)}</code>${parameter.default !== undefined ? `<div class="api-default">Default: <code>${escapeHtml(parameter.default)}</code></div>` : ''}</td><td>${escapeHtml(parameter.description)}</td></tr>`).join('')}</tbody></table></div>` : '';
+    const returnType = apiTypeText(signature.returns.type);
+    const returns = returnType === 'void' ? '' : `<h3 id="returns${index || ''}">Returns${suffix}</h3><p><code>${renderApiType(signature.returns.type, catalog)}</code> — ${escapeHtml(signature.returns.description)}</p>`;
+    return `<section class="api-signature"><h2 id="signature${index || ''}">Signature${suffix}</h2><div class="docs-code">${codeBlock(locale, 'TypeScript', 'typescript', apiSignatureText(symbol, signature))}</div>${parameters}${returns}</section>`;
+}
+
+function renderApiMember(member: any, catalog: any): string {
+    const modifiers = `${member.isReadonly ? 'readonly ' : ''}${member.name}${member.optional ? '?' : ''}`;
+    const signature = member.signatures.length
+        ? member.signatures.map((value: any) => `${modifiers}(${value.parameters.map((parameter: any) => `${parameter.name}${parameter.optional ? '?' : ''}: ${apiTypeText(parameter.type)}`).join(', ')}): ${apiTypeText(value.returns.type)}`).join('\n')
+        : `${modifiers}: ${apiTypeText(member.type)}`;
+    const details: string[] = [];
+    if (member.default !== undefined) details.push(`Default: <code>${escapeHtml(apiValue(member.default))}</code>`);
+    if (member.enumValues?.length) details.push(`Values: ${member.enumValues.map((value: any) => `<code>${escapeHtml(apiValue(value))}</code>`).join(', ')}`);
+    if (member.inherited) details.push('Inherited');
+    return `<section class="api-member" id="member-${apiSlug(member.name)}"><h3><code>${escapeHtml(member.name)}</code></h3><pre><code class="language-typescript">${escapeHtml(signature)}</code></pre><p>${escapeHtml(member.description)}</p>${details.length ? `<p class="api-member__details">${details.join(' · ')}</p>` : ''}${member.type ? `<p class="api-member__type">Type: <code>${renderApiType(member.type, catalog)}</code></p>` : ''}</section>`;
+}
+
+function renderApiControl(symbol: any): string {
+    if (!symbol.control) return '';
+    const child = symbol.control.children;
+    const maximum = child.maximum < 0 ? 'unbounded' : String(child.maximum);
+    const rows = symbol.control.props.map((prop: any) => `<tr><td><code>${escapeHtml(prop.name)}</code>${prop.required ? ' <span class="api-required">required</span>' : ''}</td><td><code>${escapeHtml(prop.type)}</code></td><td>${escapeHtml(prop.documentation)}${prop.default !== undefined ? `<div class="api-default">Default: <code>${escapeHtml(apiValue(prop.default))}</code></div>` : ''}${prop.enumValues?.length ? `<div class="api-values">Values: ${prop.enumValues.map((value: any) => `<code>${escapeHtml(apiValue(value))}</code>`).join(', ')}</div>` : ''}</td></tr>`).join('');
+    return `<h2 id="control-metadata">Control metadata</h2><dl class="api-metadata"><div><dt>Native type</dt><dd><code>${escapeHtml(symbol.control.nativeType)}</code></dd></div><div><dt>Props</dt><dd><a href="/docs/api/gui/${apiSlug(symbol.control.propsType)}"><code>${escapeHtml(symbol.control.propsType)}</code></a></dd></div><div><dt>Children</dt><dd>${escapeHtml(child.model)} (${child.minimum}–${maximum})</dd></div><div><dt>Handle</dt><dd><code>${escapeHtml(symbol.control.handle)}</code></dd></div></dl><h2 id="props">Props</h2><div class="api-table-wrap"><table class="api-table"><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function renderApiSymbol(locale: Locale, symbol: any, catalog: any): string {
+    let declaration = '';
+    if (!symbol.signatures.length && symbol.type) {
+        const prefix = symbol.kind === 'Type alias' ? 'type ' : 'const ';
+        declaration = `<h2 id="definition">Definition</h2><div class="docs-code">${codeBlock(locale, 'TypeScript', 'typescript', `${prefix}${symbol.name} = ${apiTypeText(symbol.type)}`)}</div>`;
+    }
+    const signatures = symbol.signatures.map((signature: any, index: number) => renderApiSignature(locale, symbol, signature, index, catalog)).join('');
+    const enumValues = symbol.enumValues?.length ? `<h2 id="values">Values</h2><ul class="api-values-list">${symbol.enumValues.map((value: any) => `<li><code>${escapeHtml(apiValue(value))}</code></li>`).join('')}</ul>` : '';
+    const members = symbol.members.length ? `<h2 id="members">Members</h2><div class="api-members">${symbol.members.map((member: any) => renderApiMember(member, catalog)).join('')}</div>` : '';
+    const related = symbol.related.length ? `<h2 id="related">Related symbols</h2><ul class="api-related">${symbol.related.map((id: string) => catalog.symbols.find((candidate: any) => candidate.id === id)).filter((candidate: any) => candidate !== undefined).map((candidate: any) => `<li><a href="${candidate!.route}"><code>${escapeHtml(candidate!.name)}</code></a> <span>${escapeHtml(candidate!.kind)}</span></li>`).join('')}</ul>` : '';
+    const source = symbol.source ? `<h2 id="source">Source</h2><p><a href="${symbol.source.url}" target="_blank" rel="noopener"><code>${escapeHtml(symbol.source.file)}:${symbol.source.line}</code></a> at SharpTS revision <code>${escapeHtml(catalog.package.revision)}</code>.</p>` : '';
+    const remarks = symbol.remarks ? `<h2 id="remarks">Remarks</h2><p>${escapeHtml(symbol.remarks)}</p>` : '';
+    return `${declaration}${signatures}${enumValues}${renderApiControl(symbol)}${members}${remarks}${related}${source}`;
+}
+
+function renderApiSidebar(page: any, documentation: LoadedDocumentation,
+    catalog: any): string {
+    const editorial = documentationSections.map(section => {
+        const first = documentation.published.find(article => article.metadata.section === section);
+        return first ? `<li><a href="${docsRoutePath(first.metadata.slug)}">${escapeHtml(section)}</a></li>` : '';
+    }).join('');
+    const packageCurrent = page.kind === 'package';
+    const currentSymbol: any = page.kind === 'symbol' ? page.symbol : null;
+    const categories = catalog.categories.map((category: any) => {
+        const current = page.kind === 'category' && page.category.id === category.id;
+        const symbolCurrent = currentSymbol !== null && currentSymbol.category === category.id;
+        return `<li><a href="${category.route}"${current ? ' aria-current="page"' : ''}>${escapeHtml(category.title)}</a>${symbolCurrent ? `<a class="docs-sidebar__symbol" href="${currentSymbol.route}" aria-current="page"><code>${escapeHtml(currentSymbol.name)}</code></a>` : ''}</li>`;
+    }).join('');
+    return `<nav class="docs-sidebar__nav" aria-label="Documentation" data-docs-sidebar><p class="docs-sidebar__section">Documentation</p><ul><li><a href="/docs">Overview</a></li>${editorial}</ul><p class="docs-sidebar__section">API Reference</p><ul><li><a href="/docs/api"${page.kind === 'landing' ? ' aria-current="page"' : ''}>Overview</a></li><li><a href="/docs/api/gui"${packageCurrent ? ' aria-current="page"' : ''}>@sharpts/gui</a></li>${categories}</ul></nav>`;
+}
+
+function apiPageDetails(locale: Locale, page: any, catalog: any): { title: string; section: string; description: string; content: string } {
+    if (page.kind === 'landing') return {
+        title: 'API Reference',
+        section: 'SharpTS APIs',
+        description: 'Generated reference documentation for the public SharpTS TypeScript packages.',
+        content: `<h2 id="packages">Packages</h2><a class="api-package-card" href="/docs/api/gui"><strong><code>@sharpts/gui</code></strong><span>${catalog.symbols.length} public symbols</span><p>Native desktop GUI components, composition, state, lifecycle, services, testing, and devtools.</p></a>`
+    };
+    if (page.kind === 'package') return {
+        title: '@sharpts/gui',
+        section: 'API Reference',
+        description: 'Complete public TypeScript API for SharpTS native desktop applications.',
+        content: `<h2 id="categories">Categories</h2>${renderApiCategories(catalog)}`
+    };
+    if (page.kind === 'category') return {
+        title: page.category.title,
+        section: '@sharpts/gui',
+        description: page.category.summary,
+        content: `<h2 id="symbols">Symbols</h2>${renderApiSymbolList(page.category.symbolIds.map((id: string) => catalog.symbols.find((symbol: any) => symbol.id === id)!).filter((symbol: any) => symbol !== undefined))}`
+    };
+    const category = catalog.categories.find((candidate: any) => candidate.id === page.symbol.category);
+    return {
+        title: page.symbol.name,
+        section: `${page.symbol.kind} · ${category ? category.title : page.symbol.category}`,
+        description: page.symbol.summary,
+        content: renderApiSymbol(locale, page.symbol, catalog)
+    };
+}
+
+function renderApiOutline(page: any, mobile: boolean): string {
+    const items: { id: string; text: string }[] = [];
+    if (page.kind === 'landing') items.push({ id: 'packages', text: 'Packages' });
+    else if (page.kind === 'package') items.push({ id: 'categories', text: 'Categories' });
+    else if (page.kind === 'category') items.push({ id: 'symbols', text: 'Symbols' });
+    else {
+        if (page.symbol.type && !page.symbol.signatures.length) items.push({ id: 'definition', text: 'Definition' });
+        if (page.symbol.signatures.length) items.push({ id: 'signature', text: 'Signature' });
+        if (page.symbol.enumValues?.length) items.push({ id: 'values', text: 'Values' });
+        if (page.symbol.control) items.push({ id: 'control-metadata', text: 'Control metadata' }, { id: 'props', text: 'Props' });
+        if (page.symbol.members.length) items.push({ id: 'members', text: 'Members' });
+        if (page.symbol.remarks) items.push({ id: 'remarks', text: 'Remarks' });
+        if (page.symbol.related.length) items.push({ id: 'related', text: 'Related symbols' });
+        if (page.symbol.source) items.push({ id: 'source', text: 'Source' });
+    }
+    const links = items.map(item => `<li><a href="#${item.id}">${escapeHtml(item.text)}</a></li>`).join('');
+    if (mobile) return `<details class="docs-mobile-outline" data-docs-outline><summary>On this page</summary><nav aria-label="On this page"><ul>${links}</ul></nav></details>`;
+    return `<aside class="docs-outline" data-docs-outline><p>On this page</p><nav aria-label="On this page"><ul>${links}</ul></nav></aside>`;
+}
+
+export function renderApiReferenceDocument(locale: Locale, page: any,
+    catalog: any, documentation: LoadedDocumentation, browserAssets: BrowserAssets): string {
+    const details = apiPageDetails(locale, page, catalog);
+    const canonical = siteOrigin + page.route;
+    const sidebar = renderApiSidebar(page, documentation, catalog);
+    const crumbs = page.kind === 'landing' ? '' : page.kind === 'package'
+        ? '<li><span aria-hidden="true">/</span><span aria-current="page">@sharpts/gui</span></li>'
+        : page.kind === 'category'
+            ? `<li><span aria-hidden="true">/</span><a href="/docs/api/gui">@sharpts/gui</a></li><li><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(page.category.title)}</span></li>`
+            : `<li><span aria-hidden="true">/</span><a href="/docs/api/gui">@sharpts/gui</a></li><li><span aria-hidden="true">/</span><a href="/docs/api/gui/${escapeHtml(page.symbol.category)}">${escapeHtml(catalog.categories.find((category: any) => category.id === page.symbol.category)?.title || page.symbol.category)}</a></li><li><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(page.symbol.name)}</span></li>`;
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="${escapeHtml(details.description)}">
+  <meta name="theme-color" content="#0d1117">
+  <meta property="og:title" content="${escapeHtml(details.title)} · SharpTS API Reference">
+  <meta property="og:description" content="${escapeHtml(details.description)}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
+  <meta property="og:locale" content="en_US">
+  <link rel="canonical" href="${canonical}">
+  <title>${escapeHtml(details.title)} · SharpTS API Reference</title>
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="icon" type="image/png" href="/favicon.png" sizes="any">
+  <link rel="stylesheet" href="/css/${browserAssets.siteStyle}">
+  <link rel="stylesheet" href="/assets/browser/${browserAssets.style}">
+</head>
+<body class="page-docs page-api">
+  ${renderNav(locale, 'docs')}
+  <div class="page docs-page">
+    <div class="docs-mobile-controls"><details class="docs-mobile-menu"><summary>Documentation</summary>${sidebar}</details>${renderApiOutline(page, true)}</div>
+    <div class="docs-layout">
+      <aside class="docs-sidebar">${sidebar}</aside>
+      <main class="docs-main" id="main-content">
+        <nav class="docs-breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Documentation</a></li><li><span aria-hidden="true">/</span><a href="/docs/api">API Reference</a></li>${crumbs}</ol></nav>
+        ${renderApiSearch(catalog)}
+        <article class="docs-article api-article">
+          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(details.section)}</p><h1>${escapeHtml(details.title)}</h1><p>${escapeHtml(details.description)}</p><span class="docs-tested"><code>${escapeHtml(catalog.package.name)}</code> ${escapeHtml(catalog.package.version)} · SharpTS <a href="${catalog.package.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(catalog.package.revision.slice(0, 12))}</a></span></header>
+          ${details.content}
+        </article>
+      </main>
+      ${renderApiOutline(page, false)}
     </div>
     ${renderFooter(locale)}
   </div>

@@ -6,6 +6,7 @@ export interface SitePaths {
     stylesRoot: string;
     staticRoot: string;
     docsRoot: string;
+    apiCatalog: string;
     browserRoot: string;
     outputRoot: string;
 }
@@ -19,6 +20,8 @@ export function loadSitePaths(): SitePaths {
         stylesRoot: path.join(sourceRoot, 'styles'),
         staticRoot: path.join(sourceRoot, 'static'),
         docsRoot: path.join(sourceRoot, 'docs'),
+        apiCatalog: path.resolve(process.env.SHARPTS_WWW_API_CATALOG ||
+            path.join(repoRoot, 'artifacts', 'api-reference', 'catalog.json')),
         browserRoot: path.resolve(process.env.SHARPTS_WWW_BROWSER_OUTPUT ||
             path.join(repoRoot, 'artifacts', 'browser-assets')),
         outputRoot: path.resolve(process.env.SHARPTS_WWW_SITE_OUTPUT ||
