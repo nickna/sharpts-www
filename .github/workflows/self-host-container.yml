@@ -16,6 +16,8 @@ on:
       - "railway.json"
       - "sharpts-source.env"
       - "setup.sh"
+      - "setup.ps1"
+      - "**/*.ps1"
       - "scripts/build-browser.mjs"
       - "scripts/build-self-host.mjs"
       - "scripts/check-browser-budget.mjs"
@@ -29,6 +31,7 @@ on:
       - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
       - "scripts/test-setup.sh"
+      - "scripts/test-setup.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Shared/**"
@@ -53,6 +56,8 @@ on:
       - "railway.json"
       - "sharpts-source.env"
       - "setup.sh"
+      - "setup.ps1"
+      - "**/*.ps1"
       - "scripts/build-browser.mjs"
       - "scripts/build-self-host.mjs"
       - "scripts/check-browser-budget.mjs"
@@ -66,6 +71,7 @@ on:
       - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
       - "scripts/test-setup.sh"
+      - "scripts/test-setup.ps1"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Shared/**"
@@ -125,6 +131,10 @@ jobs:
       - name: Verify the canonical installer
         shell: bash
         run: bash ./scripts/test-setup.sh
+
+      - name: Verify the PowerShell installer
+        shell: pwsh
+        run: ./scripts/test-setup.ps1
 
       - name: Verify Aspire proxy and origin wiring
         shell: pwsh

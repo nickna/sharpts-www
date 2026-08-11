@@ -55,11 +55,18 @@ test('static interactions work without Blazor or external browser assets', async
     await page.keyboard.press('Escape');
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
 
-    const copy = page.locator('.hero__install [data-copy-button]');
+    const heroPowerShellTab = page.locator('#hero-installer-powershell-tab');
+    await heroPowerShellTab.click();
+    await expect(heroPowerShellTab).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#hero-installer-shell-tab')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.locator('#getting-started-installer-powershell-tab')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#getting-started-installer-powershell-panel')).toBeVisible();
+
+    const copy = page.locator('#hero-installer-powershell-panel [data-copy-button]');
     await copy.click();
     await expect(copy).toHaveClass(/copied/);
-    expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toContain(
-        'dotnet tool install'
+    expect(await page.evaluate(() => (window as Window & { __copiedText?: string }).__copiedText)).toBe(
+        'irm https://sharpts.dev/setup.ps1 | iex'
     );
 
     await page.locator('[data-example-tab="2"]').click();

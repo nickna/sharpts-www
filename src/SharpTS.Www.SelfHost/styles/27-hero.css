@@ -139,40 +139,77 @@
 
 .hero__ctas {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     gap: 1rem;
     margin-bottom: 4rem;
     flex-wrap: wrap;
 }
 
-.hero__install {
+.installer-selector {
+    min-width: 0;
+    text-align: left;
+}
+
+.installer-selector__tabs {
+    width: fit-content;
+    max-width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-bottom: 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.installer-selector__tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+}
+
+.installer-selector__panel {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-default);
-    border-radius: var(--border-radius);
+    border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius);
     padding: 0.75rem 1.25rem;
     transition: all var(--transition-default);
 }
 
-.hero__install:hover {
+.installer-selector__panel[hidden] {
+    display: none;
+}
+
+.installer-selector__panel:hover {
     border-color: var(--accent-green);
     box-shadow: 0 0 20px rgba(63, 185, 80, 0.1);
 }
 
-.hero__install-prompt {
+.installer-selector__prompt {
     font-family: var(--font-mono);
     color: var(--text-tertiary);
     font-size: 0.9rem;
     user-select: none;
+    white-space: nowrap;
 }
 
-.hero__install-cmd {
+.installer-selector__command {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
     font-family: var(--font-mono);
     font-size: 0.9rem;
     color: var(--accent-green);
+    white-space: nowrap;
+    scrollbar-width: thin;
+}
+
+.installer-selector--hero {
+    width: min(100%, 570px);
+}
+
+.installer-selector__panel .copy-btn {
+    flex-shrink: 0;
 }
 
 /* Code block in hero */
@@ -279,7 +316,29 @@ html.preload .hero-enter {
 
     .hero__ctas {
         flex-direction: column;
+        align-items: center;
         margin-bottom: 2.5rem;
+        width: 100%;
+    }
+
+    .installer-selector__panel {
+        padding: 0.75rem;
+    }
+
+    .installer-selector__command {
+        font-size: 0.8125rem;
+    }
+
+    .installer-selector__panel .copy-btn span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
     }
 
     .hero__orb--1 { width: 300px; height: 300px; }

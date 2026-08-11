@@ -47,7 +47,9 @@ Operations that require an open managed runtime remain features of the managed d
 
 ## Choose a SharpTS distribution
 
-Use the distribution that matches the deployment rather than the source language:
+Start with the [recommended setup script](/docs/getting-started/installation). It uses the .NET global tool when the .NET 10 SDK is installed and otherwise selects the Native AOT package for the current platform, so most users do not need to choose a package manually.
+
+Choose a method explicitly only when the deployment requires a particular runtime model:
 
 - The **.NET global tool** is the simplest choice when the .NET SDK is already installed.
 - The **managed self-contained package** includes the runtime and preserves the broadest dynamic .NET interop surface.

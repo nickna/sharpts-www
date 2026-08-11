@@ -24,7 +24,7 @@ export const documentationManifest: DocumentationArticle[] = [
         slug: 'getting-started/installation',
         section: 'Getting Started',
         title: 'Installation',
-        description: 'Install SharpTS as a .NET global tool or use a self-contained release.',
+        description: 'Install, upgrade, or remove SharpTS with the recommended setup scripts.',
         order: 1,
         published: true
     },

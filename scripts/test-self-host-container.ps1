@@ -183,6 +183,9 @@ try {
     }
 
     $siteManifest = (Invoke-TestRequest -Method Get -Path '/site-manifest.json').Content | ConvertFrom-Json
+    Assert-True ($siteManifest.installScript -eq 'setup.sh') "Manifest installScript changed unexpectedly."
+    Assert-True ($siteManifest.powerShellInstallScript -eq 'setup.ps1') `
+        "Manifest powerShellInstallScript is missing or incorrect."
     $setupScript = Invoke-TestRequest -Method Get -Path '/setup.sh'
     Assert-True ([int]$setupScript.StatusCode -eq 200) "setup.sh did not return HTTP 200."
     Assert-True ($setupScript.Headers['Content-Type'] -like 'text/x-shellscript*') `
@@ -193,6 +196,19 @@ try {
     $setupHead = Invoke-TestRequest -Method Head -Path '/setup.sh'
     Assert-True ([int]$setupHead.StatusCode -eq 200) "HEAD /setup.sh did not return HTTP 200."
     Assert-True ([string]::IsNullOrEmpty($setupHead.Content)) "HEAD /setup.sh returned a response body."
+    $powerShellSetup = Invoke-TestRequest -Method Get -Path '/setup.ps1'
+    Assert-True ([int]$powerShellSetup.StatusCode -eq 200) "setup.ps1 did not return HTTP 200."
+    Assert-True ($powerShellSetup.Headers['Content-Type'] -like 'text/plain*') `
+        "setup.ps1 has the wrong content type."
+    Assert-True ($powerShellSetup.Headers['Cache-Control'] -like '*must-revalidate*') `
+        "setup.ps1 must require cache revalidation."
+    Assert-True ($powerShellSetup.Content.StartsWith('#requires -Version 5.1')) `
+        "setup.ps1 content is malformed."
+    $powerShellSetupHead = Invoke-TestRequest -Method Head -Path '/setup.ps1'
+    Assert-True ([int]$powerShellSetupHead.StatusCode -eq 200) `
+        "HEAD /setup.ps1 did not return HTTP 200."
+    Assert-True ([string]::IsNullOrEmpty($powerShellSetupHead.Content)) `
+        "HEAD /setup.ps1 returned a response body."
     $siteCss = Invoke-TestRequest -Method Get -Path "/$($siteManifest.stylesheet)"
     Assert-True ([int]$siteCss.StatusCode -eq 200) "Generated CSS bundle did not return HTTP 200."
     Assert-True (-not $siteCss.Content.Contains("::deep")) "Generated CSS still contains ::deep."

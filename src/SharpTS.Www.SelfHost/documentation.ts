@@ -46,11 +46,10 @@ export function renderDocumentationFigure(name: string): string {
             box(555, 180, 'Output', 'console or .NET IL'),
         'A TypeScript source file can run immediately through the interpreter or compile to .NET IL.');
     if (name === 'installation')
-        return diagram('Installation decision', box(35, 210, '.NET 10 SDK installed?', 'Choose your package') +
-            arrow(245, 335, 'yes') + box(335, 180, '.NET global tool', 'dotnet tool install', ' docs-figure__node--accent') +
-            '<path class="docs-figure__branch" d="M 140 127 V 158 H 580 V 127"></path><text x="350" y="178" text-anchor="middle">no — use a self-contained release</text>' +
-            box(580, 150, 'Release asset', 'OS + architecture'),
-        'Use the global tool when the SDK is present; otherwise choose a self-contained asset for the machine.');
+        return diagram('Automatic installation', box(15, 175, 'Setup script', 'Shell or PowerShell') +
+            arrow(190, 230) + box(230, 190, 'Detect environment', '.NET 10 + platform') +
+            arrow(420, 460) + box(460, 280, 'Install SharpTS', '.NET tool or Native AOT', ' docs-figure__node--accent'),
+        'The script uses the .NET global tool when the .NET 10 SDK is present, or a self-contained Native AOT build otherwise.');
     if (name === 'cli-modes')
         return diagram('CLI execution modes', box(12, 160, 'sharpts', 'REPL') + arrow(172, 202) +
             box(202, 160, 'sharpts app.ts', 'interpret') + arrow(362, 392) +

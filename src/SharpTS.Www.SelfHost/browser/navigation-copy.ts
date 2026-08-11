@@ -47,9 +47,11 @@ export function initializeNavigation(doc: Document, win: Window): void {
 }
 
 function findCopyText(button: HTMLButtonElement): string | null {
+    const installerCommand = button.closest('[data-installer-panel]')?.querySelector('code');
+    if (installerCommand) return installerCommand.textContent || '';
     const code = button.closest('.code-block')?.querySelector('code');
     if (code) return code.textContent || '';
-    return button.closest('.hero__install')?.querySelector('.hero__install-cmd')?.textContent || null;
+    return null;
 }
 
 async function writeClipboard(doc: Document, win: Window, value: string): Promise<void> {

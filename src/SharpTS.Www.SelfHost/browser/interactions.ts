@@ -55,6 +55,50 @@ function initializeExamples(doc: Document): void {
     });
 }
 
+function initializeInstallerSelectors(doc: Document): void {
+    const selectors = Array.from(doc.querySelectorAll<HTMLElement>('[data-installer-selector]'));
+    if (!selectors.length) return;
+
+    const select = (kind: string): void => {
+        selectors.forEach(selector => {
+            const tabs = Array.from(selector.querySelectorAll<HTMLButtonElement>('[data-installer-tab]'));
+            const panels = Array.from(selector.querySelectorAll<HTMLElement>('[data-installer-panel]'));
+            tabs.forEach(tab => {
+                const active = tab.dataset.installerTab === kind;
+                tab.classList.toggle('active', active);
+                tab.setAttribute('aria-selected', String(active));
+                tab.tabIndex = active ? 0 : -1;
+            });
+            panels.forEach(panel => {
+                panel.hidden = panel.dataset.installerPanel !== kind;
+            });
+        });
+    };
+
+    selectors.forEach(selector => {
+        const tabs = Array.from(selector.querySelectorAll<HTMLButtonElement>('[data-installer-tab]'));
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => select(tab.dataset.installerTab || 'shell'));
+            tab.addEventListener('keydown', event => {
+                let nextIndex = index;
+                if (event.key === 'ArrowRight')
+                    nextIndex = (index + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft')
+                    nextIndex = (index - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home')
+                    nextIndex = 0;
+                else if (event.key === 'End')
+                    nextIndex = tabs.length - 1;
+                else
+                    return;
+                event.preventDefault();
+                tabs[nextIndex].focus();
+                tabs[nextIndex].click();
+            });
+        });
+    });
+}
+
 function initializeArchitecture(doc: Document): void {
     doc.querySelectorAll<HTMLElement>('[data-architecture]').forEach(diagram => {
         const buttons = Array.from(diagram.querySelectorAll<HTMLButtonElement>('[data-architecture-stage]'));
@@ -196,6 +240,7 @@ export function initializeInteractions(doc: Document = document, win: Window = w
     initialize('navigation', () => initializeNavigation(doc, win));
     initialize('language selectors', () => initializeLanguageSelectors(doc));
     initialize('copy buttons', () => initializeCopyButtons(doc, win));
+    initialize('installer selectors', () => initializeInstallerSelectors(doc));
     initialize('examples', () => initializeExamples(doc));
     initialize('architecture', () => initializeArchitecture(doc));
     initialize('hero particles', () => initializeHeroParticles(doc, win));

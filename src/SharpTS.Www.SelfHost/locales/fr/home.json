@@ -11,7 +11,7 @@
     "title": "Questions fréquentes",
     "subtitle": "Les questions qui viennent en premier — avec des réponses directes.",
     "q1": "En quoi SharpTS diffère-t-il de tsc ?",
-    "a1": "tsc vérifie les types de votre code et émet du JavaScript qu'un moteur comme Node exécute. SharpTS ne produit jamais de JavaScript : il vérifie les types du même TypeScript, puis l'exécute directement ou le compile en assembly .NET. Il n'y a aucun Node dans la chaîne — le seul prérequis est le SDK .NET.",
+    "a1": "tsc vérifie les types de votre code et émet du JavaScript qu'un moteur comme Node exécute. SharpTS ne produit jamais de JavaScript : il vérifie les types du même TypeScript, puis l'exécute directement ou le compile en assembly .NET. Il n'y a aucun Node dans la chaîne. Le script d'installation utilise le SDK .NET lorsqu'il est disponible, sinon il installe une version autonome.",
     "q2": "Pourquoi ne pas intégrer un moteur JavaScript comme Jint ou ClearScript ?",
     "a2": "Ces projets exécutent du JavaScript brut, non typé, dans un hôte .NET — très bien pour de petits scripts embarqués. SharpTS exécute TypeScript lui-même, vérifié avant l'exécution, et ajoute ce qu'un moteur JS embarqué ne peut pas offrir : la compilation anticipée vers IL, l'empaquetage NuGet et l'interop typée dans les deux sens entre TypeScript et C#.",
     "q3": "Puis-je utiliser des paquets npm ?",
@@ -85,7 +85,7 @@
     "terminal": "Terminal",
     "step1": {
       "title": "Installer",
-      "desc": "Installez SharpTS comme outil global .NET"
+      "desc": "Exécutez le script d'installation pour installer la version de SharpTS adaptée à cette machine"
     },
     "step2": {
       "title": "Écrire",

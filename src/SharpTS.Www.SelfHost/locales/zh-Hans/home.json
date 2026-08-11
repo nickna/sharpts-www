@@ -11,7 +11,7 @@
     "title": "常见问题",
     "subtitle": "大家最先问到的问题——直截了当地回答。",
     "q1": "SharpTS 和 tsc 有什么不同？",
-    "a1": "tsc 对代码做类型检查后生成 JavaScript，交给 Node 这样的引擎去运行。SharpTS 从不生成 JavaScript：它对同样的 TypeScript 做类型检查，然后要么直接执行，要么编译为 .NET 程序集。整条链路中没有 Node——唯一的前提是 .NET SDK。",
+    "a1": "tsc 对代码做类型检查后生成 JavaScript，交给 Node 这样的引擎去运行。SharpTS 从不生成 JavaScript：它对同样的 TypeScript 做类型检查，然后要么直接执行，要么编译为 .NET 程序集。整条链路中没有 Node。安装脚本会在 .NET SDK 可用时使用它，否则安装独立运行版本。",
     "q2": "为什么不嵌入 Jint 或 ClearScript 这样的 JavaScript 引擎？",
     "a2": "那些项目在 .NET 宿主中运行的是无类型的纯 JavaScript——非常适合小型嵌入式脚本。SharpTS 运行的是 TypeScript 本身，执行前经过类型检查，并提供嵌入式 JS 引擎做不到的能力：预先编译为 IL、打包 NuGet，以及 TypeScript 与 C# 之间的双向类型化互操作。",
     "q3": "可以使用 npm 包吗？",
@@ -85,7 +85,7 @@
     "terminal": "终端",
     "step1": {
       "title": "安装",
-      "desc": "将 SharpTS 安装为 .NET 全局工具"
+      "desc": "运行安装脚本，为此计算机安装合适的 SharpTS 版本"
     },
     "step2": {
       "title": "编写",

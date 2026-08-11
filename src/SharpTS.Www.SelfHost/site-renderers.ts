@@ -41,6 +41,35 @@ function codeBlock(locale: Locale, title: string, language: string, code: string
 </div>`;
 }
 
+function installerSelector(locale: Locale, id: string, className: string = ''): string {
+    const label = escapeHtml(t(locale, 'home.gettingStarted', 'Step1_Title'));
+    const definitions: Array<{ kind: string; title: string; prompt: string; language: string; command: string }> = [
+        {
+            kind: 'shell',
+            title: 'Shell',
+            prompt: '$',
+            language: 'bash',
+            command: 'curl -fsSL https://sharpts.dev/setup.sh | sh'
+        },
+        {
+            kind: 'powershell',
+            title: 'PowerShell',
+            prompt: 'PS&gt;',
+            language: 'powershell',
+            command: 'irm https://sharpts.dev/setup.ps1 | iex'
+        }
+    ];
+    const tabs: string[] = [];
+    const panels: string[] = [];
+    for (let index = 0; index < definitions.length; index++) {
+        const definition = definitions[index];
+        const active = index === 0;
+        tabs.push(`<button type="button" id="${id}-${definition.kind}-tab" class="tab installer-selector__tab${active ? ' active' : ''}" role="tab" data-installer-tab="${definition.kind}" aria-controls="${id}-${definition.kind}-panel" aria-selected="${active}" tabindex="${active ? '0' : '-1'}">${definition.title}</button>`);
+        panels.push(`<div id="${id}-${definition.kind}-panel" class="installer-selector__panel" role="tabpanel" aria-labelledby="${id}-${definition.kind}-tab" data-installer-panel="${definition.kind}"${active ? '' : ' hidden'}><span class="installer-selector__prompt" aria-hidden="true">${definition.prompt}</span><code class="installer-selector__command language-${definition.language}" tabindex="0">${escapeHtml(definition.command)}</code>${copyButton(locale)}</div>`);
+    }
+    return `<div class="installer-selector${className}" data-installer-selector><div class="tabs installer-selector__tabs" role="tablist" aria-label="${label}">${tabs.join('\n')}</div>${panels.join('\n')}</div>`;
+}
+
 function languageSelector(locale: Locale, page: PageKind): string {
     const languageBundle = 'common.languageSelector';
     const label = escapeHtml(t(locale, languageBundle, 'ChangeLanguage'));
@@ -116,7 +145,7 @@ function renderHero(locale: Locale): string {
     <p class="hero__tagline hero-enter hero-enter--3">${escapeHtml(t(locale, bundle, 'Hero_Tagline'))}</p>
     <p class="hero__subtagline hero-enter hero-enter--4">${escapeHtml(t(locale, bundle, 'Hero_Subtagline'))}</p>
     <div class="hero__ctas hero-enter hero-enter--5">
-      <div class="hero__install"><span class="hero__install-prompt">$</span><code class="hero__install-cmd">dotnet tool install -g SharpTS</code>${copyButton(locale)}</div>
+      ${installerSelector(locale, 'hero-installer', ' installer-selector--hero')}
       <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary btn--glow">${githubIcon}${escapeHtml(t(locale, bundle, 'Hero_StarOnGitHub'))}</a>
     </div>
     <div class="hero__code hero-enter hero-enter--6"><div class="code-block hero__code-block"><div class="code-block__header"><div class="hero__code-dots"><span class="hero__code-dot hero__code-dot--red"></span><span class="hero__code-dot hero__code-dot--yellow"></span><span class="hero__code-dot hero__code-dot--green"></span></div><span>example.ts</span>${copyButton(locale)}</div><div class="code-block__content"><pre><code id="hero-typed-code" class="language-typescript">${escapeHtml(heroCode)}</code></pre></div></div></div>
@@ -271,12 +300,16 @@ const gettingStartedWriteCode = [
 
 function renderGettingStarted(locale: Locale): string {
     const bundle = 'home.gettingStarted';
-    const codes = ['dotnet tool install -g SharpTS', gettingStartedWriteCode, t(locale, bundle, 'RunCode')];
-    const titles = [t(locale, bundle, 'Terminal'), 'hello.ts', t(locale, bundle, 'Terminal')];
-    const languages = ['bash', 'typescript', 'bash'];
+    const codes = [gettingStartedWriteCode, t(locale, bundle, 'RunCode')];
+    const titles = ['hello.ts', t(locale, bundle, 'Terminal')];
+    const languages = ['typescript', 'bash'];
     const steps: string[] = [];
-    for (let index = 1; index <= 3; index++)
-        steps.push(`<div class="gs-step"><div class="gs-step__number">${index}</div><div class="gs-step__content"><h3 class="gs-step__title">${escapeHtml(t(locale, bundle, 'Step' + index + '_Title'))}</h3><p class="gs-step__desc">${escapeHtml(t(locale, bundle, 'Step' + index + '_Desc'))}</p>${codeBlock(locale, titles[index - 1], languages[index - 1], codes[index - 1])}</div></div>`);
+    for (let index = 1; index <= 3; index++) {
+        const content = index === 1
+            ? installerSelector(locale, 'getting-started-installer', ' installer-selector--getting-started')
+            : codeBlock(locale, titles[index - 2], languages[index - 2], codes[index - 2]);
+        steps.push(`<div class="gs-step"><div class="gs-step__number">${index}</div><div class="gs-step__content"><h3 class="gs-step__title">${escapeHtml(t(locale, bundle, 'Step' + index + '_Title'))}</h3><p class="gs-step__desc">${escapeHtml(t(locale, bundle, 'Step' + index + '_Desc'))}</p>${content}</div></div>`);
+    }
     return `<section class="section"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="getting-started reveal">${steps.join('\n')}</div></div></section>`;
 }
 

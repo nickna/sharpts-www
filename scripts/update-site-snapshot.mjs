@@ -17,6 +17,7 @@ const paths = [
     ...manifest.routes.map((route) => route.file),
     manifest.stylesheet,
     manifest.installScript,
+    manifest.powerShellInstallScript,
     'docs/api/search-index.json',
     ...manifest.browserBundle.filter((file) => file.endsWith('.js') || file.endsWith('.css'))
 ];

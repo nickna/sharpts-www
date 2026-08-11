@@ -174,10 +174,13 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     ensureDirectory(paths.outputRoot);
     copyTree(paths.staticRoot, paths.outputRoot);
     const installScript = 'setup.sh';
-    const installScriptSource = path.join(paths.repoRoot, installScript);
-    if (!fs.existsSync(installScriptSource))
-        fail('root setup.sh is missing');
-    fs.copyFileSync(installScriptSource, path.join(paths.outputRoot, installScript));
+    const powerShellInstallScript = 'setup.ps1';
+    for (const script of [installScript, powerShellInstallScript]) {
+        const source = path.join(paths.repoRoot, script);
+        if (!fs.existsSync(source))
+            fail('root ' + script + ' is missing');
+        fs.copyFileSync(source, path.join(paths.outputRoot, script));
+    }
     copyTree(paths.browserRoot, path.join(paths.outputRoot, 'assets', 'browser'));
     const stylesheet = buildStyles(paths.stylesRoot, paths.outputRoot);
     const browserAssets = loadBrowserAssets(paths.browserRoot, stylesheet.file);
@@ -241,6 +244,7 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         stylesheetSources: stylesheet.sources,
         stylesheet: 'css/' + stylesheet.file,
         installScript,
+        powerShellInstallScript,
         messageFiles: cultures.length * catalogNames.length,
         browserBundle: browserAssets.files.map(file => 'assets/browser/' + file),
         browserEntry: {

@@ -10,6 +10,17 @@ describe('static site interactions', () => {
             <button data-nav-toggle aria-expanded="false"></button>
           </header>
           <div class="code-block"><button data-copy-button data-copy-label="Copy" data-copied-label="Copied"><span>Copy</span></button><code>const safe = true;</code></div>
+          <div data-installer-selector id="hero-installer">
+            <button data-installer-tab="shell" aria-selected="true" tabindex="0">Shell</button>
+            <button data-installer-tab="powershell" aria-selected="false" tabindex="-1">PowerShell</button>
+            <div data-installer-panel="shell"><code>curl -fsSL https://sharpts.dev/setup.sh | sh</code><button data-copy-button><span>Copy</span></button></div>
+            <div data-installer-panel="powershell" hidden><code>irm https://sharpts.dev/setup.ps1 | iex</code><button data-copy-button><span>Copy</span></button></div>
+          </div>
+          <div data-installer-selector id="getting-started-installer">
+            <button data-installer-tab="shell" aria-selected="true" tabindex="0">Shell</button>
+            <button data-installer-tab="powershell" aria-selected="false" tabindex="-1">PowerShell</button>
+            <div data-installer-panel="shell"></div><div data-installer-panel="powershell" hidden></div>
+          </div>
           <div data-examples>
             <button class="tab active" data-example-tab="1" aria-selected="true" tabindex="0"></button>
             <button class="tab" data-example-tab="2" aria-selected="false" tabindex="-1"></button>
@@ -54,6 +65,42 @@ describe('static site interactions', () => {
         await vi.advanceTimersByTimeAsync(2000);
         expect(button.textContent).toBe('Copy');
         expect(button.classList.contains('copied')).toBe(false);
+    });
+
+    it('synchronizes installer tabs, supports keyboard navigation, and copies the selected command', async () => {
+        const heroShell = document.querySelector<HTMLButtonElement>('#hero-installer [data-installer-tab="shell"]')!;
+        const heroPowerShell = document.querySelector<HTMLButtonElement>(
+            '#hero-installer [data-installer-tab="powershell"]'
+        )!;
+        const gettingStartedPowerShell = document.querySelector<HTMLButtonElement>(
+            '#getting-started-installer [data-installer-tab="powershell"]'
+        )!;
+
+        heroShell.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+        expect(heroPowerShell).toBe(document.activeElement);
+        expect(heroPowerShell.getAttribute('aria-selected')).toBe('true');
+        expect(heroPowerShell.tabIndex).toBe(0);
+        expect(heroShell.tabIndex).toBe(-1);
+        expect(gettingStartedPowerShell.getAttribute('aria-selected')).toBe('true');
+        expect(
+            document.querySelector<HTMLElement>('#getting-started-installer [data-installer-panel="powershell"]')!
+                .hidden
+        ).toBe(false);
+
+        const copy = document.querySelector<HTMLButtonElement>(
+            '#hero-installer [data-installer-panel="powershell"] [data-copy-button]'
+        )!;
+        copy.click();
+        await Promise.resolve();
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith('irm https://sharpts.dev/setup.ps1 | iex');
+
+        heroPowerShell.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+        expect(heroShell).toBe(document.activeElement);
+        expect(heroShell.getAttribute('aria-selected')).toBe('true');
+        heroShell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        expect(heroPowerShell.getAttribute('aria-selected')).toBe('true');
+        heroPowerShell.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        expect(heroShell.getAttribute('aria-selected')).toBe('true');
     });
 
     it('switches examples and architecture details without replacing content', () => {

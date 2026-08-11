@@ -81,6 +81,79 @@ describe('static site primitives', () => {
         expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(174);
     });
 
+    it('renders synchronized setup-script selectors and installation guidance', () => {
+        const paths = loadSitePaths();
+        const assets: BrowserAssets = {
+            script: 'site.js',
+            style: 'browser.css',
+            conformanceScript: 'conformance.js',
+            docsScript: 'docs.js',
+            siteStyle: 'site.css',
+            files: []
+        };
+        const conformance = {
+            formatVersion: 1,
+            provenance: {
+                sharpTsRevision: '0'.repeat(40),
+                test262Revision: '0'.repeat(40),
+                typeScriptRevision: '0'.repeat(40)
+            },
+            roots: []
+        };
+        const english = loadLocale(paths.localeRoot, cultures[0]);
+        const homeHtml = renderDocument(english, 'home', assets, conformance);
+        expect(homeHtml.match(/curl -fsSL https:\/\/sharpts\.dev\/setup\.sh \| sh/g)).toHaveLength(2);
+        expect(homeHtml.match(/irm https:\/\/sharpts\.dev\/setup\.ps1 \| iex/g)).toHaveLength(2);
+        expect(homeHtml).not.toContain('dotnet tool install -g SharpTS');
+        const installerIds = Array.from(
+            homeHtml.matchAll(/id="((?:hero|getting-started)-installer-(?:shell|powershell)-(?:tab|panel))"/g),
+            (match) => match[1]
+        );
+        expect(installerIds).toHaveLength(8);
+        expect(new Set(installerIds).size).toBe(installerIds.length);
+        for (const selector of ['hero-installer', 'getting-started-installer']) {
+            for (const kind of ['shell', 'powershell']) {
+                expect(homeHtml).toContain(`id="${selector}-${kind}-tab" class="tab installer-selector__tab`);
+                expect(homeHtml).toContain(`aria-controls="${selector}-${kind}-panel"`);
+                expect(homeHtml).toContain(`aria-labelledby="${selector}-${kind}-tab"`);
+            }
+        }
+        expect(homeHtml.match(/data-installer-tab="shell"[^>]*aria-selected="true"[^>]*tabindex="0"/g)).toHaveLength(2);
+        expect(
+            homeHtml.match(/data-installer-tab="powershell"[^>]*aria-selected="false"[^>]*tabindex="-1"/g)
+        ).toHaveLength(2);
+        expect(homeHtml.match(/data-installer-panel="powershell" hidden/g)).toHaveLength(2);
+
+        const localizedDescriptions = [
+            'Run the setup script to install the best SharpTS build for this machine',
+            '运行安装脚本，为此计算机安装合适的 SharpTS 版本',
+            "Exécutez le script d'installation pour installer la version de SharpTS adaptée à cette machine",
+            'Ejecuta el script de instalación para instalar la versión de SharpTS adecuada para este equipo',
+            'Führen Sie das Setup-Skript aus, um die passende SharpTS-Variante für diesen Rechner zu installieren'
+        ];
+        cultures.forEach((culture, index) => {
+            const locale = loadLocale(paths.localeRoot, culture);
+            const html = renderDocument(locale, 'home', assets, conformance);
+            expect(html).toContain(escapeHtml(localizedDescriptions[index]));
+            expect(html).toContain('curl -fsSL https://sharpts.dev/setup.sh | sh');
+            expect(html).toContain('irm https://sharpts.dev/setup.ps1 | iex');
+        });
+
+        const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
+        const installation = documentation.published.find(
+            (candidate) => candidate.metadata.slug === 'getting-started/installation'
+        )!;
+        const installationHtml = renderDocumentationDocument(english, installation, documentation, assets);
+        expect(installationHtml).toContain('curl -fsSL https://sharpts.dev/setup.sh | sh');
+        expect(installationHtml).toContain('irm https://sharpts.dev/setup.ps1 | iex');
+        expect(installationHtml).toContain('dotnet tool install --global SharpTS');
+
+        const desktopGui = documentation.published.find(
+            (candidate) => candidate.metadata.slug === 'getting-started/desktop-gui'
+        )!;
+        expect(desktopGui.rendered.html).toContain('dotnet tool install --global SharpTS --version 1.0.9');
+    });
+
     it('escapes text by default', () => {
         expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
     });

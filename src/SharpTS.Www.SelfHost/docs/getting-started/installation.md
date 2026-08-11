@@ -1,82 +1,118 @@
-Install SharpTS as a .NET global tool when the .NET 10 SDK is available, or use a self-contained release on machines without .NET.
+Install SharpTS with one setup command. The installer detects the platform and chooses the recommended distribution automatically.
 
 :::figure installation
 
-## Prerequisites
+## Recommended installation
 
-The global-tool installation requires the **.NET 10 SDK or later**. Check the installed SDK with:
-
-```bash
-dotnet --version
-```
-
-Self-contained release binaries include what SharpTS needs to run and do **not** require an installed .NET runtime.
-
-## macOS
-
-Install the preferred global tool and verify it:
+Use Shell on Linux, WSL, or Apple Silicon macOS:
 
 ```bash
-dotnet tool install --global SharpTS
-sharpts --version
+curl -fsSL https://sharpts.dev/setup.sh | sh
 ```
 
-Global tools are normally placed in `$HOME/.dotnet/tools`. If `sharpts` is not found after installation, add that directory to your shell's `PATH`, then open a new terminal.
-
-## Linux
-
-Install the preferred global tool and verify it:
-
-```bash
-dotnet tool install --global SharpTS
-sharpts --version
-```
-
-Global tools are normally placed in `$HOME/.dotnet/tools`. If the command is unavailable, ensure that directory is on `PATH` and restart the shell session.
-
-## Windows
-
-Run the preferred commands in PowerShell or Windows Terminal:
+Use PowerShell on Windows:
 
 ```powershell
-dotnet tool install --global SharpTS
+irm https://sharpts.dev/setup.ps1 | iex
+```
+
+Both scripts make the same automatic choice:
+
+- With the **.NET 10 SDK or later**, install SharpTS as a .NET global tool.
+- Without that SDK, install the self-contained **Native AOT** build for the detected operating system and CPU architecture.
+
+The self-contained build does not require a separate .NET installation. Open a new terminal if the installer changes `PATH`, then verify the command:
+
+```bash
 sharpts --version
 ```
 
-Global tools are normally placed in `%USERPROFILE%\.dotnet\tools`. If Windows cannot find `sharpts`, add that directory to the user `PATH` and open a new terminal.
+## Upgrade or remove SharpTS
 
-## Install without .NET
-
-Open the [SharpTS GitHub Releases page](https://github.com/nickna/SharpTS/releases) and choose the asset that matches your operating system and architecture. Release names can change, so use the labels on the latest release rather than copying an old filename.
-
-- **Managed self-contained** packages bundle the .NET runtime and favor broad compatibility.
-- **Native AOT** packages are ahead-of-time native executables designed for fast startup and deployment without a runtime.
-
-Confirm both the operating system and architecture, such as x64 or Arm64, before downloading. Extract the archive, put the executable in a directory on `PATH`, and run `sharpts --version`.
-
-## Update or remove the global tool
-
-Update to the current package:
+Upgrade the installation managed by the setup script:
 
 ```bash
-dotnet tool update --global SharpTS
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- upgrade
 ```
 
-Remove the global tool:
+```powershell
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) upgrade
+```
+
+Remove it with the corresponding action:
 
 ```bash
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- remove
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) remove
+```
+
+The scripts detect an existing compatible SharpTS installation and keep its installation method during upgrades.
+
+## Select a version or prerelease
+
+Install an exact stable version:
+
+```bash
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- install --version 1.2.3
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) install -Version 1.2.3
+```
+
+List prerelease versions, or install a selected prerelease:
+
+```bash
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- list --prerelease
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- install --version 1.3.0-rc.1 --prerelease
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) list -Prerelease
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) install -Version 1.3.0-rc.1 -Prerelease
+```
+
+## Select the managed self-contained build
+
+The default Native AOT fallback favors fast startup and operation without a runtime. Choose the managed self-contained build when you need the broadest dynamic .NET interop surface, including runtime loading of arbitrary third-party assemblies:
+
+```bash
+curl -fsSL https://sharpts.dev/setup.sh | sh -s -- install --method managed
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://sharpts.dev/setup.ps1))) install -Method managed
+```
+
+## Advanced and manual installation
+
+If you deliberately manage .NET tools yourself and already have the .NET 10 SDK or later, use the direct global-tool commands:
+
+```bash
+dotnet tool install --global SharpTS
+dotnet tool update --global SharpTS
 dotnet tool uninstall --global SharpTS
 ```
+
+For a fully manual installation, open the [SharpTS GitHub Releases page](https://github.com/nickna/SharpTS/releases) and choose the asset matching both the operating system and architecture, such as x64 or Arm64.
+
+- **Managed self-contained** packages bundle the .NET runtime and preserve the broadest dynamic interop support.
+- **Native AOT** packages are native executables designed for fast startup and deployment without an installed runtime.
+
+Extract the archive, put the executable in a directory on `PATH`, and run `sharpts --version`. Release asset names can change, so follow the labels on the selected release instead of copying an old filename.
 
 ## Troubleshooting
 
 ### `dotnet` is missing
 
-Install the .NET 10 SDK or choose a self-contained SharpTS release. Installing only an older runtime is not enough for the global-tool workflow.
+Run the recommended setup script without forcing a method. It installs the self-contained Native AOT build when the .NET 10 SDK is unavailable. The explicit `dotnet` method still requires that SDK.
 
 ### `sharpts` is missing
 
-Verify the global tool directory is on `PATH`, restart the terminal, and run `dotnet tool list --global` to confirm the installation.
+Follow any `PATH` instructions printed by the installer, then open a new terminal. For a manually installed global tool, verify the global tool directory is on `PATH` and run `dotnet tool list --global`.
 
 ### The binary reports an architecture error
 
@@ -84,4 +120,4 @@ Download the release asset matching both the operating system and CPU architectu
 
 ### The installed version is stale
 
-Run the global update command above. For a self-contained install, download and replace it with the appropriate asset from the latest GitHub release.
+Run the script-based upgrade command above. It upgrades both global-tool and self-contained installations without requiring you to choose a new package manually.
