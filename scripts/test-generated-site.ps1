@@ -204,9 +204,17 @@ Assert-True ($snapshot.version -eq 2) "Unsupported generated-site snapshot versi
 $expectedSnapshotPaths = @(
     @($manifest.routes | ForEach-Object { $_.file }) +
     @($manifest.stylesheet) +
+    @($manifest.installScript) +
     @($manifest.browserBundle | Where-Object { $_ -match '\.(js|css)$' }) +
     @('docs/api/search-index.json')
 ) | Sort-Object -Unique
+Assert-True ($manifest.installScript -eq 'setup.sh') "Generated manifest has the wrong install script path."
+$generatedSetup = Join-Path $resolvedRoot $manifest.installScript
+$sourceSetup = Join-Path $repoRoot 'setup.sh'
+Assert-True (Test-Path -LiteralPath $generatedSetup -PathType Leaf) "Generated setup.sh is missing."
+Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $generatedSetup).Hash -eq `
+    (Get-FileHash -Algorithm SHA256 -LiteralPath $sourceSetup).Hash) `
+    "Generated setup.sh does not match the repository-root source."
 Assert-True (@($snapshot.files).Count -eq @($expectedSnapshotPaths).Count) `
     "Generated snapshot count does not match routes and published assets."
 foreach ($entry in $snapshot.files) {

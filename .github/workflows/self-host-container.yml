@@ -15,6 +15,7 @@ on:
       - "playwright.config.ts"
       - "railway.json"
       - "sharpts-source.env"
+      - "setup.sh"
       - "scripts/build-browser.mjs"
       - "scripts/build-self-host.mjs"
       - "scripts/check-browser-budget.mjs"
@@ -27,6 +28,7 @@ on:
       - "scripts/test-browser-bundle.mjs"
       - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
+      - "scripts/test-setup.sh"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Shared/**"
@@ -50,6 +52,7 @@ on:
       - "playwright.config.ts"
       - "railway.json"
       - "sharpts-source.env"
+      - "setup.sh"
       - "scripts/build-browser.mjs"
       - "scripts/build-self-host.mjs"
       - "scripts/check-browser-budget.mjs"
@@ -62,6 +65,7 @@ on:
       - "scripts/test-browser-bundle.mjs"
       - "scripts/test-generated-site.ps1"
       - "scripts/test-self-host-container.ps1"
+      - "scripts/test-setup.sh"
       - "src/SharpTS.Www.AppHost/**"
       - "src/SharpTS.Www.SelfHost/**"
       - "src/SharpTS.Www.Shared/**"
@@ -117,6 +121,10 @@ jobs:
       - name: Verify generated localized pages and CSS
         shell: pwsh
         run: ./scripts/test-generated-site.ps1
+
+      - name: Verify the canonical installer
+        shell: bash
+        run: bash ./scripts/test-setup.sh
 
       - name: Verify Aspire proxy and origin wiring
         shell: pwsh

@@ -198,7 +198,7 @@ try {
         }),
         'SharpTS static-site generation',
         ['Generated localized static site'],
-        [path.join(publicRoot, 'site-manifest.json')]
+        [path.join(publicRoot, 'site-manifest.json'), path.join(publicRoot, 'setup.sh')]
     );
 
     const showcaseManifestPath = path.join(publicRoot, 'showcase-manifest.json');

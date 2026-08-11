@@ -183,6 +183,16 @@ try {
     }
 
     $siteManifest = (Invoke-TestRequest -Method Get -Path '/site-manifest.json').Content | ConvertFrom-Json
+    $setupScript = Invoke-TestRequest -Method Get -Path '/setup.sh'
+    Assert-True ([int]$setupScript.StatusCode -eq 200) "setup.sh did not return HTTP 200."
+    Assert-True ($setupScript.Headers['Content-Type'] -like 'text/x-shellscript*') `
+        "setup.sh has the wrong content type."
+    Assert-True ($setupScript.Headers['Cache-Control'] -like '*must-revalidate*') `
+        "setup.sh must require cache revalidation."
+    Assert-True ($setupScript.Content.StartsWith('#!/bin/sh')) "setup.sh content is malformed."
+    $setupHead = Invoke-TestRequest -Method Head -Path '/setup.sh'
+    Assert-True ([int]$setupHead.StatusCode -eq 200) "HEAD /setup.sh did not return HTTP 200."
+    Assert-True ([string]::IsNullOrEmpty($setupHead.Content)) "HEAD /setup.sh returned a response body."
     $siteCss = Invoke-TestRequest -Method Get -Path "/$($siteManifest.stylesheet)"
     Assert-True ([int]$siteCss.StatusCode -eq 200) "Generated CSS bundle did not return HTTP 200."
     Assert-True (-not $siteCss.Content.Contains("::deep")) "Generated CSS still contains ::deep."

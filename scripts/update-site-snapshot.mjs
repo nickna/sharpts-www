@@ -16,6 +16,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(publicRoot, 'site-manifest
 const paths = [
     ...manifest.routes.map((route) => route.file),
     manifest.stylesheet,
+    manifest.installScript,
     'docs/api/search-index.json',
     ...manifest.browserBundle.filter((file) => file.endsWith('.js') || file.endsWith('.css'))
 ];

@@ -110,6 +110,7 @@ const mimeTypes: { [extension: string]: string } = {
     '.js': 'text/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8',
     '.png': 'image/png',
+    '.sh': 'text/x-shellscript; charset=utf-8',
     '.svg': 'image/svg+xml',
     '.txt': 'text/plain; charset=utf-8',
     '.webp': 'image/webp',
@@ -208,7 +209,7 @@ function serveStatic(requestValue: unknown, response: HttpResponse, requestId: s
             response.setHeader('Vary', 'Accept-Encoding');
         }
         const fingerprinted = isFingerprintedFile(filePath);
-        const requiresRevalidation = extension === '.html' ||
+        const requiresRevalidation = extension === '.html' || extension === '.sh' ||
             ((!fingerprinted) && (extension === '.css' || extension === '.js'));
         response.setHeader('Cache-Control', fingerprinted
             ? 'public, max-age=31536000, immutable'
