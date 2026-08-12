@@ -94,5 +94,18 @@ Generated output is protected by reviewed SHA-256 hashes. After inspecting an
 intentional site or asset change, run `npm run snapshot:update`; the command
 requires the explicit acceptance flag embedded in the npm script.
 
+## Contribute documentation
+
+Editorial documentation lives under `src/SharpTS.Www.SelfHost/docs/`. Edit the
+Markdown source that corresponds to the published `/docs/...` route and keep its
+metadata in `docs-manifest.ts` accurate. The `/docs` overview is sourced from
+`docs/index.md`.
+
+The API reference under `/docs/api` is generated from the public declarations in
+the pinned SharpTS source. Fix API documentation at its upstream source and then
+regenerate the catalog with `npm run generate:api`. Do not edit generated HTML,
+the API catalog, or anything under `artifacts/` directly; those files are build
+output and will be replaced.
+
 Before opening a pull request, keep the scope focused, explain externally visible
 behavior, and call out security-sensitive changes explicitly.

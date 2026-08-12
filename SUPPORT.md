@@ -1,8 +1,9 @@
 # Support
 
-Use [GitHub Discussions](https://github.com/nickna/sharpts-www/discussions) for
-setup questions, design discussion, and help using or deploying the website. Use
-an issue when you can describe a reproducible defect or a focused enhancement.
+Use a [website issue](https://github.com/nickna/sharpts-www/issues/new/choose)
+when you can describe a focused documentation or website defect or enhancement.
+Include a small reproduction when the report concerns the playground, build, or
+deployment tooling.
 
 Questions about the SharpTS language, compiler, or runtime belong in the
 [SharpTS repository](https://github.com/nickna/SharpTS). Security reports must

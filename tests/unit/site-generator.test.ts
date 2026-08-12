@@ -25,6 +25,12 @@ import {
     loadApiReferenceCatalog
 } from '../../src/SharpTS.Www.SelfHost/api-reference';
 import type { BrowserAssets } from '../../src/SharpTS.Www.SelfHost/site-model';
+import {
+    documentationIssueUrl,
+    editorialDocumentationEditUrl,
+    editorialDocumentationSourceUrl,
+    renderDocumentationFeedback
+} from '../../src/SharpTS.Www.SelfHost/site-components';
 import path from 'node:path';
 
 describe('static site primitives', () => {
@@ -79,6 +85,85 @@ describe('static site primitives', () => {
         expect(apiHtml).toContain('Default:');
         expect(apiHtml).toContain(apiCatalog.package.revision);
         expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(174);
+    });
+
+    it('renders page-aware documentation contribution and issue links', () => {
+        const paths = loadSitePaths();
+        const assets: BrowserAssets = {
+            script: 'site.js',
+            style: 'browser.css',
+            conformanceScript: 'conformance.js',
+            docsScript: 'docs.js',
+            siteStyle: 'site.css',
+            files: []
+        };
+        const english = loadLocale(paths.localeRoot, cultures[0]);
+        const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
+        const index = documentation.published.find((article) => article.metadata.slug === 'index')!;
+        const sourceUrl = 'https://github.com/nickna/sharpts-www/blob/main/src/SharpTS.Www.SelfHost/docs/index.md';
+        const editUrl = 'https://github.com/nickna/sharpts-www/edit/main/src/SharpTS.Www.SelfHost/docs/index.md';
+        const indexHtml = renderDocumentationDocument(english, index, documentation, assets);
+        const indexIssueUrl =
+            'https://github.com/nickna/sharpts-www/issues/new?template=documentation.yml' +
+            '&amp;title=%5BDocs%5D%3A%20Start%20using%20SharpTS' +
+            '&amp;page=https%3A%2F%2Fsharpts.dev%2Fdocs' +
+            '&amp;source=https%3A%2F%2Fgithub.com%2Fnickna%2Fsharpts-www%2Fblob%2Fmain%2Fsrc%2FSharpTS.Www.SelfHost%2Fdocs%2Findex.md' +
+            `&amp;version=${encodeURIComponent(documentation.testedVersion)}`;
+
+        expect(editorialDocumentationSourceUrl('index')).toBe(sourceUrl);
+        expect(editorialDocumentationEditUrl('index')).toBe(editUrl);
+        expect(indexHtml).toContain('data-docs-feedback');
+        expect(indexHtml).toContain(`href="${editUrl}" target="_blank" rel="noopener">Edit this page</a>`);
+        expect(indexHtml).toContain(`href="${indexIssueUrl}" target="_blank" rel="noopener">Report a docs issue</a>`);
+        expect(indexHtml.indexOf('data-docs-feedback')).toBeGreaterThan(indexHtml.indexOf('</article>'));
+        expect(indexHtml.indexOf('data-docs-feedback')).toBeLessThan(indexHtml.indexOf('class="docs-pagination"'));
+
+        const catalog = loadApiReferenceCatalog(paths.apiCatalog);
+        const pages = apiReferencePages(catalog);
+        const buttonPage = pages.find((page) => page.kind === 'symbol' && page.symbol.name === 'Button')!;
+        const buttonSource = buttonPage.symbol.source!.url;
+        const buttonHtml = renderApiReferenceDocument(english, buttonPage, catalog, documentation, assets);
+        const buttonIssueUrl =
+            'https://github.com/nickna/sharpts-www/issues/new?template=documentation.yml' +
+            '&amp;title=%5BDocs%5D%3A%20Button' +
+            '&amp;page=https%3A%2F%2Fsharpts.dev%2Fdocs%2Fapi%2Fgui%2Fbutton' +
+            `&amp;source=${encodeURIComponent(buttonSource)}` +
+            `&amp;version=${catalog.package.revision}`;
+        expect(buttonHtml).toContain(`href="${buttonSource}" target="_blank" rel="noopener">View source</a>`);
+        expect(buttonHtml).toContain(
+            `href="${buttonIssueUrl}" target="_blank" rel="noopener">Report an API docs issue</a>`
+        );
+
+        const packagePage = pages.find((page) => page.kind === 'package')!;
+        const packageHtml = renderApiReferenceDocument(english, packagePage, catalog, documentation, assets);
+        expect(packageHtml).toContain(
+            `href="${catalog.package.sourceUrl}" target="_blank" rel="noopener">View source</a>`
+        );
+    });
+
+    it('URL-encodes issue prefills and HTML-escapes the completed href', () => {
+        const issueUrl = documentationIssueUrl(
+            'A & "B"',
+            'https://sharpts.dev/docs/example?mode=a&b=c',
+            'https://github.com/nickna/example/blob/main/a&b.md',
+            '1.0 & beta'
+        );
+        expect(issueUrl).toBe(
+            'https://github.com/nickna/sharpts-www/issues/new?template=documentation.yml' +
+                '&title=%5BDocs%5D%3A%20A%20%26%20%22B%22' +
+                '&page=https%3A%2F%2Fsharpts.dev%2Fdocs%2Fexample%3Fmode%3Da%26b%3Dc' +
+                '&source=https%3A%2F%2Fgithub.com%2Fnickna%2Fexample%2Fblob%2Fmain%2Fa%26b.md' +
+                '&version=1.0%20%26%20beta'
+        );
+        const html = renderDocumentationFeedback({
+            kind: 'api',
+            title: 'A & "B"',
+            pageUrl: 'https://sharpts.dev/docs/example?mode=a&b=c',
+            sourceUrl: 'https://github.com/nickna/example/blob/main/a&b.md',
+            version: '1.0 & beta'
+        });
+        expect(html).toContain(escapeHtml(issueUrl));
+        expect(html).not.toContain('&title=');
     });
 
     it('renders synchronized setup-script selectors and installation guidance', () => {

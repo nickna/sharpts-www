@@ -332,6 +332,18 @@ test('documentation navigation, outlines, copy controls, and pagination work on 
     await expect(page.locator('.docs-pagination__previous')).toContainText('Installation');
     await expect(page.locator('.docs-pagination__next')).toContainText('Build a desktop GUI application');
 
+    const feedback = page.locator('[data-docs-feedback]');
+    await expect(feedback).toBeVisible();
+    await expect(feedback.locator('a')).toHaveText(['Edit this page', 'Report a docs issue']);
+    for (const link of await feedback.locator('a').all()) {
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', 'noopener');
+    }
+    const edit = feedback.getByRole('link', { name: 'Edit this page' });
+    await edit.focus();
+    await expect(edit).toBeFocused();
+    await expect(edit).toHaveCSS('outline-style', 'solid');
+
     const copy = page.locator('.docs-code [data-copy-button]').first();
     await copy.focus();
     await expect(copy).toBeFocused();
@@ -397,6 +409,16 @@ test('API reference renders structured symbols and keyboard-searches the generat
         'href',
         /github\.com\/nickna\/SharpTS\/tree\/[0-9a-f]{40}/
     );
+    const feedback = page.locator('[data-docs-feedback]');
+    await expect(feedback.locator('a')).toHaveText(['View source', 'Report an API docs issue']);
+    await expect(feedback.getByRole('link', { name: 'View source' })).toHaveAttribute(
+        'href',
+        /github\.com\/nickna\/SharpTS\/blob\/[0-9a-f]{40}\/.+#L\d+/
+    );
+    for (const link of await feedback.locator('a').all()) {
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', 'noopener');
+    }
 
     const copy = page.locator('.api-signature [data-copy-button]').first();
     await copy.click();
@@ -442,6 +464,9 @@ test('documentation mobile menus are keyboard accessible and fit the viewport', 
     await outline.locator('summary').click();
     await expect(outline).toHaveAttribute('open', '');
     await expect(outline.locator('a').first()).toHaveText('Discover the program from its entry point');
+    const feedback = page.locator('[data-docs-feedback]');
+    await expect(feedback.locator('a')).toHaveText(['Edit this page', 'Report a docs issue']);
+    await expect(feedback.locator('.docs-feedback__actions')).toHaveCSS('flex-wrap', 'wrap');
     expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
     ).toBe(true);

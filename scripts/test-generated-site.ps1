@@ -92,6 +92,14 @@ foreach ($route in $manifest.routes) {
         Assert-True ($route.culture -eq "en") "Documentation routes must be English-first."
         Assert-True ($html.Contains('data-docs-sidebar')) "Documentation sidebar is missing."
         Assert-True ($html.Contains('data-docs-outline')) "Documentation outline is missing."
+        Assert-True (([regex]::Matches($html, 'data-docs-feedback')).Count -eq 1) `
+            "Documentation feedback is missing or duplicated on $($route.route)."
+        Assert-True ($html.Contains('>Edit this page</a>')) `
+            "Editorial contribution action is missing from $($route.route)."
+        Assert-True ($html.Contains('>Report a docs issue</a>')) `
+            "Editorial feedback action is missing from $($route.route)."
+        Assert-True (-not $html.Contains('>Report an API docs issue</a>')) `
+            "API feedback action leaked into $($route.route)."
         Assert-True ($html.Contains('Tested with SharpTS')) "Tested version is missing."
         Assert-True ($html.Contains("src=`"/$($manifest.browserEntry.docsScript)`"")) `
             "Documentation route $($route.route) is missing its lightweight bundle."
@@ -102,6 +110,14 @@ foreach ($route in $manifest.routes) {
         Assert-True ($route.culture -eq "en") "API reference routes must be English-first."
         Assert-True ($html.Contains('data-docs-sidebar')) "API reference sidebar is missing."
         Assert-True ($html.Contains('data-docs-outline')) "API reference outline is missing."
+        Assert-True (([regex]::Matches($html, 'data-docs-feedback')).Count -eq 1) `
+            "API documentation feedback is missing or duplicated on $($route.route)."
+        Assert-True ($html.Contains('>View source</a>')) `
+            "API source action is missing from $($route.route)."
+        Assert-True ($html.Contains('>Report an API docs issue</a>')) `
+            "API feedback action is missing from $($route.route)."
+        Assert-True (-not $html.Contains('>Edit this page</a>')) `
+            "Editorial contribution action leaked into $($route.route)."
         Assert-True ($html.Contains('data-api-search')) "API search is missing."
         Assert-True ($html.Contains('@sharpts/gui')) "API package identity is missing."
         Assert-True ($html.Contains("src=`"/$($manifest.browserEntry.docsScript)`"")) `
@@ -139,7 +155,7 @@ foreach ($route in $manifest.routes) {
 $cssPath = Join-Path $resolvedRoot $manifest.stylesheet
 $css = Get-Content -Raw -LiteralPath $cssPath
 Assert-True (-not $css.Contains('::deep')) "CSS bundle contains a Blazor ::deep selector."
-foreach ($selector in @('.hero', '.features-grid', '.pipeline', '.playground', '.lang-selector', '.conformance', '.docs-layout', '.api-search', '.api-table', '.footer')) {
+foreach ($selector in @('.hero', '.features-grid', '.pipeline', '.playground', '.lang-selector', '.conformance', '.docs-layout', '.docs-feedback', '.api-search', '.api-table', '.footer')) {
     Assert-True ($css.Contains($selector)) "CSS bundle is missing $selector."
 }
 

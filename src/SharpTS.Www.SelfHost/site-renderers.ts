@@ -9,7 +9,12 @@ import { showcaseExamples } from './showcase-data';
 import { presets } from './presets';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 import { documentationSections } from './docs-manifest';
-import { renderCopyButton } from './site-components';
+import {
+    editorialDocumentationEditUrl,
+    editorialDocumentationSourceUrl,
+    renderCopyButton,
+    renderDocumentationFeedback
+} from './site-components';
 import { composeCode, heroCodeBody, playgroundCodeBody } from './code-samples';
 
 function messageKey(key: string): string {
@@ -124,7 +129,7 @@ function renderFooter(locale: Locale): string {
       <div class="footer__brand"><a href="${home}" class="footer__logo-link"><span class="footer__logo-name">SharpTS</span></a><p class="footer__tagline">${escapeHtml(t(locale, bundle, 'Tagline'))}</p></div>
       <div class="footer__links">
         <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Resources'))}</h4><a href="/docs">${escapeHtml(t(locale, bundle, 'Link_Documentation'))}</a><a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener">GitHub</a><a href="https://www.nuget.org/packages/SharpTS" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_NuGet'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/STATUS.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Status'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/ARCHITECTURE.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Architecture'))}</a></div>
-        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Community'))}</h4><a href="https://github.com/nickna/SharpTS/issues" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_ReportIssue'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Contributing'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/LICENSE" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_License'))}</a></div>
+        <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_Community'))}</h4><a href="https://github.com/nickna/sharpts-www/issues/new/choose" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_ReportWebsiteIssue'))}</a><a href="https://github.com/nickna/sharpts-www/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_Contributing'))}</a><a href="https://github.com/nickna/SharpTS/blob/main/LICENSE" target="_blank" rel="noopener">${escapeHtml(t(locale, bundle, 'Link_License'))}</a></div>
         <div class="footer__col"><h4 class="footer__col-title">${escapeHtml(t(locale, bundle, 'Col_OnThisPage'))}</h4><a href="${home}#features">${escapeHtml(t(locale, bundle, 'Link_Features'))}</a><a href="${home}#examples">${escapeHtml(t(locale, bundle, 'Link_CodeExamples'))}</a><a href="${home}#use-cases">${escapeHtml(t(locale, bundle, 'Link_UseCases'))}</a><a href="${home}#playground">${escapeHtml(t(locale, bundle, 'Link_Playground'))}</a><a href="${home}#faq">${escapeHtml(t(locale, bundle, 'Link_Faq'))}</a><a href="/docs">${escapeHtml(t(locale, bundle, 'Link_Documentation'))}</a></div>
       </div>
     </div>
@@ -635,6 +640,15 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
     documentation: LoadedDocumentation, browserAssets: BrowserAssets): string {
     const route = docsRoutePath(article.metadata.slug);
     const canonical = siteOrigin + route;
+    const sourceUrl = editorialDocumentationSourceUrl(article.metadata.slug);
+    const feedback = renderDocumentationFeedback({
+        kind: 'editorial',
+        title: article.metadata.title,
+        pageUrl: canonical,
+        sourceUrl,
+        version: documentation.testedVersion,
+        editUrl: editorialDocumentationEditUrl(article.metadata.slug)
+    });
     const sidebar = renderDocsSidebar(article, documentation);
     const crumb = article.metadata.slug === 'index' ? '' : `<li><span aria-hidden="true">/</span><span>${escapeHtml(article.metadata.section)}</span></li><li><span aria-hidden="true">/</span><span aria-current="page">${escapeHtml(article.metadata.title)}</span></li>`;
     return `<!doctype html>
@@ -670,6 +684,7 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
           <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(article.metadata.section)}</p><h1>${escapeHtml(article.metadata.title)}</h1><p>${escapeHtml(article.metadata.description)}</p><span class="docs-tested">Tested with SharpTS ${escapeHtml(documentation.testedVersion)}</span></header>
           ${article.rendered.html}
         </article>
+        ${feedback}
         ${renderDocsPagination(article, documentation)}
       </main>
       ${renderDocsOutline(article, false)}
@@ -852,6 +867,16 @@ export function renderApiReferenceDocument(locale: Locale, page: any,
     catalog: any, documentation: LoadedDocumentation, browserAssets: BrowserAssets): string {
     const details = apiPageDetails(locale, page, catalog);
     const canonical = siteOrigin + page.route;
+    const sourceUrl = page.kind === 'symbol' && page.symbol.source
+        ? page.symbol.source.url
+        : catalog.package.sourceUrl;
+    const feedback = renderDocumentationFeedback({
+        kind: 'api',
+        title: details.title,
+        pageUrl: canonical,
+        sourceUrl,
+        version: catalog.package.revision
+    });
     const sidebar = renderApiSidebar(page, documentation, catalog);
     const crumbs = page.kind === 'landing' ? '' : page.kind === 'package'
         ? '<li><span aria-hidden="true">/</span><span aria-current="page">@sharpts/gui</span></li>'
@@ -891,6 +916,7 @@ export function renderApiReferenceDocument(locale: Locale, page: any,
           <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(details.section)}</p><h1>${escapeHtml(details.title)}</h1><p>${escapeHtml(details.description)}</p><span class="docs-tested"><code>${escapeHtml(catalog.package.name)}</code> ${escapeHtml(catalog.package.version)} · SharpTS <a href="${catalog.package.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(catalog.package.revision.slice(0, 12))}</a></span></header>
           ${details.content}
         </article>
+        ${feedback}
       </main>
       ${renderApiOutline(page, false)}
     </div>

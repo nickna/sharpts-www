@@ -10,7 +10,7 @@
       "nuGet": "NuGet 包",
       "status": "实现状态",
       "architecture": "架构指南",
-      "reportIssue": "报告问题",
+      "reportWebsiteIssue": "报告网站问题",
       "contributing": "参与贡献",
       "license": "MIT 许可证",
       "features": "功能",

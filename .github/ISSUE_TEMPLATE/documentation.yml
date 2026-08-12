@@ -1,0 +1,58 @@
+name: Documentation feedback
+description: Report incorrect, unclear, missing, or broken website documentation.
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for the sharpts.dev guides and generated API reference. Report security vulnerabilities privately through the repository's Security tab. SharpTS language, compiler, interpreter, and runtime defects belong in the [SharpTS repository](https://github.com/nickna/SharpTS/issues).
+  - type: input
+    id: page
+    attributes:
+      label: Documentation page
+      description: Provide the page URL or documentation area where you found the problem.
+      placeholder: https://sharpts.dev/docs/...
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source file or symbol
+      description: Link to the editorial source file or generated API symbol source when available.
+  - type: input
+    id: version
+    attributes:
+      label: Displayed version or revision
+      description: Provide the SharpTS version or pinned revision shown on the page.
+  - type: dropdown
+    id: feedback_type
+    attributes:
+      label: Feedback type
+      options:
+        - Incorrect or outdated
+        - Unclear or confusing
+        - Missing information or example
+        - Broken link or sample
+        - New documentation
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What needs to change?
+      description: Explain the problem and its impact. Include enough context for someone to verify it.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested correction
+      description: If you have one, describe the wording, example, or structure you would prefer.
+  - type: checkboxes
+    id: existing_issues
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched existing issues and did not find a matching documentation report.
+          required: true

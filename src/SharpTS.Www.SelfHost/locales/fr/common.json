@@ -10,7 +10,7 @@
       "nuGet": "Paquet NuGet",
       "status": "État d'implémentation",
       "architecture": "Guide d'architecture",
-      "reportIssue": "Signaler un problème",
+      "reportWebsiteIssue": "Signaler un problème du site web",
       "contributing": "Contribuer",
       "license": "Licence MIT",
       "features": "Fonctionnalités",
