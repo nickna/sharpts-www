@@ -139,7 +139,7 @@
 
 .hero__ctas {
     display: flex;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: center;
     gap: 1rem;
     margin-bottom: 4rem;
