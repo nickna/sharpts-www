@@ -1,8 +1,21 @@
 import { basicSetup } from 'codemirror';
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { javascript } from '@codemirror/lang-javascript';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { color as oneDarkColor, oneDarkHighlightStyle, oneDarkTheme } from '@codemirror/theme-one-dark';
+
+const accessibleMuted = '#9aa3b2';
+const accessibleCoral = '#ed7a84';
+const accessibleOneDarkHighlightStyle = HighlightStyle.define(
+    oneDarkHighlightStyle.specs.map((specification) => {
+        if (specification.color === oneDarkColor.stone)
+            return { ...specification, color: accessibleMuted };
+        if (specification.color === oneDarkColor.coral)
+            return { ...specification, color: accessibleCoral };
+        return specification;
+    })
+);
 
 export interface EditorAdapter {
     getValue(): string;
@@ -36,7 +49,8 @@ export function createEditor(container: HTMLElement): EditorAdapter {
             extensions: [
                 basicSetup,
                 javascript({ typescript: true }),
-                oneDark,
+                oneDarkTheme,
+                syntaxHighlighting(accessibleOneDarkHighlightStyle),
                 EditorView.contentAttributes.of({ 'aria-label': 'TypeScript source editor' }),
                 EditorView.theme({
                     '&': { height: '100%', fontSize: '14px' },

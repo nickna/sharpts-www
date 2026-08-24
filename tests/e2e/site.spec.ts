@@ -290,6 +290,8 @@ test('every advertised example and playground preset executes in both modes', as
 });
 
 test('representative localized pages meet automated WCAG checks', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+
     for (const route of [
         '/',
         '/how-it-works',

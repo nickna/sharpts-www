@@ -87,7 +87,7 @@
 .typing__caption {
     margin: 0.875rem auto 0;
     font-size: 0.875rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     line-height: 1.6;
 }
 
