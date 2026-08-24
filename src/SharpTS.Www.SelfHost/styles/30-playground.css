@@ -107,6 +107,11 @@
     height: 100%;
 }
 
+.playground__codemirror-host .cm-gutters {
+    /* Override CodeMirror's runtime-injected One Dark gutter color. */
+    color: #9aa3b2 !important;
+}
+
 .playground__output {
     display: flex;
     flex-direction: column;
@@ -312,7 +317,7 @@
 
 .playground__placeholder {
     font-size: 0.875rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-style: italic;
 }
 
