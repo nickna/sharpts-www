@@ -326,7 +326,7 @@ function validateDescriptorIdentity(repoRoot, manifest, docs) {
     if (!/^[0-9a-f]{64}$/.test(docs.schemaHash || ''))
         throw new Error('Generated control documentation has an invalid descriptor schema hash.');
     const generated = fs.readFileSync(path.join(repoRoot,
-        'lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/control-surface.generated.ts'), 'utf8');
+        'lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/control-surface.generated.ts'), 'utf8');
     const match = /descriptorSchemaHash\s*=\s*"([0-9a-f]{64})"/.exec(generated);
     if (!match || match[1] !== docs.schemaHash)
         throw new Error('GUI descriptor schema hash does not match the generated TypeScript surface.');
@@ -559,7 +559,7 @@ export function runTypeDoc(repoRoot, outputFile) {
     const cli = path.join(toolRoot, 'node_modules', 'typedoc', 'bin', 'typedoc');
     if (!fs.existsSync(cli)) throw new Error('API documentation dependencies are missing; run npm ci in tools/api-docs.');
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
-    const entryRoot = 'lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage';
+    const entryRoot = 'lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage';
     const result = spawnSync(process.execPath, [
         cli,
         '--tsconfig', 'tools/api-docs/tsconfig.json',
@@ -585,7 +585,7 @@ export function generateApiReference(options = {}) {
     const rawFile = path.join(artifactRoot, 'typedoc.raw.json');
     const catalogFile = path.join(artifactRoot, 'catalog.json');
     if (!options.skipTypeDoc) runTypeDoc(repoRoot, rawFile);
-    const sourceRoot = path.join(repoRoot, 'lib', 'SharpTS');
+    const sourceRoot = path.join(repoRoot, 'lib', 'SharpTS', 'src');
     const manifest = readJson(path.join(sourceRoot, 'SharpTS.Gui', 'Controls', 'controls.v1.json'));
     const controlDocs = readJson(path.join(sourceRoot, 'SharpTS.Gui.Sdk', 'GuiPackage', 'control-docs.generated.json'));
     validateDescriptorIdentity(repoRoot, manifest, controlDocs);

@@ -3,6 +3,6 @@
     <Project Path="src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj" />
   </Folder>
   <Folder Name="/lib/">
-    <Project Path="lib/SharpTS/SharpTS.csproj" />
+    <Project Path="lib/SharpTS/src/SharpTS/SharpTS.csproj" />
   </Folder>
 </Solution>

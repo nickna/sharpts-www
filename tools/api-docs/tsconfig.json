@@ -11,8 +11,8 @@
   },
   "files": [
     "ambient.d.ts",
-    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/index.ts",
-    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/testing.ts",
-    "../../lib/SharpTS/SharpTS.Gui.Sdk/GuiPackage/devtools.ts"
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/index.ts",
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/testing.ts",
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/devtools.ts"
   ]
 }

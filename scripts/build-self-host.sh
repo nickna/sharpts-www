@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CONFIGURATION="${1:-Release}"
-SHARPTS_PROJECT="${2:-lib/SharpTS/SharpTS.csproj}"
+SHARPTS_PROJECT="${2:-lib/SharpTS/src/SharpTS/SharpTS.csproj}"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 EXTRA_ARGS=()
