@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APPHOST_PROJECT="$REPO_ROOT/src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj"
-SUBMODULE_PROJECT="$REPO_ROOT/lib/SharpTS/SharpTS.csproj"
+SUBMODULE_PROJECT="$REPO_ROOT/lib/SharpTS/src/SharpTS/SharpTS.csproj"
 BUILD_SELF_HOST_SCRIPT="$REPO_ROOT/scripts/build-self-host.sh"
 
 # Ensure the SharpTS submodule is checked out. The nested conformance corpora

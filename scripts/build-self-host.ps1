@@ -1,6 +1,6 @@
 param(
     [string]$Configuration = 'Release',
-    [string]$SharpTSProject = 'lib/SharpTS/SharpTS.csproj',
+    [string]$SharpTSProject = 'lib/SharpTS/src/SharpTS/SharpTS.csproj',
     [switch]$AllowDirtySharpTS
 )
 

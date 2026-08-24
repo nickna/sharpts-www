@@ -38,7 +38,7 @@ COPY --from=api-reference-build /src/artifacts/api-reference/catalog.json /src/a
 RUN set -eu; \
     . ./sharpts-source.env; \
     SHARPTS_SOURCE_REVISION="$(printf '%s' "$SHARPTS_SOURCE_REVISION" | tr -d '\r')"; \
-    if ! dotnet build lib/SharpTS/SharpTS.csproj -c Release --nologo \
+    if ! dotnet build lib/SharpTS/src/SharpTS/SharpTS.csproj -c Release --nologo \
         -p:MinVerVersionOverride="0.0.0-main+$SHARPTS_SOURCE_REVISION" \
         -p:SourceRevisionId="$SHARPTS_SOURCE_REVISION" \
         -p:EnableSourceLink=false \
@@ -48,11 +48,11 @@ RUN set -eu; \
       exit 1; \
     fi; \
     cat /tmp/sharpts-build.log; \
-    test -f lib/SharpTS/bin/Release/net10.0/SharpTS.dll
+    test -f lib/SharpTS/src/SharpTS/bin/Release/net10.0/SharpTS.dll
 
 RUN set -eu; \
     mkdir -p /app; \
-    if ! dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
+    if ! dotnet lib/SharpTS/src/SharpTS/bin/Release/net10.0/SharpTS.dll \
         --compile src/SharpTS.Www.SelfHost/server.ts \
         --verify \
         -o /app/SharpTS.Www.SelfHost.dll > /tmp/sharpts-compile.log 2>&1; then \
@@ -65,7 +65,7 @@ RUN set -eu; \
     test -f /app/SharpTS.Www.SelfHost.dll
 RUN set -eu; \
     mkdir -p /app/worker; \
-    if ! dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
+    if ! dotnet lib/SharpTS/src/SharpTS/bin/Release/net10.0/SharpTS.dll \
         --compile src/SharpTS.Www.Worker/worker.ts \
         --target exe \
         --verify \
@@ -84,7 +84,7 @@ RUN set -eu; \
     if ! SHARPTS_WWW_SITE_REPO_ROOT=/src \
         SHARPTS_WWW_SITE_OUTPUT=/app/public \
         SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets \
-        dotnet lib/SharpTS/bin/Release/net10.0/SharpTS.dll \
+        dotnet lib/SharpTS/src/SharpTS/bin/Release/net10.0/SharpTS.dll \
         src/SharpTS.Www.SelfHost/generate-site.ts > /tmp/site-generation.log 2>&1; then \
       cat /tmp/site-generation.log; \
       exit 1; \

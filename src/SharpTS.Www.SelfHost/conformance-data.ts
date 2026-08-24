@@ -261,8 +261,9 @@ function readSourceRevision(repoRoot: string): string {
 }
 
 export function loadConformanceData(repoRoot: string): ConformanceData {
-    const test262Root = path.join(repoRoot, 'lib', 'SharpTS', 'SharpTS.Test262', 'baselines');
-    const typeScriptRoot = path.join(repoRoot, 'lib', 'SharpTS', 'SharpTS.TypeScriptConformance', 'baselines');
+    const test262Root = path.join(repoRoot, 'lib', 'SharpTS', 'tests', 'conformance', 'SharpTS.Test262', 'baselines');
+    const typeScriptRoot = path.join(repoRoot, 'lib', 'SharpTS', 'tests', 'conformance',
+        'SharpTS.TypeScriptConformance', 'baselines');
     const interpreted = parseBaselineText(String(fs.readFileSync(path.join(test262Root, 'interpreted.txt'), 'utf8')),
         'Test262', 'Test262 interpreted baseline');
     const compiled = parseBaselineText(String(fs.readFileSync(path.join(test262Root, 'compiled.txt'), 'utf8')),
