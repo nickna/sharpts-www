@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:25-bookworm-slim AS browser-build
+FROM node:26-bookworm-slim AS browser-build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -8,7 +8,7 @@ COPY src/SharpTS.Www.SelfHost/browser/ src/SharpTS.Www.SelfHost/browser/
 COPY src/SharpTS.Www.Shared/ src/SharpTS.Www.Shared/
 RUN SHARPTS_WWW_BROWSER_OUTPUT=/browser-assets npm run build:browser
 
-FROM node:25-bookworm-slim AS api-reference-build
+FROM node:26-bookworm-slim AS api-reference-build
 WORKDIR /src
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY tools/api-docs/package.json tools/api-docs/package-lock.json tools/api-docs/
