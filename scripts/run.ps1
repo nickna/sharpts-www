@@ -2,11 +2,11 @@ $ErrorActionPreference = 'Stop'
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $AppHostProject = Join-Path $RepoRoot 'src/SharpTS.Www.AppHost/SharpTS.Www.AppHost.csproj'
-$SubmoduleProject = Join-Path $RepoRoot 'lib/SharpTS/SharpTS.csproj'
+$SubmoduleProject = Join-Path $RepoRoot 'lib/SharpTS/src/SharpTS/SharpTS.csproj'
 $BuildSelfHostScript = Join-Path $PSScriptRoot 'build-self-host.ps1'
 
 # Ensure the SharpTS submodule is checked out. Both the HTTP host and worker are
-# compiled from TypeScript by lib/SharpTS/SharpTS.csproj.
+# compiled from TypeScript by lib/SharpTS/src/SharpTS/SharpTS.csproj.
 if (-not (Test-Path $SubmoduleProject)) {
     Write-Host 'SharpTS submodule is missing. Initializing it now...'
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {

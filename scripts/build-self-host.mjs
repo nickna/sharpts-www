@@ -88,7 +88,7 @@ if (!/^[A-Za-z0-9._-]+$/.test(configuration)) throw new Error(`Invalid build con
 const skipWorkerShowcaseVerification = process.env.SHARPTS_WWW_SKIP_WORKER_SHOWCASE_VERIFICATION === 'true';
 const allowDirtySharpTS = process.argv.includes('--allow-dirty-sharpts');
 
-const project = path.resolve(repoRoot, option('--sharpts-project', 'lib/SharpTS/SharpTS.csproj'));
+const project = path.resolve(repoRoot, option('--sharpts-project', 'lib/SharpTS/src/SharpTS/SharpTS.csproj'));
 if (!project.startsWith(`${repoRoot}${path.sep}`) || !fs.existsSync(project))
     throw new Error(`SharpTS project must be an existing file inside the repository: ${project}`);
 
