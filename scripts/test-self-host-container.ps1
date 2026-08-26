@@ -165,19 +165,33 @@ try {
         "/de/conformance" = "de"
         "/de/performance" = "de"
     }
-    foreach ($legacyGuideRoute in @(
-        "/how-it-works",
-        "/zh-Hans/how-it-works",
-        "/fr/how-it-works",
-        "/es/how-it-works",
-        "/de/how-it-works"
-    )) {
-        $redirect = Invoke-WebRequest -Method Get -Uri "$origin$legacyGuideRoute" `
-            -MaximumRedirection 0 -SkipHttpErrorCheck -TimeoutSec 25
-        Assert-True ([int]$redirect.StatusCode -eq 308) `
-            "Legacy guide route $legacyGuideRoute did not return HTTP 308."
-        Assert-True ([string]$redirect.Headers["Location"] -eq "/docs/compiler-concepts/compilation-and-native-aot") `
-            "Legacy guide route $legacyGuideRoute returned the wrong redirect target."
+    $redirectHandler = [System.Net.Http.HttpClientHandler]::new()
+    $redirectHandler.AllowAutoRedirect = $false
+    $redirectClient = [System.Net.Http.HttpClient]::new($redirectHandler)
+    $redirectClient.Timeout = [TimeSpan]::FromSeconds(25)
+    try {
+        foreach ($legacyGuideRoute in @(
+            "/how-it-works",
+            "/zh-Hans/how-it-works",
+            "/fr/how-it-works",
+            "/es/how-it-works",
+            "/de/how-it-works"
+        )) {
+            $redirect = $redirectClient.GetAsync("$origin$legacyGuideRoute").GetAwaiter().GetResult()
+            try {
+                Assert-True ([int]$redirect.StatusCode -eq 308) `
+                    "Legacy guide route $legacyGuideRoute did not return HTTP 308."
+                Assert-True ([string]$redirect.Headers.Location -eq "/docs/compiler-concepts/compilation-and-native-aot") `
+                    "Legacy guide route $legacyGuideRoute returned the wrong redirect target."
+            }
+            finally {
+                $redirect.Dispose()
+            }
+        }
+    }
+    finally {
+        $redirectClient.Dispose()
+        $redirectHandler.Dispose()
     }
     foreach ($route in $localizedRoutes.GetEnumerator()) {
         $page = Invoke-TestRequest -Method Get -Path $route.Key
