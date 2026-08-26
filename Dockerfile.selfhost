@@ -13,7 +13,7 @@ WORKDIR /src
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY tools/api-docs/package.json tools/api-docs/package-lock.json tools/api-docs/
 RUN npm ci --prefix tools/api-docs
-COPY tools/api-docs/generate-api-reference.mjs tools/api-docs/ambient.d.ts tools/api-docs/tsconfig.json tools/api-docs/
+COPY tools/api-docs/generate-api-reference.mjs tools/api-docs/ambient.d.ts tools/api-docs/tsconfig.json tools/api-docs/documentation-gap-allowlist.json tools/api-docs/
 COPY sharpts-source.env ./
 # API extraction and the compiled runtime use the same exact pinned SharpTS revision.
 RUN set -eu; \
@@ -21,7 +21,8 @@ RUN set -eu; \
     SHARPTS_SOURCE_REVISION="$(printf '%s' "$SHARPTS_SOURCE_REVISION" | tr -d '\r')"; \
     git init lib/SharpTS; \
     git -C lib/SharpTS remote add origin https://github.com/nickna/SharpTS.git; \
-    git -C lib/SharpTS fetch --depth 1 origin "$SHARPTS_SOURCE_REVISION"; \
+    # Keep commit history for benchmark-snapshot ancestry validation while avoiding historical blobs. \
+    git -C lib/SharpTS fetch --filter=blob:none origin "$SHARPTS_SOURCE_REVISION"; \
     git -C lib/SharpTS checkout --detach FETCH_HEAD; \
     test "$(git -C lib/SharpTS rev-parse HEAD)" = "$SHARPTS_SOURCE_REVISION"; \
     node tools/api-docs/generate-api-reference.mjs
