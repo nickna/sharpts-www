@@ -14,6 +14,7 @@ import type { BrowserAssets, GeneratedRoute, Locale, PageKind } from './site-mod
 import { docsOutputPath, docsRoutePath, outputPath, routePath } from './site-paths';
 import { showcaseExamples } from './showcase-data';
 import type { ConformanceData } from './conformance-data';
+import type { PerformanceData } from './performance-data';
 import { loadDocumentation } from './documentation';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 import {
@@ -57,25 +58,30 @@ function loadBrowserAssets(browserRoot: string, siteStyle: string): BrowserAsset
     if (!fs.existsSync(manifestPath))
         fail('browser asset manifest is missing; run npm run build:browser first');
     const manifest = JSON.parse(String(fs.readFileSync(manifestPath, 'utf8'))) as {
-        entry?: { script?: unknown; style?: unknown; conformanceScript?: unknown; docsScript?: unknown };
+        entry?: { script?: unknown; style?: unknown; conformanceScript?: unknown; performanceScript?: unknown;
+            docsScript?: unknown };
         files?: unknown;
     };
     const script = manifest.entry?.script;
     const style = manifest.entry?.style;
     const conformanceScript = manifest.entry?.conformanceScript;
+    const performanceScript = manifest.entry?.performanceScript;
     const docsScript = manifest.entry?.docsScript;
     const files = manifest.files;
     if (typeof script !== 'string' || typeof style !== 'string' ||
-        typeof conformanceScript !== 'string' || typeof docsScript !== 'string' || !Array.isArray(files))
+        typeof conformanceScript !== 'string' || typeof performanceScript !== 'string' ||
+        typeof docsScript !== 'string' || !Array.isArray(files))
         fail('browser asset manifest is malformed');
     const entryScript = String(script);
     const entryStyle = String(style);
     const conformanceEntryScript = String(conformanceScript);
+    const performanceEntryScript = String(performanceScript);
     const docsEntryScript = String(docsScript);
     const safeFiles = files as string[];
     if (!safeFiles.every(file => typeof file === 'string'))
         fail('browser asset manifest contains a non-string file path');
-    for (const file of [entryScript, entryStyle, conformanceEntryScript, docsEntryScript, ...safeFiles]) {
+    for (const file of [entryScript, entryStyle, conformanceEntryScript, performanceEntryScript,
+        docsEntryScript, ...safeFiles]) {
         if (!file || file.indexOf('..') >= 0 || file.startsWith('/') || file.indexOf('\\') >= 0)
             fail('browser asset manifest contains an unsafe path');
         if (!fs.existsSync(path.join(browserRoot, file)))
@@ -85,6 +91,7 @@ function loadBrowserAssets(browserRoot: string, siteStyle: string): BrowserAsset
         script: entryScript,
         style: entryStyle,
         conformanceScript: conformanceEntryScript,
+        performanceScript: performanceEntryScript,
         docsScript: docsEntryScript,
         siteStyle,
         files: safeFiles
@@ -100,10 +107,12 @@ export function validateDocument(html: string, locale: Locale, page: PageKind,
         'src="/img/sharpts-logo.png"',
         `href="/assets/browser/${browserAssets.style}"`
     ];
-    if (page !== 'conformance')
+    if (page === 'home')
         required.push(`src="/assets/browser/${browserAssets.script}"`);
-    else
+    else if (page === 'conformance')
         required.push(`src="/assets/browser/${browserAssets.conformanceScript}"`);
+    else
+        required.push(`src="/assets/browser/${browserAssets.performanceScript}"`);
     for (const marker of required) {
         if (html.indexOf(marker) < 0)
             fail('missing ' + marker + ' from ' + locale.culture.code + ' ' + page);
@@ -169,7 +178,8 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
     renderDocumentationDocument: (locale: Locale, article: LoadedDocumentationArticle, documentation: LoadedDocumentation,
         browserAssets: BrowserAssets) => string,
     renderApiReferenceDocument: any,
-    conformance: ConformanceData): void {
+    conformance: ConformanceData,
+    performance: PerformanceData): void {
     const paths = loadSitePaths();
     ensureDirectory(paths.outputRoot);
     copyTree(paths.staticRoot, paths.outputRoot);
@@ -251,6 +261,7 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
             script: 'assets/browser/' + browserAssets.script,
             style: 'assets/browser/' + browserAssets.style,
             conformanceScript: 'assets/browser/' + browserAssets.conformanceScript,
+            performanceScript: 'assets/browser/' + browserAssets.performanceScript,
             docsScript: 'assets/browser/' + browserAssets.docsScript
         }
     }, null, 2) + '\n');
@@ -258,6 +269,8 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         JSON.stringify(showcaseExamples, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'conformance.json'),
         JSON.stringify(conformance, null, 2) + '\n');
+    writeText(path.join(paths.outputRoot, 'performance.json'),
+        JSON.stringify(performance, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'docs-manifest.json'), JSON.stringify({
         language: 'en',
         testedVersion: documentation.testedVersion,

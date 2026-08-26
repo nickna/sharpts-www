@@ -16,6 +16,26 @@ import {
     renderDocumentationFeedback
 } from './site-components';
 import { composeCode, heroCodeBody, playgroundCodeBody } from './code-samples';
+import {
+    budgetStatus,
+    classifyRelativeSpeed,
+    formatMeasurement,
+    formatRatio,
+    geometricMean,
+    humanizeBenchmarkId,
+    relativeSpeed,
+    runtimeMeasurement
+} from './performance-data';
+import type {
+    ComparisonClass,
+    CrossRuntimeCase,
+    CrossRuntimeSnapshot,
+    NormalizedBenchmarkCase,
+    NormalizedMeasurement,
+    NormalizedRun,
+    PerformanceData,
+    RuntimeId
+} from './performance-data';
 
 function messageKey(key: string): string {
     const parts = key.split('_');
@@ -100,6 +120,7 @@ function renderNav(locale: Locale, page: PageKind | 'docs'): string {
     const bundle = 'common';
     const home = routePath(locale.culture, 'home');
     const conformance = routePath(locale.culture, 'conformance');
+    const performance = routePath(locale.culture, 'performance');
     return `<header class="nav" data-nav>
   <div class="container nav__inner">
     <a href="${home}" class="nav__logo"><img src="/img/sharpts-logo.png" alt="SharpTS logo" class="nav__logo-icon" width="32" height="32"><span class="nav__logo-text">SharpTS</span></a>
@@ -107,6 +128,7 @@ function renderNav(locale: Locale, page: PageKind | 'docs'): string {
       <a href="${home}#features" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Features'))}</a>
       <a href="${home}#examples" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Examples'))}</a>
       <a href="${conformance}" class="nav__link"${page === 'conformance' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Conformance'))}</a>
+      <a href="${performance}" class="nav__link"${page === 'performance' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Performance'))}</a>
       <a href="${home}#playground" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Playground'))}</a>
       <a href="/docs" class="nav__link"${page === 'docs' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Documentation'))}</a>
       <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="nav__link nav__link--github" aria-label="GitHub">${githubIcon}</a>
@@ -502,32 +524,243 @@ export function renderConformance(locale: Locale, data: ConformanceData): string
   <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 8)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScriptRevision}">${typeScriptRevision.slice(0, 8)}</a>) · <a href="/conformance.json">JSON</a></p></div></section>${renderFooter(locale)}</main>`;
 }
 
+function comparisonClassLabel(locale: Locale, value: ComparisonClass): string {
+    return t(locale, 'performance', 'Status_' + (value === 'nearParity' ? 'NearParity' :
+        value.charAt(0).toUpperCase() + value.slice(1)));
+}
+
+function performanceRuntimePayload(benchmark: CrossRuntimeCase): string {
+    const result: Record<string, unknown> = {};
+    for (const runtime of benchmark.runtimes) {
+        const measurements = runtime.measurements;
+        if (runtime.status === 'measured' && measurements && measurements.length > 0) {
+            const measurement = measurements[0];
+            result[runtime.id] = {
+                status: 'measured',
+                mean: measurement.mean,
+                minimum: measurement.minimum,
+                standardDeviation: measurement.standardDeviation,
+                sampleCount: measurement.sampleCount,
+                innerIterations: measurement.innerIterations
+            };
+        } else {
+            result[runtime.id] = { status: 'missing', reason: runtime.reason || 'unavailable' };
+        }
+    }
+    return escapeHtml(JSON.stringify(result));
+}
+
+function ratioPosition(ratio: number): number {
+    return Math.max(0, Math.min(100, 50 + Math.log(ratio) / Math.log(2) * 12.5));
+}
+
+function renderRatioVisual(locale: Locale, ratio: number | null, classification: ComparisonClass | null): string {
+    if (ratio === null || classification === null)
+        return `<span class="performance-ratio__unavailable">${escapeHtml(t(locale, 'performance', 'Comparison_Unavailable'))}</span>`;
+    const position = ratioPosition(ratio);
+    const start = Math.min(50, position);
+    const width = Math.abs(position - 50);
+    const label = formatRatio(ratio) + ' — ' + comparisonClassLabel(locale, classification);
+    return `<div class="performance-ratio performance-ratio--${classification}" role="img" aria-label="${escapeHtml(label)}" style="--ratio-position:${position.toFixed(3)}%;--ratio-start:${start.toFixed(3)}%;--ratio-width:${width.toFixed(3)}%"><span class="performance-ratio__track" aria-hidden="true"><span class="performance-ratio__parity"></span><span class="performance-ratio__fill"></span><span class="performance-ratio__marker"></span></span><strong data-performance-ratio-label>${formatRatio(ratio)}</strong><span class="performance-ratio__status" data-performance-status-label>${escapeHtml(comparisonClassLabel(locale, classification))}</span></div>`;
+}
+
+function runtimeDisplayName(locale: Locale, runtime: RuntimeId): string {
+    if (runtime === 'node') return t(locale, 'performance', 'Filters_Node');
+    if (runtime === 'bun') return t(locale, 'performance', 'Filters_Bun');
+    if (runtime === 'compiled') return t(locale, 'performance', 'Filters_Compiled');
+    return t(locale, 'performance', 'Filters_Interpreter');
+}
+
+function renderRawRuntimeTable(locale: Locale, benchmark: CrossRuntimeCase): string {
+    const rows = benchmark.runtimes.map(runtime => {
+        const measurement = runtimeMeasurement(benchmark, runtime.id);
+        const cells = measurement
+            ? `<td>${formatMeasurement(measurement.mean, benchmark.unit)}</td><td>${formatMeasurement(measurement.minimum, benchmark.unit)}</td><td>${formatMeasurement(measurement.standardDeviation, benchmark.unit)}</td><td>${String(measurement.sampleCount)}</td><td>${String(measurement.innerIterations)}</td>`
+            : `<td colspan="5" class="performance-table__unavailable">${escapeHtml(t(locale, 'performance', 'Comparison_Unavailable'))}${runtime.reason ? ': ' + escapeHtml(runtime.reason) : ''}</td>`;
+        return `<tr><th scope="row">${escapeHtml(runtimeDisplayName(locale, runtime.id))}</th>${cells}</tr>`;
+    }).join('');
+    return `<div class="performance-table-wrap"><table class="performance-table"><thead><tr><th></th><th>${escapeHtml(t(locale, 'performance', 'Comparison_Mean'))}</th><th>${escapeHtml(t(locale, 'performance', 'Comparison_Minimum'))}</th><th>${escapeHtml(t(locale, 'performance', 'Comparison_Deviation'))}</th><th>${escapeHtml(t(locale, 'performance', 'Comparison_Samples'))}</th><th>${escapeHtml(t(locale, 'performance', 'Comparison_Iterations'))}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function renderCrossRuntimeRow(locale: Locale, benchmark: CrossRuntimeCase): string {
+    const ratio = relativeSpeed(benchmark, 'compiled', 'node');
+    const classification = ratio === null ? null : classifyRelativeSpeed(ratio);
+    const title = humanizeBenchmarkId(benchmark.name);
+    const parameter = Object.entries(benchmark.parameters).map(([key, value]) => key + '=' + value).join(', ');
+    return `<details class="performance-case performance-case--${classification || 'unavailable'}" data-performance-case data-family="${escapeHtml(benchmark.family)}" data-size="${benchmark.parameters.n}" data-search="${escapeHtml((benchmark.family + ' ' + benchmark.name + ' ' + parameter).toLowerCase())}" data-unit="${benchmark.unit}" data-direction="${benchmark.direction}" data-runtimes="${performanceRuntimePayload(benchmark)}">
+  <summary><span class="performance-case__identity"><strong>${escapeHtml(title)}</strong><code>${escapeHtml(parameter)}</code></span><span class="performance-case__visual" data-performance-ratio>${renderRatioVisual(locale, ratio, classification)}</span></summary>
+  <div class="performance-case__details"><p><code>${escapeHtml(benchmark.id)}</code></p><h3>${escapeHtml(t(locale, 'performance', 'Comparison_RawMeasurements'))}</h3>${renderRawRuntimeTable(locale, benchmark)}</div>
+</details>`;
+}
+
+function renderSummary(locale: Locale, snapshot: CrossRuntimeSnapshot | null): string {
+    const ratios: number[] = [];
+    if (snapshot) {
+        for (const benchmark of snapshot.cases) {
+            const ratio = relativeSpeed(benchmark, 'compiled', 'node');
+            if (typeof ratio === 'number') ratios.push(ratio);
+        }
+    }
+    const counts: Record<ComparisonClass, number> = { faster: 0, nearParity: 0, behind: 0 };
+    for (const ratio of ratios) {
+        const classification = classifyRelativeSpeed(ratio);
+        counts[classification] = counts[classification] + 1;
+    }
+    const average = geometricMean(ratios);
+    const cards = [
+        { modifier: 'overall', label: t(locale, 'performance', 'Summary_Overall'), value: average === null ? '—' : formatRatio(average) },
+        { modifier: 'faster', label: t(locale, 'performance', 'Summary_Faster'), value: String(counts.faster) },
+        { modifier: 'nearParity', label: t(locale, 'performance', 'Summary_Parity'), value: String(counts.nearParity) },
+        { modifier: 'behind', label: t(locale, 'performance', 'Summary_Behind'), value: String(counts.behind) }
+    ];
+    return `<div class="performance-summary" aria-label="${escapeHtml(t(locale, 'performance', 'SuiteNavigation'))}">${cards.map(card => `<article class="performance-summary__card performance-summary__card--${card.modifier}"><span>${escapeHtml(card.label)}</span><strong>${card.value}</strong><small>${ratios.length} ${escapeHtml(t(locale, 'performance', 'Summary_Cases'))}</small></article>`).join('')}</div>`;
+}
+
+function renderPerformanceFilters(locale: Locale, snapshot: CrossRuntimeSnapshot): string {
+    const families = [...new Set(snapshot.cases.map(benchmark => benchmark.family))].sort();
+    const sizes = [...new Set(snapshot.cases.map(benchmark => benchmark.parameters.n))].sort((a, b) => a - b);
+    const option = (value: string, label: string) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
+    return `<div class="performance-controls" data-performance-controls hidden>
+  <label><span>${escapeHtml(t(locale, 'performance', 'Filters_Search'))}</span><input type="search" data-performance-search placeholder="${escapeHtml(t(locale, 'performance', 'Filters_SearchPlaceholder'))}"></label>
+  <label><span>${escapeHtml(t(locale, 'performance', 'Filters_Implementation'))}</span><select data-performance-implementation>${option('compiled', t(locale, 'performance', 'Filters_Compiled'))}${option('interpreter', t(locale, 'performance', 'Filters_Interpreter'))}</select></label>
+  <label><span>${escapeHtml(t(locale, 'performance', 'Filters_Reference'))}</span><select data-performance-reference>${option('node', t(locale, 'performance', 'Filters_Node'))}${option('bun', t(locale, 'performance', 'Filters_Bun'))}</select></label>
+  <label><span>${escapeHtml(t(locale, 'performance', 'Filters_Family'))}</span><select data-performance-family>${option('all', t(locale, 'performance', 'Filters_All'))}${families.map(family => option(family, humanizeBenchmarkId(family))).join('')}</select></label>
+  <label><span>${escapeHtml(t(locale, 'performance', 'Filters_Size'))}</span><select data-performance-size>${option('all', t(locale, 'performance', 'Filters_All'))}${sizes.map(size => option(String(size), String(size))).join('')}</select></label>
+  <button type="button" class="btn btn-secondary btn-sm" data-performance-reset>${escapeHtml(t(locale, 'performance', 'Filters_Reset'))}</button>
+</div>`;
+}
+
+function latestCrossRuntime(data: PerformanceData): CrossRuntimeSnapshot | null {
+    const runs = [...data.crossRuntimeRuns].sort((left, right) =>
+        left.snapshot.run.timestampUtc.localeCompare(right.snapshot.run.timestampUtc));
+    return runs.length ? runs[runs.length - 1].snapshot : null;
+}
+
+function renderNodeComparison(locale: Locale, snapshot: CrossRuntimeSnapshot | null): string {
+    if (!snapshot)
+        return `<section class="section performance-section" id="node"><div class="container"><h2>${escapeHtml(t(locale, 'performance', 'Comparison_Title'))}</h2><p class="performance-empty">${escapeHtml(t(locale, 'performance', 'Summary_NotAvailable'))}</p></div></section>`;
+    const rows = snapshot.cases.map(benchmark => renderCrossRuntimeRow(locale, benchmark)).join('\n');
+    return `<section class="section performance-section" id="node" data-performance-explorer data-label-faster="${escapeHtml(t(locale, 'performance', 'Status_Faster'))}" data-label-near-parity="${escapeHtml(t(locale, 'performance', 'Status_NearParity'))}" data-label-behind="${escapeHtml(t(locale, 'performance', 'Status_Behind'))}" data-label-unavailable="${escapeHtml(t(locale, 'performance', 'Comparison_Unavailable'))}"><div class="container">
+  <div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Comparison_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Comparison_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Comparison_Description'))}</p></div>
+  <aside class="performance-callout"><span class="performance-callout__line" aria-hidden="true"></span><p>${escapeHtml(t(locale, 'performance', 'Comparison_RatioExplanation'))}</p></aside>
+  ${renderPerformanceFilters(locale, snapshot)}
+  <div class="performance-axis" aria-hidden="true"><span>¼×</span><span>½×</span><strong>${escapeHtml(t(locale, 'performance', 'Comparison_Parity'))}</strong><span>2×</span><span>4×</span></div>
+  <div class="performance-cases" data-performance-cases>${rows}</div>
+  <p class="performance-empty" data-performance-empty hidden>${escapeHtml(t(locale, 'performance', 'Comparison_NoResults'))}</p>
+  <p class="performance-result-count" data-performance-result-count data-template="${escapeHtml(t(locale, 'performance', 'Comparison_Showing'))}">${escapeHtml(tf(locale, 'performance.comparison.showing', { count: snapshot.cases.length }))}</p>
+</div></section>`;
+}
+
+function normalizedMeasurement(benchmark: NormalizedBenchmarkCase, id: string): NormalizedMeasurement | null {
+    return benchmark.measurements.find(measurement => measurement.id === id) || null;
+}
+
+function implementationName(value: string): string {
+    const names: Record<string, string> = {
+        sharpTsCompiled: 'SharpTS compiled', sharpTsInterpreter: 'SharpTS interpreter',
+        equivalentCSharp: 'Equivalent dynamic C#', idiomaticCSharp: 'Idiomatic C#',
+        componentProbe: 'Component probe', sharpTsGui: 'SharpTS GUI', directAvalonia: 'Direct Avalonia',
+        compiledXaml: 'Compiled XAML'
+    };
+    return names[value] || humanizeBenchmarkId(value.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase());
+}
+
+function renderCompilerRun(locale: Locale, run: NormalizedRun, index: number): string {
+    const rows = run.cases.map(benchmark => {
+        const mean = normalizedMeasurement(benchmark, 'mean');
+        const throughput = normalizedMeasurement(benchmark, 'throughput');
+        const allocated = normalizedMeasurement(benchmark, 'allocated');
+        const cell = (measurement: NormalizedMeasurement | null): string => {
+            // biome-ignore lint/complexity/useOptionalChain: explicit narrowing is required by the self-host compiler.
+            if (!measurement || measurement.status !== 'measured') return '—';
+            const actual = measurement.actual;
+            return typeof actual === 'number' ? formatMeasurement(actual, measurement.unit) : '—';
+        };
+        return `<tr data-performance-micro-case data-family="${escapeHtml(benchmark.family)}"><th scope="row"><strong>${escapeHtml(humanizeBenchmarkId(benchmark.family))}</strong><small>${escapeHtml(benchmark.displayInfo)}</small></th><td>${escapeHtml(implementationName(benchmark.implementation))}</td><td data-metric="mean">${cell(mean)}</td><td data-metric="throughput">${cell(throughput)}</td><td data-metric="allocated">${cell(allocated)}</td></tr>`;
+    }).join('');
+    return `<article class="performance-run"><header><span>Run ${index + 1}</span><code>${escapeHtml(run.run.revision.commit.slice(0, 8))}</code></header><div class="performance-table-wrap"><table class="performance-table performance-table--compiler"><thead><tr><th>${escapeHtml(t(locale, 'performance', 'Comparison_Workload'))}</th><th>Implementation</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Timing'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Throughput'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Allocation'))}</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
+}
+
+function renderCompilerEvidence(locale: Locale, runs: NormalizedRun[]): string {
+    const body = runs.length
+        ? runs.map((run, index) => renderCompilerRun(locale, run, index)).join('')
+        : `<div class="performance-empty-state"><span aria-hidden="true">↗</span><p>${escapeHtml(t(locale, 'performance', 'Compiler_Empty'))}</p></div>`;
+    return `<section class="section section--alt performance-section performance-section--compiler" id="compiler"><div class="container"><div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Compiler_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Compiler_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Compiler_Description'))}</p></div>${body}</div></section>`;
+}
+
+function renderBudgetMeasurement(locale: Locale, benchmark: NormalizedBenchmarkCase,
+    measurement: NormalizedMeasurement): string {
+    const actual = measurement.actual;
+    if (measurement.status !== 'measured' || typeof actual !== 'number')
+        return `<article class="performance-budget performance-budget--missing"><h3>${escapeHtml(benchmark.displayInfo)}</h3><strong>${escapeHtml(t(locale, 'performance', 'Comparison_Unavailable'))}</strong><p>${escapeHtml(measurement.reason || 'not measured')}</p></article>`;
+    if (!measurement.budget)
+        return `<article class="performance-budget performance-budget--baseline"><span>${escapeHtml(t(locale, 'performance', 'Desktop_Baseline'))}</span><h3>${escapeHtml(benchmark.displayInfo)}</h3><strong>${formatMeasurement(actual, measurement.unit)}</strong><small>${escapeHtml(implementationName(benchmark.implementation))}</small></article>`;
+    const status = budgetStatus(actual, measurement.budget.limit, measurement.direction);
+    const headroom = Math.abs(status.headroom * 100).toFixed(1) + '%';
+    return `<article class="performance-budget performance-budget--${status.passes ? 'pass' : 'fail'}"><span>${escapeHtml(t(locale, 'performance', status.passes ? 'Desktop_Pass' : 'Desktop_Fail'))}</span><h3>${escapeHtml(benchmark.displayInfo)}</h3><strong>${formatMeasurement(actual, measurement.unit)}</strong><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Desktop_Budget'))}</dt><dd>${formatMeasurement(measurement.budget.limit, measurement.unit)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Desktop_Headroom'))}</dt><dd>${headroom}</dd></div></dl><div class="performance-budget__meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, status.utilization * 100).toFixed(1)}"><span style="width:${Math.min(100, status.utilization * 100).toFixed(1)}%"></span></div></article>`;
+}
+
+function renderGuiEvidence(locale: Locale, runs: NormalizedRun[]): string {
+    const cards: string[] = [];
+    for (const run of runs)
+        for (const benchmark of run.cases)
+            for (const measurement of benchmark.measurements)
+                if (measurement.budget || measurement.id === 'mean' || measurement.id === 'allocated' ||
+                    measurement.id === 'coldStartup' || measurement.id === 'peakWorkingSet' ||
+                    measurement.id === 'executableSize' || measurement.id === 'shippingSize')
+                    cards.push(renderBudgetMeasurement(locale, benchmark, measurement));
+    const body = cards.length
+        ? `<div class="performance-budgets">${cards.join('')}</div>`
+        : `<div class="performance-empty-state"><span aria-hidden="true">◇</span><p>${escapeHtml(t(locale, 'performance', 'Desktop_Empty'))}</p></div>`;
+    return `<section class="section performance-section performance-section--desktop" id="desktop"><div class="container"><div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Desktop_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Desktop_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Desktop_Description'))}</p></div>${body}</div></section>`;
+}
+
+function renderMethodology(locale: Locale, data: PerformanceData, snapshot: CrossRuntimeSnapshot | null): string {
+    const cards: string[] = [];
+    if (snapshot) {
+        const run = snapshot.run;
+        const runtimeVersions = run.tools.runtimes.filter(runtime => runtime.version !== null)
+            .map(runtime => runtime.id + ' ' + (runtime.version || '')).join(' · ');
+        cards.push(`<article class="performance-method"><header><strong>Cross-runtime</strong><time datetime="${escapeHtml(run.timestampUtc)}">${escapeHtml(run.timestampUtc.slice(0, 10))}</time></header><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Environment'))}</dt><dd>${escapeHtml(run.environment.operatingSystem + ' · ' + run.environment.architecture + ' · ' + run.environment.cpu)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Toolchain'))}</dt><dd>.NET ${escapeHtml(run.tools.dotnet)} · ${escapeHtml(runtimeVersions)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_TimingScope'))}</dt><dd>${escapeHtml(snapshot.methodology.timingScope)} · ${escapeHtml(snapshot.methodology.clock)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Includes'))}</dt><dd>${escapeHtml(snapshot.methodology.includes.join('; '))}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Excludes'))}</dt><dd>${escapeHtml(snapshot.methodology.excludes.join('; '))}</dd></div></dl><footer><a href="https://github.com/nickna/SharpTS/tree/${run.revision.commit}/benchmarks/cross-runtime">${escapeHtml(t(locale, 'performance', 'Methodology_Source'))}</a><a href="https://github.com/nickna/SharpTS/commit/${run.revision.commit}">${escapeHtml(t(locale, 'performance', 'Methodology_SourceRevision'))} ${run.revision.commit.slice(0, 8)}</a></footer></article>`);
+    }
+    for (const run of [...data.compilerMicroRuns, ...data.guiRuns])
+        cards.push(`<article class="performance-method"><header><strong>${escapeHtml(run.suite)}</strong><time datetime="${escapeHtml(run.run.timestampUtc)}">${escapeHtml(run.run.timestampUtc.slice(0, 10))}</time></header><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Environment'))}</dt><dd>${escapeHtml(run.run.environment.operatingSystem + ' · ' + run.run.environment.architecture + ' · ' + run.run.environment.processor)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_TimingScope'))}</dt><dd>${escapeHtml(run.methodology.timingScope)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_SourceRevision'))}</dt><dd><code>${run.run.revision.commit}</code></dd></div></dl></article>`);
+    return `<section class="section section--alt performance-section performance-section--methodology" id="methodology"><div class="container"><div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Methodology_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Methodology_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Methodology_Description'))}</p></div><div class="performance-methods">${cards.join('')}</div><p class="performance-provenance"><a href="/performance.json">${escapeHtml(t(locale, 'performance', 'Methodology_RawJson'))}</a> · <a href="https://github.com/nickna/SharpTS/commit/${data.sourceRevision}">Pinned SharpTS ${data.sourceRevision.slice(0, 8)}</a></p></div></section>`;
+}
+
+export function renderPerformance(locale: Locale, data: PerformanceData): string {
+    const snapshot = latestCrossRuntime(data);
+    return `<main class="landing performance-page"><section class="performance-hero"><div class="performance-hero__grid" aria-hidden="true"></div><div class="performance-hero__orb" aria-hidden="true"></div><div class="container"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Eyebrow'))}</p><h1>${escapeHtml(t(locale, 'performance', 'Title'))}</h1><p>${escapeHtml(t(locale, 'performance', 'Subtitle'))}</p><nav aria-label="${escapeHtml(t(locale, 'performance', 'SuiteNavigation'))}"><a href="#node">${escapeHtml(t(locale, 'performance', 'Navigation_Node'))}</a><a href="#compiler">${escapeHtml(t(locale, 'performance', 'Navigation_Compiler'))}</a><a href="#desktop">${escapeHtml(t(locale, 'performance', 'Navigation_Desktop'))}</a><a href="#methodology">${escapeHtml(t(locale, 'performance', 'Navigation_Methodology'))}</a></nav>${renderSummary(locale, snapshot)}</div></section>${renderNodeComparison(locale, snapshot)}${renderCompilerEvidence(locale, data.compilerMicroRuns)}${renderGuiEvidence(locale, data.guiRuns)}${renderMethodology(locale, data, snapshot)}${renderFooter(locale)}</main>`;
+}
+
 function alternateLinks(page: PageKind): string {
     const links = cultures.map(culture => `<link rel="alternate" hreflang="${culture.code}" href="${siteOrigin}${routePath(culture, page)}">`).join('\n');
     return links + `\n<link rel="alternate" hreflang="x-default" href="${siteOrigin}${routePath(cultures[0], page)}">`;
 }
 
 export function renderDocument(locale: Locale, page: PageKind, browserAssets: BrowserAssets,
-    conformanceData: ConformanceData): string {
+    conformanceData: ConformanceData, performanceData: PerformanceData): string {
     const appBundle = 'home';
     const pagePath = routePath(locale.culture, page);
     const canonical = siteOrigin + pagePath;
-    const pageBundle = 'conformance';
+    const pageBundle = page === 'performance' ? 'performance' : 'conformance';
     const title = page === 'home' ? t(locale, appBundle, 'Meta_Title') : t(locale, pageBundle, 'Meta_Title');
     const ogTitle = page === 'home' ? t(locale, appBundle, 'Og_Title') : title;
-    const description = page === 'conformance'
-        ? t(locale, 'conformance', 'Meta_Description')
+    const description = page !== 'home'
+        ? t(locale, pageBundle, 'Meta_Description')
         : t(locale, appBundle, 'Meta_Description');
-    const ogDescription = page === 'conformance'
+    const ogDescription = page !== 'home'
         ? description
         : t(locale, appBundle, 'Og_Description');
     const body = page === 'home'
         ? renderHome(locale)
-        : renderConformance(locale, conformanceData);
-    const preloadScript = page === 'conformance' ? '' : '  <script src="/js/preload.js"></script>\n';
+        : page === 'conformance' ? renderConformance(locale, conformanceData) : renderPerformance(locale, performanceData);
+    const preloadScript = page === 'home' ? '  <script src="/js/preload.js"></script>\n' : '';
     const browserScript = page === 'conformance'
         ? `  <script type="module" src="/assets/browser/${browserAssets.conformanceScript}"></script>\n`
-        : `  <script type="module" src="/assets/browser/${browserAssets.script}"></script>\n`;
+        : page === 'performance'
+            ? `  <script type="module" src="/assets/browser/${browserAssets.performanceScript}"></script>\n`
+            : `  <script type="module" src="/assets/browser/${browserAssets.script}"></script>\n`;
     return `<!doctype html>
 <html lang="${locale.culture.code}">
 <head>

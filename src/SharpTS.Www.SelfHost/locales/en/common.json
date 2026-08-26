@@ -26,6 +26,7 @@
     "features": "Features",
     "examples": "Examples",
     "conformance": "Conformance",
+    "performance": "Performance",
     "playground": "Playground",
     "documentation": "Documentation",
     "toggleAriaLabel": "Toggle navigation"

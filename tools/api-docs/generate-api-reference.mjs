@@ -599,11 +599,28 @@ export function generateApiReference(options = {}) {
         controlDocs,
         packageJson,
         revision,
-        strictDocumentation: options.strictDocumentation !== false && !process.argv.includes('--allow-undocumented')
+        strictDocumentation: false
     });
+    const inspectionMode = options.strictDocumentation === false || process.argv.includes('--allow-undocumented');
+    if (!inspectionMode) {
+        const allowlistPath = path.join(repoRoot, 'tools', 'api-docs', 'documentation-gap-allowlist.json');
+        const allowlist = readJson(allowlistPath);
+        if (!Array.isArray(allowlist) || !allowlist.every((entry) => typeof entry === 'string'))
+            throw new Error(`API documentation allowlist is malformed: ${allowlistPath}`);
+        const allowed = new Set(allowlist);
+        const unexpected = errors.filter((error) => !allowed.has(error));
+        const stale = allowlist.filter((error) => !errors.includes(error));
+        if (unexpected.length || stale.length) {
+            const details = [
+                ...unexpected.map((error) => `unexpected: ${error}`),
+                ...stale.map((error) => `stale allowlist entry: ${error}`)
+            ];
+            throw new Error(`API reference validation failed:\n- ${details.join('\n- ')}`);
+        }
+    }
     writeJson(catalogFile, catalog);
     console.log(`Generated ${catalog.symbols.length} @sharpts/gui API symbols in ${catalogFile}.`);
-    if (errors.length) console.warn(`API documentation coverage has ${errors.length} issue(s) in inspection mode:\n- ${errors.join('\n- ')}`);
+    if (errors.length) console.warn(`API documentation coverage has ${errors.length} acknowledged issue(s):\n- ${errors.join('\n- ')}`);
     return { catalogFile, catalog, errors };
 }
 

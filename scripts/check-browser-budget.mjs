@@ -12,6 +12,7 @@ const initialJavaScript = javascript.filter(
     (file) => file === manifest.entry.script || file.startsWith('chunks/chunk-')
 );
 const conformanceJavaScript = javascript.filter((file) => file === manifest.entry.conformanceScript);
+const performanceJavaScript = javascript.filter((file) => file === manifest.entry.performanceScript);
 const docsJavaScript = javascript.filter((file) => file === manifest.entry.docsScript);
 
 function size(files) {
@@ -24,6 +25,7 @@ function size(files) {
 
 const initial = size(initialJavaScript);
 const conformance = size(conformanceJavaScript);
+const performance = size(performanceJavaScript);
 const docs = size(docsJavaScript);
 const total = size(javascript);
 const budgets = {
@@ -31,6 +33,8 @@ const budgets = {
     initialBrotli: 25 * 1024,
     conformanceRaw: 18 * 1024,
     conformanceBrotli: 7 * 1024,
+    performanceRaw: 18 * 1024,
+    performanceBrotli: 7 * 1024,
     docsRaw: 8 * 1024,
     docsBrotli: 3 * 1024,
     totalRaw: 600 * 1024,
@@ -44,6 +48,10 @@ if (conformance.raw > budgets.conformanceRaw)
     failures.push(`conformance raw ${conformance.raw} > ${budgets.conformanceRaw}`);
 if (conformance.brotli > budgets.conformanceBrotli)
     failures.push(`conformance Brotli ${conformance.brotli} > ${budgets.conformanceBrotli}`);
+if (performance.raw > budgets.performanceRaw)
+    failures.push(`performance raw ${performance.raw} > ${budgets.performanceRaw}`);
+if (performance.brotli > budgets.performanceBrotli)
+    failures.push(`performance Brotli ${performance.brotli} > ${budgets.performanceBrotli}`);
 if (docs.raw > budgets.docsRaw) failures.push(`docs raw ${docs.raw} > ${budgets.docsRaw}`);
 if (docs.brotli > budgets.docsBrotli) failures.push(`docs Brotli ${docs.brotli} > ${budgets.docsBrotli}`);
 if (total.raw > budgets.totalRaw) failures.push(`total raw ${total.raw} > ${budgets.totalRaw}`);
@@ -55,6 +63,7 @@ console.log(
         {
             initial: { files: initialJavaScript, ...initial },
             conformance: { files: conformanceJavaScript, ...conformance },
+            performance: { files: performanceJavaScript, ...performance },
             docs: { files: docsJavaScript, ...docs },
             total: { files: javascript, ...total },
             budgets

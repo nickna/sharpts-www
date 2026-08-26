@@ -55,7 +55,25 @@ const conformanceResult = await build({
     metafile: true
 });
 
-const outputs = [...Object.entries(result.metafile.outputs), ...Object.entries(conformanceResult.metafile.outputs)];
+const performanceResult = await build({
+    entryPoints: [path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'browser', 'performance-entry.ts')],
+    outdir: outputRoot,
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    target: ['es2022'],
+    minify: true,
+    sourcemap: false,
+    legalComments: 'none',
+    entryNames: '[name]-[hash]',
+    metafile: true
+});
+
+const outputs = [
+    ...Object.entries(result.metafile.outputs),
+    ...Object.entries(conformanceResult.metafile.outputs),
+    ...Object.entries(performanceResult.metafile.outputs)
+];
 const entryOutput = outputs.find(
     ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/site-entry.ts')
 );
@@ -68,6 +86,12 @@ const conformanceOutput = outputs.find(
 );
 if (!conformanceOutput) throw new Error('Browser build did not emit the conformance JavaScript entry.');
 const [conformanceScriptPath] = conformanceOutput;
+const performanceOutput = outputs.find(
+    ([outputPath, metadata]) =>
+        outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/performance-entry.ts')
+);
+if (!performanceOutput) throw new Error('Browser build did not emit the performance JavaScript entry.');
+const [performanceScriptPath] = performanceOutput;
 const docsOutput = outputs.find(
     ([outputPath, metadata]) => outputPath.endsWith('.js') && metadata.entryPoint?.endsWith('browser/docs-entry.ts')
 );
@@ -81,6 +105,7 @@ const manifest = {
         script: relativeOutput(entryScriptPath),
         style: relativeOutput(entryMetadata.cssBundle),
         conformanceScript: relativeOutput(conformanceScriptPath),
+        performanceScript: relativeOutput(performanceScriptPath),
         docsScript: relativeOutput(docsScriptPath)
     },
     files: outputs.map(([outputPath]) => relativeOutput(outputPath)).sort()
