@@ -37,8 +37,13 @@ test('malformed playground input is rejected without destabilizing the host', as
 });
 
 test('retired How It Works routes permanently redirect to the canonical documentation', async ({ request }) => {
-    for (const route of ['/how-it-works', '/zh-Hans/how-it-works', '/fr/how-it-works',
-        '/es/how-it-works', '/de/how-it-works']) {
+    for (const route of [
+        '/how-it-works',
+        '/zh-Hans/how-it-works',
+        '/fr/how-it-works',
+        '/es/how-it-works',
+        '/de/how-it-works'
+    ]) {
         const response = await request.get(route, { maxRedirects: 0 });
         expect(response.status(), route).toBe(308);
         expect(response.headers().location, route).toBe('/docs/compiler-concepts/compilation-and-native-aot');
@@ -305,12 +310,14 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
     for (const route of [
         '/',
         '/conformance',
+        '/performance',
         '/docs/getting-started/desktop-gui',
         '/docs/getting-started/scripting',
         '/docs/compiler-concepts/performance',
         '/docs/api/gui/button',
         '/fr',
-        '/fr/conformance'
+        '/fr/conformance',
+        '/fr/performance'
     ]) {
         await page.goto(route);
         const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
@@ -533,6 +540,79 @@ test('conformance remains readable without JavaScript and fits a mobile viewport
     const root = page.locator('.conformance__node--depth-0').first();
     await root.locator(':scope > summary').click();
     await expect(root).not.toHaveAttribute('open', '');
+    expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+    ).toBe(true);
+    await context.close();
+});
+
+test('performance explorer is localized, shareable, keyboard accessible, and data-driven', async ({
+    page,
+    request
+}) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const [route, language] of [
+        ['/performance', 'en'],
+        ['/zh-Hans/performance', 'zh-Hans'],
+        ['/fr/performance', 'fr'],
+        ['/es/performance', 'es'],
+        ['/de/performance', 'de']
+    ] as const) {
+        const response = await request.get(route);
+        expect(response.status(), route).toBe(200);
+        expect(await response.text()).toContain(`<html lang="${language}">`);
+    }
+
+    await page.goto('/fr/performance');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+    await expect(page.locator('.nav__link[aria-current="page"]')).toHaveText('Performances');
+    await expect(page.locator('[data-performance-controls]')).toBeVisible();
+    await expect(page.locator('[data-performance-case]').first()).toBeVisible();
+    await expect(page.locator('.performance-ratio[role="img"]').first()).toBeVisible();
+    await expect(page.locator('#compiler')).toBeVisible();
+    await expect(page.locator('#desktop')).toBeVisible();
+    await expect(page.locator('#methodology')).toContainText('Méthodologie et provenance');
+
+    const family = page.locator('[data-performance-family]');
+    const firstFamily = await family.locator('option').nth(1).getAttribute('value');
+    expect(firstFamily).toBeTruthy();
+    await family.selectOption(firstFamily!);
+    await expect(page).toHaveURL(new RegExp(`family=${firstFamily}`));
+    const visibleRows = page.locator('[data-performance-case]:visible');
+    expect(await visibleRows.count()).toBeGreaterThan(0);
+    await visibleRows.first().locator('summary').focus();
+    await page.keyboard.press('Enter');
+    await expect(visibleRows.first()).toHaveAttribute('open', '');
+
+    await page.locator('[data-performance-reference]').selectOption('bun');
+    await expect(page).toHaveURL(/reference=bun/);
+    await expect(visibleRows.first().locator('.performance-ratio__unavailable')).toBeVisible();
+    await page.locator('[data-performance-reset]').click();
+    await expect(page).not.toHaveURL(/family=|reference=/);
+
+    const data = await request.get('/performance.json');
+    expect(data.status()).toBe(200);
+    await expect(data.json()).resolves.toMatchObject({
+        formatVersion: 1,
+        practicalParityTolerance: 0.05
+    });
+});
+
+test('performance evidence remains complete without JavaScript and fits a 390px viewport', async ({ browser }) => {
+    const context = await browser.newContext({
+        javaScriptEnabled: false,
+        viewport: { width: 390, height: 844 },
+        reducedMotion: 'reduce'
+    });
+    const page = await context.newPage();
+    await page.goto('/performance');
+    await expect(page.locator('[data-performance-controls]')).toBeHidden();
+    await expect(page.locator('[data-performance-case]').first()).toBeVisible();
+    await expect(page.locator('#compiler')).toBeVisible();
+    await expect(page.locator('#desktop')).toBeVisible();
+    await expect(page.locator('#methodology')).toBeVisible();
+    await page.locator('[data-performance-case]').first().locator('summary').click();
+    await expect(page.locator('[data-performance-case]').first()).toHaveAttribute('open', '');
     expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
     ).toBe(true);

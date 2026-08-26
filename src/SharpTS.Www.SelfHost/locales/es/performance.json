@@ -1,0 +1,19 @@
+{
+  "metadata": { "title": "Rendimiento — SharpTS", "description": "Compara SharpTS compilado con Node.js y consulta pruebas del compilador y del escritorio." },
+  "eyebrow": "Rendimiento medido", "title": "TypeScript a velocidad de .NET",
+  "subtitle": "Datos reproducibles de la revisión fijada de SharpTS, centrados en el objetivo principal: igualar o superar a Node.js.",
+  "suiteNavigation": "Datos de rendimiento",
+  "navigation": { "node": "SharpTS frente a Node", "compiler": "Margen del compilador", "desktop": "Presupuestos de escritorio", "methodology": "Metodología" },
+  "summary": { "overall": "Media geométrica frente a Node", "faster": "Más rápido que Node", "parity": "A menos del 5 % de Node", "behind": "Aún por detrás", "cases": "casos comparables", "notAvailable": "Sin ejecución comparable" },
+  "comparison": {
+    "eyebrow": "Benchmark principal", "title": "SharpTS frente a Node.js",
+    "description": "Cada fila compara la misma carga TypeScript en el mismo entorno. La escala logarítmica evita que los valores extremos oculten los resultados habituales.",
+    "ratioExplanation": "La velocidad relativa es media de Node ÷ media de SharpTS. Más de 1× favorece a SharpTS; 0,95×–1,05× se considera paridad práctica.",
+    "parity": "Paridad 1×", "workload": "Carga", "result": "Velocidad relativa", "rawMeasurements": "Medidas sin procesar", "mean": "Media", "minimum": "Mínimo", "deviation": "Desviación estándar", "samples": "Muestras", "iterations": "Iteraciones internas", "unavailable": "No disponible", "noResults": "Ningún benchmark coincide con estos filtros.", "showing": "Se muestran {count} casos de benchmark."
+  },
+  "filters": { "search": "Buscar cargas", "searchPlaceholder": "Array, JSON, regex…", "implementation": "Modo SharpTS", "reference": "Comparar con", "family": "Familia", "size": "Tamaño de entrada", "all": "Todas", "compiled": "Compilado", "interpreter": "Intérprete", "node": "Node.js", "bun": "Bun", "reset": "Restablecer filtros" },
+  "status": { "faster": "Más rápido", "nearParity": "Casi a la par", "behind": "Por detrás" },
+  "compiler": { "eyebrow": "Techo técnico", "title": "Margen del compilador", "description": "TypeScript compilado por SharpTS frente a C# dinámico equivalente y C# idiomático dentro de cada ejecución BenchmarkDotNet.", "empty": "Aún no hay una instantánea compiler-micro revisada en esta revisión. El panel está listo para la próxima ejecución schema-v2 publicada.", "metric": "Métrica", "timing": "Tiempo", "throughput": "Rendimiento", "allocation": "Asignación" },
+  "desktop": { "eyebrow": "Límites de publicación", "title": "Presupuestos de rendimiento de escritorio", "description": "Latencia, asignación, inicio, memoria y tamaño se mantienen separados de la comparación con Node.", "empty": "Aún no hay una instantánea GUI revisada. Los datos ausentes nunca se muestran como cero ni como un presupuesto aprobado.", "actual": "Real", "budget": "Presupuesto", "headroom": "Margen", "pass": "Cumple", "fail": "Supera el presupuesto", "baseline": "Referencia" },
+  "methodology": { "eyebrow": "Leer los datos", "title": "Metodología y procedencia", "description": "Las medidas absolutas solo se comparan dentro de una ejecución ligada a una máquina. Nunca se combinan suites ni entornos distintos.", "runDate": "Fecha", "environment": "Entorno", "toolchain": "Herramientas", "timingScope": "Ámbito medido", "includes": "Incluye", "excludes": "Excluye", "sourceRevision": "Revisión de SharpTS", "rawJson": "JSON normalizado", "source": "Fuente del benchmark" }
+}

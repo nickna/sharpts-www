@@ -183,6 +183,7 @@ try {
         browserManifest.entry?.script,
         browserManifest.entry?.style,
         browserManifest.entry?.conformanceScript,
+        browserManifest.entry?.performanceScript,
         browserManifest.entry?.docsScript
     ]) {
         if (typeof entry !== 'string' || !fs.existsSync(path.join(browserRoot, entry)))

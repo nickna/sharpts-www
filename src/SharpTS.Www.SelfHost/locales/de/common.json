@@ -26,6 +26,7 @@
     "features": "Funktionen",
     "examples": "Beispiele",
     "conformance": "Konformität",
+    "performance": "Leistung",
     "playground": "Playground",
     "documentation": "Dokumentation",
     "toggleAriaLabel": "Navigation umschalten"

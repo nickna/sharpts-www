@@ -26,6 +26,7 @@
     "features": "Características",
     "examples": "Ejemplos",
     "conformance": "Conformidad",
+    "performance": "Rendimiento",
     "playground": "Entorno de pruebas",
     "documentation": "Documentación",
     "toggleAriaLabel": "Alternar navegación"

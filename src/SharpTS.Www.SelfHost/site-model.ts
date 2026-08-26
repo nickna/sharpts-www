@@ -13,7 +13,7 @@ export interface Locale {
     messages: { [catalog: string]: MessageCatalog };
 }
 
-export type PageKind = 'home' | 'conformance';
+export type PageKind = 'home' | 'conformance' | 'performance';
 
 export interface DocumentationRoute {
     page: 'docs';
@@ -32,6 +32,7 @@ export interface BrowserAssets {
     script: string;
     style: string;
     conformanceScript: string;
+    performanceScript: string;
     docsScript: string;
     siteStyle: string;
     files: string[];
@@ -47,6 +48,6 @@ export const cultures: CultureInfo[] = [
     { code: 'de', displayName: 'Deutsch', openGraphLocale: 'de_DE' }
 ];
 
-export const pageKinds: PageKind[] = ['home', 'conformance'];
+export const pageKinds: PageKind[] = ['home', 'conformance', 'performance'];
 
-export const catalogNames = ['common', 'home', 'conformance'];
+export const catalogNames = ['common', 'home', 'conformance', 'performance'];

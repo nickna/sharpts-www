@@ -26,6 +26,7 @@
     "features": "Fonctionnalités",
     "examples": "Exemples",
     "conformance": "Conformité",
+    "performance": "Performances",
     "playground": "Bac à sable",
     "documentation": "Documentation",
     "toggleAriaLabel": "Basculer la navigation"

@@ -1,0 +1,14 @@
+{
+  "metadata": { "title": "性能 — SharpTS", "description": "比较编译后的 SharpTS 与 Node.js，并查看编译器和桌面性能数据。" },
+  "eyebrow": "实测性能", "title": "以 .NET 速度运行 TypeScript",
+  "subtitle": "来自固定 SharpTS 版本的可复现基准数据，首先回答最重要的目标：达到或超过 Node.js。",
+  "suiteNavigation": "性能数据",
+  "navigation": { "node": "SharpTS 与 Node", "compiler": "编译器提升空间", "desktop": "桌面性能预算", "methodology": "测试方法" },
+  "summary": { "overall": "相对 Node 的几何平均值", "faster": "快于 Node", "parity": "与 Node 相差 5% 以内", "behind": "仍然落后", "cases": "个可比较用例", "notAvailable": "没有可比较的测试" },
+  "comparison": { "eyebrow": "主要基准", "title": "SharpTS 与 Node.js", "description": "每一行都在同一环境中比较相同的 TypeScript 工作负载。图表采用对数刻度，避免极端结果掩盖常规差异。", "ratioExplanation": "相对速度为 Node 平均值 ÷ SharpTS 平均值。大于 1× 表示 SharpTS 更快；0.95×–1.05× 视为实际持平。", "parity": "1× 持平", "workload": "工作负载", "result": "相对速度", "rawMeasurements": "原始测量", "mean": "平均值", "minimum": "最小值", "deviation": "标准差", "samples": "样本数", "iterations": "内部迭代", "unavailable": "不可用", "noResults": "没有符合筛选条件的基准。", "showing": "显示 {count} 个基准用例。" },
+  "filters": { "search": "搜索工作负载", "searchPlaceholder": "数组、JSON、正则…", "implementation": "SharpTS 模式", "reference": "比较对象", "family": "类别", "size": "输入大小", "all": "全部", "compiled": "编译", "interpreter": "解释器", "node": "Node.js", "bun": "Bun", "reset": "重置筛选" },
+  "status": { "faster": "更快", "nearParity": "接近持平", "behind": "较慢" },
+  "compiler": { "eyebrow": "工程上限", "title": "编译器提升空间", "description": "在同一次 BenchmarkDotNet 测试中，将 SharpTS 编译的 TypeScript 与等价动态 C# 和惯用 C# 比较。", "empty": "此 SharpTS 版本尚未签入审核后的 compiler-micro 快照。面板已准备好接收下一次发布的 schema-v2 测试。", "metric": "指标", "timing": "耗时", "throughput": "吞吐量", "allocation": "内存分配" },
+  "desktop": { "eyebrow": "发布约束", "title": "桌面性能预算", "description": "GUI 延迟、内存分配、启动、内存和发布大小数据与 Node 比较保持分离。", "empty": "尚未签入审核后的 GUI 快照。缺失数据绝不会显示为零或预算通过。", "actual": "实际值", "budget": "预算", "headroom": "余量", "pass": "通过", "fail": "超出预算", "baseline": "基线" },
+  "methodology": { "eyebrow": "理解数据", "title": "测试方法与来源", "description": "绝对测量值只在同一个绑定机器的测试内比较。绝不会合并不同测试套件或环境。", "runDate": "测试日期", "environment": "环境", "toolchain": "工具链", "timingScope": "计时范围", "includes": "包含", "excludes": "不包含", "sourceRevision": "SharpTS 版本", "rawJson": "原始标准化 JSON", "source": "基准源代码" }
+}

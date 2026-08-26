@@ -26,6 +26,7 @@
     "features": "功能",
     "examples": "示例",
     "conformance": "规范一致性",
+    "performance": "性能",
     "playground": "演练场",
     "documentation": "文档",
     "toggleAriaLabel": "切换导航"

@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "title": "Performances — SharpTS",
+    "description": "Comparez SharpTS compilé à Node.js et consultez les mesures du compilateur et du bureau."
+  },
+  "eyebrow": "Performances mesurées",
+  "title": "TypeScript à la vitesse de .NET",
+  "subtitle": "Des mesures reproductibles de la révision SharpTS épinglée, centrées sur l'objectif principal : atteindre ou dépasser Node.js.",
+  "suiteNavigation": "Mesures de performance",
+  "navigation": {
+    "node": "SharpTS face à Node",
+    "compiler": "Marge du compilateur",
+    "desktop": "Budgets bureau",
+    "methodology": "Méthodologie"
+  },
+  "summary": {
+    "overall": "Moyenne géométrique face à Node",
+    "faster": "Plus rapide que Node",
+    "parity": "À moins de 5 % de Node",
+    "behind": "Encore en retrait",
+    "cases": "cas comparables",
+    "notAvailable": "Aucune exécution comparable"
+  },
+  "comparison": {
+    "eyebrow": "Benchmark principal",
+    "title": "SharpTS face à Node.js",
+    "description": "Chaque ligne compare la même charge TypeScript dans le même environnement. L'échelle logarithmique empêche les valeurs extrêmes de masquer les résultats ordinaires.",
+    "ratioExplanation": "La vitesse relative est la moyenne Node ÷ la moyenne SharpTS. Au-dessus de 1×, SharpTS est favorisé ; 0,95×–1,05× est considéré comme une parité pratique.",
+    "parity": "Parité 1×",
+    "workload": "Charge",
+    "result": "Vitesse relative",
+    "rawMeasurements": "Mesures brutes",
+    "mean": "Moyenne",
+    "minimum": "Minimum",
+    "deviation": "Écart type",
+    "samples": "Échantillons",
+    "iterations": "Itérations internes",
+    "unavailable": "Indisponible",
+    "noResults": "Aucun benchmark ne correspond à ces filtres.",
+    "showing": "{count} cas de benchmark affichés."
+  },
+  "filters": {
+    "search": "Rechercher des charges",
+    "searchPlaceholder": "Tableau, JSON, regex…",
+    "implementation": "Mode SharpTS",
+    "reference": "Comparer avec",
+    "family": "Famille",
+    "size": "Taille d'entrée",
+    "all": "Toutes",
+    "compiled": "Compilé",
+    "interpreter": "Interpréteur",
+    "node": "Node.js",
+    "bun": "Bun",
+    "reset": "Réinitialiser"
+  },
+  "status": { "faster": "Plus rapide", "nearParity": "Presque à parité", "behind": "En retrait" },
+  "compiler": {
+    "eyebrow": "Plafond technique",
+    "title": "Marge du compilateur",
+    "description": "TypeScript compilé par SharpTS face au C# dynamique équivalent et au C# idiomatique dans chaque exécution BenchmarkDotNet.",
+    "empty": "Aucun instantané compiler-micro validé n'est encore intégré à cette révision. Le tableau est prêt pour la prochaine exécution schema-v2 publiée.",
+    "metric": "Mesure", "timing": "Temps", "throughput": "Débit", "allocation": "Allocation"
+  },
+  "desktop": {
+    "eyebrow": "Garde-fous de version",
+    "title": "Budgets de performance bureau",
+    "description": "La latence, l'allocation, le démarrage, la mémoire et la taille restent séparés de la comparaison Node.",
+    "empty": "Aucun instantané GUI validé n'est encore intégré. Une mesure absente n'est jamais affichée comme zéro ni comme un budget réussi.",
+    "actual": "Réel", "budget": "Budget", "headroom": "Marge", "pass": "Réussi", "fail": "Budget dépassé", "baseline": "Référence"
+  },
+  "methodology": {
+    "eyebrow": "Lire les mesures", "title": "Méthodologie et provenance",
+    "description": "Les mesures absolues ne sont comparées qu'au sein d'une même exécution liée à une machine. Les suites et environnements différents ne sont jamais combinés.",
+    "runDate": "Date", "environment": "Environnement", "toolchain": "Outils", "timingScope": "Périmètre temporel", "includes": "Inclus", "excludes": "Exclus", "sourceRevision": "Révision SharpTS", "rawJson": "JSON normalisé brut", "source": "Source du benchmark"
+  }
+}

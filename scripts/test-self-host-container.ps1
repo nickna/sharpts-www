@@ -151,14 +151,19 @@ try {
     $localizedRoutes = @{
         "/" = "en"
         "/conformance" = "en"
+        "/performance" = "en"
         "/zh-Hans" = "zh-Hans"
         "/zh-Hans/conformance" = "zh-Hans"
+        "/zh-Hans/performance" = "zh-Hans"
         "/fr" = "fr"
         "/fr/conformance" = "fr"
+        "/fr/performance" = "fr"
         "/es" = "es"
         "/es/conformance" = "es"
+        "/es/performance" = "es"
         "/de" = "de"
         "/de/conformance" = "de"
+        "/de/performance" = "de"
     }
     foreach ($legacyGuideRoute in @(
         "/how-it-works",
@@ -188,6 +193,12 @@ try {
                 "Conformance route $($route.Key) is missing the explorer markup."
             Assert-True ($page.Content.Contains('<script type="module"')) `
                 "Conformance route $($route.Key) is missing the explorer script."
+        }
+        if ($route.Key.EndsWith("/performance") -or $route.Key -eq "/performance") {
+            Assert-True ($page.Content.Contains('data-performance-explorer')) `
+                "Performance route $($route.Key) is missing the explorer markup."
+            Assert-True ($page.Content.Contains('<script type="module"')) `
+                "Performance route $($route.Key) is missing the explorer script."
         }
     }
 

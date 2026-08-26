@@ -12,6 +12,7 @@ import {
 import { renderDocumentationMarkdown } from '../../src/SharpTS.Www.SelfHost/docs-markdown';
 import { loadDocumentation } from '../../src/SharpTS.Www.SelfHost/documentation';
 import { loadConformanceData } from '../../src/SharpTS.Www.SelfHost/conformance-data';
+import { loadPerformanceData } from '../../src/SharpTS.Www.SelfHost/performance-data';
 import { loadLocale } from '../../src/SharpTS.Www.SelfHost/i18n';
 import { loadSitePaths } from '../../src/SharpTS.Www.SelfHost/site-config';
 import {
@@ -37,26 +38,32 @@ describe('static site primitives', () => {
     it('renders every page kind, an alternate locale, and documentation with stable metadata and assets', () => {
         const paths = loadSitePaths();
         const conformance = loadConformanceData(paths.repoRoot);
+        const performance = loadPerformanceData(paths.repoRoot);
         const assets: BrowserAssets = {
             script: 'site.js',
             style: 'browser.css',
             conformanceScript: 'conformance.js',
+            performanceScript: 'performance.js',
             docsScript: 'docs.js',
             siteStyle: 'site.css',
             files: []
         };
         const english = loadLocale(paths.localeRoot, cultures[0]);
         const french = loadLocale(paths.localeRoot, cultures[2]);
-        for (const page of ['home', 'conformance'] as const) {
-            const html = renderDocument(english, page, assets, conformance);
+        for (const page of ['home', 'conformance', 'performance'] as const) {
+            const html = renderDocument(english, page, assets, conformance, performance);
             expect(html).toContain(`<link rel="canonical" href="https://sharpts.dev${routePath(cultures[0], page)}">`);
             expect(html).toContain('hreflang="fr"');
             expect(html).toContain('/assets/browser/browser.css');
             expect(html).toContain(
-                page === 'conformance' ? '/assets/browser/conformance.js' : '/assets/browser/site.js'
+                page === 'conformance'
+                    ? '/assets/browser/conformance.js'
+                    : page === 'performance'
+                      ? '/assets/browser/performance.js'
+                      : '/assets/browser/site.js'
             );
         }
-        const homeHtml = renderDocument(english, 'home', assets, conformance);
+        const homeHtml = renderDocument(english, 'home', assets, conformance, performance);
         expect(homeHtml).toContain('<div id="support">');
         expect(homeHtml.match(/<article class="card support-card">/g)).toHaveLength(4);
         expect(homeHtml).toContain('href="/conformance"');
@@ -64,7 +71,10 @@ describe('static site primitives', () => {
         expect(homeHtml).toContain('href="https://github.com/nickna/SharpTS/blob/main/STATUS-NODE.md"');
         expect(homeHtml).not.toContain('comparison__table');
         expect(homeHtml).not.toContain('badge-green');
-        expect(renderDocument(french, 'home', assets, conformance)).toContain('href="/fr/conformance"');
+        expect(renderDocument(french, 'home', assets, conformance, performance)).toContain('href="/fr/conformance"');
+        expect(renderDocument(french, 'performance', assets, conformance, performance)).toContain(
+            'href="/fr/performance"'
+        );
 
         const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
         const article = documentation.published[1];
@@ -77,14 +87,14 @@ describe('static site primitives', () => {
         const apiPages = apiReferencePages(apiCatalog);
         const buttonPage = apiPages.find((page) => page.kind === 'symbol' && page.symbol.name === 'Button')!;
         const apiHtml = renderApiReferenceDocument(english, buttonPage, apiCatalog, documentation, assets);
-        expect(apiCatalog.symbols).toHaveLength(174);
-        expect(apiPages).toHaveLength(184);
+        expect(apiCatalog.symbols).toHaveLength(198);
+        expect(apiPages).toHaveLength(208);
         expect(apiHtml).toContain('<link rel="canonical" href="https://sharpts.dev/docs/api/gui/button">');
         expect(apiHtml).toContain('data-api-search');
         expect(apiHtml).toContain('id="control-metadata"');
         expect(apiHtml).toContain('Default:');
         expect(apiHtml).toContain(apiCatalog.package.revision);
-        expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(174);
+        expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(198);
     });
 
     it('renders page-aware documentation contribution and issue links', () => {
@@ -93,6 +103,7 @@ describe('static site primitives', () => {
             script: 'site.js',
             style: 'browser.css',
             conformanceScript: 'conformance.js',
+            performanceScript: 'performance.js',
             docsScript: 'docs.js',
             siteStyle: 'site.css',
             files: []
@@ -172,6 +183,7 @@ describe('static site primitives', () => {
             script: 'site.js',
             style: 'browser.css',
             conformanceScript: 'conformance.js',
+            performanceScript: 'performance.js',
             docsScript: 'docs.js',
             siteStyle: 'site.css',
             files: []
@@ -186,7 +198,8 @@ describe('static site primitives', () => {
             roots: []
         };
         const english = loadLocale(paths.localeRoot, cultures[0]);
-        const homeHtml = renderDocument(english, 'home', assets, conformance);
+        const performance = loadPerformanceData(paths.repoRoot);
+        const homeHtml = renderDocument(english, 'home', assets, conformance, performance);
         expect(homeHtml.match(/curl -fsSL https:\/\/sharpts\.dev\/setup\.sh \| sh/g)).toHaveLength(2);
         expect(homeHtml.match(/irm https:\/\/sharpts\.dev\/setup\.ps1 \| iex/g)).toHaveLength(2);
         expect(homeHtml).not.toContain('dotnet tool install -g SharpTS');
@@ -218,7 +231,7 @@ describe('static site primitives', () => {
         ];
         cultures.forEach((culture, index) => {
             const locale = loadLocale(paths.localeRoot, culture);
-            const html = renderDocument(locale, 'home', assets, conformance);
+            const html = renderDocument(locale, 'home', assets, conformance, performance);
             expect(html).toContain(escapeHtml(localizedDescriptions[index]));
             expect(html).toContain('curl -fsSL https://sharpts.dev/setup.sh | sh');
             expect(html).toContain('irm https://sharpts.dev/setup.ps1 | iex');
