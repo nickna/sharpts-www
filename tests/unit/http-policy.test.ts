@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { loadServerConfig } from '../../src/SharpTS.Www.SelfHost/config';
 import {
     clientIdentity,
+    legacyGuideRedirect,
     normalizeRequestPath,
     originAllowed,
     staticFilePath
@@ -20,6 +21,14 @@ describe('HTTP policy', () => {
         const root = path.resolve('site', 'public');
         expect(staticFilePath(root, '/guide')).toBe(path.join(root, 'guide', 'index.html'));
         expect(staticFilePath(root, '/../secret')).toBeNull();
+    });
+
+    it('redirects retired localized guide routes to the canonical documentation', () => {
+        const canonical = '/docs/compiler-concepts/compilation-and-native-aot';
+        expect(legacyGuideRedirect('/how-it-works')).toBe(canonical);
+        expect(legacyGuideRedirect('/fr/how-it-works/')).toBe(canonical);
+        expect(legacyGuideRedirect('/conformance')).toBeNull();
+        expect(legacyGuideRedirect('/other/how-it-works')).toBeNull();
     });
 
     it('applies explicit and host-derived same-origin checks', () => {

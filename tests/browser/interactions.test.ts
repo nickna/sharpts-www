@@ -25,11 +25,6 @@ describe('static site interactions', () => {
             <button class="tab active" data-example-tab="1" aria-selected="true" tabindex="0"></button>
             <button class="tab" data-example-tab="2" aria-selected="false" tabindex="-1"></button>
             <div data-example-panel="1"></div><div data-example-panel="2" hidden><code class="language-typescript">let x = 1;</code></div>
-          </div>
-          <div data-architecture>
-            <button data-architecture-stage="Lexer" aria-pressed="false"></button>
-            <p data-architecture-hint>Choose</p>
-            <div data-architecture-detail="Lexer" hidden>Lexer detail</div>
           </div>`;
         Object.defineProperty(navigator, 'clipboard', {
             configurable: true,
@@ -103,7 +98,7 @@ describe('static site interactions', () => {
         expect(heroShell.getAttribute('aria-selected')).toBe('true');
     });
 
-    it('switches examples and architecture details without replacing content', () => {
+    it('switches examples without replacing content', () => {
         const secondTab = document.querySelector<HTMLButtonElement>('[data-example-tab="2"]')!;
         secondTab.click();
         expect(secondTab.getAttribute('aria-selected')).toBe('true');
@@ -113,13 +108,5 @@ describe('static site interactions', () => {
         expect(document.querySelector<HTMLButtonElement>('[data-example-tab="1"]')!.getAttribute('aria-selected')).toBe(
             'true'
         );
-
-        const lexer = document.querySelector<HTMLButtonElement>('[data-architecture-stage="Lexer"]')!;
-        lexer.click();
-        expect(lexer.getAttribute('aria-pressed')).toBe('true');
-        expect(document.querySelector<HTMLElement>('[data-architecture-detail="Lexer"]')!.hidden).toBe(false);
-        expect(document.querySelector<HTMLElement>('[data-architecture-hint]')!.hidden).toBe(true);
-        lexer.click();
-        expect(lexer.getAttribute('aria-pressed')).toBe('false');
     });
 });

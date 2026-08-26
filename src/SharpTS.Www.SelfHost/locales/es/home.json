@@ -222,5 +222,20 @@
       "title": "Herramientas de línea de comandos autónomas",
       "desc": "Compila a un único ejecutable autónomo que funciona sin instalar un runtime aparte — sin Node en la máquina de destino, sin carpeta <code>node_modules</code> junto a tu herramienta."
     }
+  },
+  "architecture": {
+    "title": "Cómo funciona",
+    "subtitle": "Una canalización de varias etapas, desde el código fuente hasta la ejecución",
+    "label": {
+      "source": "Código fuente",
+      "lexer": "Lexer",
+      "parser": "Analizador",
+      "typeChecker": "Comprobador de tipos",
+      "interpreter": "Intérprete",
+      "ilCompiler": "Compilador de IL"
+    },
+    "cta": {
+      "learnMore": "Descubre cómo funciona"
+    }
   }
 }

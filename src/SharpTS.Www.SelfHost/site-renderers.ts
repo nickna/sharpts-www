@@ -99,7 +99,6 @@ function languageSelector(locale: Locale, page: PageKind): string {
 function renderNav(locale: Locale, page: PageKind | 'docs'): string {
     const bundle = 'common';
     const home = routePath(locale.culture, 'home');
-    const guide = routePath(locale.culture, 'guide');
     const conformance = routePath(locale.culture, 'conformance');
     return `<header class="nav" data-nav>
   <div class="container nav__inner">
@@ -107,7 +106,6 @@ function renderNav(locale: Locale, page: PageKind | 'docs'): string {
     <nav class="nav__links" data-nav-links>
       <a href="${home}#features" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Features'))}</a>
       <a href="${home}#examples" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Examples'))}</a>
-      <a href="${guide}" class="nav__link"${page === 'guide' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_HowItWorks'))}</a>
       <a href="${conformance}" class="nav__link"${page === 'conformance' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Conformance'))}</a>
       <a href="${home}#playground" class="nav__link">${escapeHtml(t(locale, bundle, 'Nav_Playground'))}</a>
       <a href="/docs" class="nav__link"${page === 'docs' ? ' aria-current="page"' : ''}>${escapeHtml(t(locale, bundle, 'Nav_Documentation'))}</a>
@@ -212,10 +210,10 @@ function renderUseCases(locale: Locale): string {
 }
 
 function renderArchitecturePreview(locale: Locale): string {
-    const bundle = 'how-it-works.architecture';
+    const bundle = 'home.architecture';
     const node = (key: string, className: string = ''): string =>
         `<span class="arch-preview__node${className}">${escapeHtml(t(locale, bundle, key))}</span>`;
-    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="arch-preview reveal"><div class="arch-preview__flow">${node('Label_Source')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Lexer')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Parser')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_TypeChecker', ' arch-preview__node--accent')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Interpreter', ' arch-preview__node--interpret')}<span class="arch-preview__sep arch-preview__sep--or" aria-hidden="true">/</span>${node('Label_ILCompiler', ' arch-preview__node--compile')}</div><a href="${routePath(locale.culture, 'guide')}" class="btn btn-primary arch-preview__cta">${escapeHtml(t(locale, bundle, 'Cta_LearnMore'))}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></div></div></section>`;
+    return `<section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="arch-preview reveal"><div class="arch-preview__flow">${node('Label_Source')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Lexer')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Parser')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_TypeChecker', ' arch-preview__node--accent')}<span class="arch-preview__sep" aria-hidden="true">→</span>${node('Label_Interpreter', ' arch-preview__node--interpret')}<span class="arch-preview__sep arch-preview__sep--or" aria-hidden="true">/</span>${node('Label_ILCompiler', ' arch-preview__node--compile')}</div><a href="/docs/compiler-concepts/compilation-and-native-aot" class="btn btn-primary arch-preview__cta">${escapeHtml(t(locale, bundle, 'Cta_LearnMore'))}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></a></div></div></section>`;
 }
 
 const playgroundTimingPhases = [
@@ -320,56 +318,6 @@ function renderGettingStarted(locale: Locale): string {
 
 export function renderHome(locale: Locale): string {
     return `<main class="landing">${renderHero(locale)}<div id="features">${renderFeatures(locale)}</div><div id="examples">${renderExamples(locale)}</div><div id="use-cases">${renderUseCases(locale)}</div><div id="architecture">${renderArchitecturePreview(locale)}</div>${renderPlayground(locale)}<div id="support">${renderSupportOverview(locale)}</div><div id="faq">${renderFaq(locale)}</div><div id="get-started">${renderGettingStarted(locale)}</div>${renderFooter(locale)}</main>`;
-}
-
-const architectureStages = ['Lexer', 'Parser', 'TypeChecker', 'Interpreter', 'ILCompiler'];
-
-function architectureButton(locale: Locale, stage: string, modifier: string, icon: string): string {
-    const bundle = 'how-it-works.architecture';
-    return `<button type="button" class="pipeline__box${modifier}" data-architecture-stage="${stage}" aria-pressed="false"><span class="pipeline__icon" aria-hidden="true">${icon}</span><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_' + stage))}</span><span class="pipeline__detail">${escapeHtml(t(locale, bundle, 'Detail_' + stage))}</span></button>`;
-}
-
-function renderArchitectureDiagram(locale: Locale): string {
-    const bundle = 'how-it-works.architecture';
-    const explanations = architectureStages.map(stage => `<div class="pipeline__detail-content" data-architecture-detail="${stage}" hidden><h3 class="pipeline__detail-title">${escapeHtml(t(locale, bundle, 'Label_' + stage))}</h3><p class="pipeline__detail-body">${escapeHtml(t(locale, bundle, 'Explain_' + stage))}</p></div>`).join('\n');
-    return `<section class="section"><div class="container"><h1 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><div class="architecture reveal" data-architecture>
-  <div class="pipeline"><div class="pipeline__step"><div class="pipeline__box pipeline__box--input"><span class="pipeline__icon" aria-hidden="true">📄</span><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_Source'))}</span></div><div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'Lexer', '', '🔤')}<div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'Parser', '', '🌳')}<div class="pipeline__arrow"></div></div><div class="pipeline__step">${architectureButton(locale, 'TypeChecker', ' pipeline__box--accent', '🔍')}<div class="pipeline__arrow pipeline__arrow--fork"></div></div></div>
-  <div class="pipeline__branches"><div class="pipeline__branch"><div class="pipeline__branch-arrow pipeline__branch-arrow--top"></div>${architectureButton(locale, 'Interpreter', ' pipeline__box--interpret', '▶️')}<div class="pipeline__arrow"></div><div class="pipeline__box pipeline__box--output"><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_Output'))}</span></div></div><div class="pipeline__branch"><div class="pipeline__branch-arrow pipeline__branch-arrow--bottom"></div>${architectureButton(locale, 'ILCompiler', ' pipeline__box--compile', '⚙️')}<div class="pipeline__arrow"></div><div class="pipeline__box pipeline__box--output"><span class="pipeline__label">${escapeHtml(t(locale, bundle, 'Label_DotNetAssembly'))}</span></div></div></div>
-  <div class="pipeline__detail-panel" role="region" aria-live="polite"><p class="pipeline__detail-hint" data-architecture-hint>${escapeHtml(t(locale, bundle, 'SelectHint'))}</p>${explanations}</div>
-</div></div></section>`;
-}
-
-const compileCommand = 'sharpts --compile script.ts\ndotnet script.dll';
-const typingExample = 'interface Walkable { walk(): void }\nclass Dog { walk(): void {} }\n\nlet w: Walkable = new Dog();';
-const dotNetExample = [
-    '@DotNetType("System.Text.StringBuilder")',
-    'declare class StringBuilder {',
-    '    constructor();',
-    '    append(value: string): StringBuilder;',
-    '    toString(): string;',
-    '}',
-    '',
-    'const sb = new StringBuilder();',
-    'sb.append("Hello from .NET!");',
-    'console.log(sb.toString());'
-].join('\n');
-
-export function renderGuide(locale: Locale): string {
-    const bundle = 'how-it-works';
-    const capabilities = [
-        ['🔌', 'Cap1_Title', 'Cap1_Body'], ['🤝', 'Cap2_Title', 'Cap2_Body'],
-        ['📦', 'Cap3_Title', 'Cap3_Body'], ['🛠️', 'Cap4_Title', 'Cap4_Body'],
-        ['💡', 'Cap5_Title', 'Cap5_Body']
-    ];
-    const capabilityCards = capabilities.map(capability => `<div class="card capability-card reveal"><span class="capability-card__icon" aria-hidden="true">${capability[0]}</span><h3 class="capability-card__title">${escapeHtml(t(locale, bundle, capability[1]))}</h3><p class="capability-card__body">${escapeHtml(t(locale, bundle, capability[2]))}</p></div>`).join('\n');
-    const home = routePath(locale.culture, 'home');
-    return `<main class="landing">${renderArchitectureDiagram(locale)}
-  <section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Modes_Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Modes_Subtitle'))}</p><div class="modes reveal"><div class="card mode-card"><span class="mode-card__icon" aria-hidden="true">▶️</span><h3 class="mode-card__title">${escapeHtml(t(locale, bundle, 'Mode_Interpret_Title'))}</h3><p class="mode-card__desc">${escapeHtml(t(locale, bundle, 'Mode_Interpret_Desc'))}</p>${codeBlock(locale, t(locale, bundle, 'Terminal'), 'bash', 'sharpts script.ts')}</div><div class="card mode-card"><span class="mode-card__icon" aria-hidden="true">⚙️</span><h3 class="mode-card__title">${escapeHtml(t(locale, bundle, 'Mode_Compile_Title'))}</h3><p class="mode-card__desc">${escapeHtml(t(locale, bundle, 'Mode_Compile_Desc'))}</p>${codeBlock(locale, t(locale, bundle, 'Terminal'), 'bash', compileCommand)}</div></div></div></section>
-  <section class="section"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Typing_Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Typing_Subtitle'))}</p><div class="typing reveal"><div class="typing__cols"><div class="card typing-card"><h3 class="typing-card__title">${escapeHtml(t(locale, bundle, 'Typing_CompileTime_Title'))}</h3><p class="typing-card__desc">${escapeHtml(t(locale, bundle, 'Typing_CompileTime_Desc'))}</p></div><div class="typing__arrow" aria-hidden="true">→</div><div class="card typing-card"><h3 class="typing-card__title">${escapeHtml(t(locale, bundle, 'Typing_Runtime_Title'))}</h3><p class="typing-card__desc">${escapeHtml(t(locale, bundle, 'Typing_Runtime_Desc'))}</p></div></div><div class="typing__example">${codeBlock(locale, 'shapes.ts', 'typescript', typingExample)}<p class="typing__caption">${escapeHtml(t(locale, bundle, 'Typing_Caption'))}</p></div></div></div></section>
-  <section class="section section--alt"><div class="container"><h2 class="section-title reveal">${escapeHtml(t(locale, bundle, 'Dotnet_Title'))}</h2><p class="section-subtitle reveal">${escapeHtml(t(locale, bundle, 'Dotnet_Subtitle'))}</p><div class="capability-grid">${capabilityCards}</div><div class="dotnet-example reveal">${codeBlock(locale, 'dotnet-interop.ts', 'typescript', dotNetExample)}</div><p class="matrix-link reveal"><a href="${home}#support">${escapeHtml(t(locale, bundle, 'Matrix_Link'))}</a></p></div></section>
-  <section class="section"><div class="container"><div class="guide-cta reveal"><h2 class="guide-cta__title">${escapeHtml(t(locale, bundle, 'Cta_Title'))}</h2><p class="guide-cta__body">${escapeHtml(t(locale, bundle, 'Cta_Body'))}</p><div class="guide-cta__actions"><a href="${home}#playground" class="btn btn-primary">${escapeHtml(t(locale, bundle, 'Cta_Playground'))}</a><a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary">${escapeHtml(t(locale, bundle, 'Cta_GitHub'))}</a></div></div></div></section>
-  ${renderFooter(locale)}
-</main>`;
 }
 
 function conformanceName(locale: Locale, node: ConformanceNode): string {
@@ -564,7 +512,7 @@ export function renderDocument(locale: Locale, page: PageKind, browserAssets: Br
     const appBundle = 'home';
     const pagePath = routePath(locale.culture, page);
     const canonical = siteOrigin + pagePath;
-    const pageBundle = page === 'guide' ? 'how-it-works' : 'conformance';
+    const pageBundle = 'conformance';
     const title = page === 'home' ? t(locale, appBundle, 'Meta_Title') : t(locale, pageBundle, 'Meta_Title');
     const ogTitle = page === 'home' ? t(locale, appBundle, 'Og_Title') : title;
     const description = page === 'conformance'
@@ -575,7 +523,7 @@ export function renderDocument(locale: Locale, page: PageKind, browserAssets: Br
         : t(locale, appBundle, 'Og_Description');
     const body = page === 'home'
         ? renderHome(locale)
-        : page === 'guide' ? renderGuide(locale) : renderConformance(locale, conformanceData);
+        : renderConformance(locale, conformanceData);
     const preloadScript = page === 'conformance' ? '' : '  <script src="/js/preload.js"></script>\n';
     const browserScript = page === 'conformance'
         ? `  <script type="module" src="/assets/browser/${browserAssets.conformanceScript}"></script>\n`

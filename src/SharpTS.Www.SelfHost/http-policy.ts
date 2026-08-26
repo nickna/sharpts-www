@@ -40,6 +40,14 @@ export function normalizeRequestPath(rawUrl: string): string | null {
     return normalized.startsWith('/') ? normalized : '/' + normalized;
 }
 
+const legacyGuidePattern = /^\/(?:(?:zh-Hans|fr|es|de)\/)?how-it-works\/?$/;
+
+export function legacyGuideRedirect(normalizedPath: string): string | null {
+    return legacyGuidePattern.test(normalizedPath)
+        ? '/docs/compiler-concepts/compilation-and-native-aot'
+        : null;
+}
+
 export function staticFilePath(contentRoot: string, normalizedPath: string): string | null {
     let relativePath = normalizedPath === '/' ? 'index.html' : normalizedPath.slice(1);
     if (relativePath.endsWith('/'))

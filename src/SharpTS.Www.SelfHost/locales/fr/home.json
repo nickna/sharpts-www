@@ -222,5 +222,20 @@
       "title": "Outils en ligne de commande autonomes",
       "desc": "Compilez vers un exécutable autonome unique qui s'exécute sans installation de runtime séparée — pas de Node sur la machine cible, pas de dossier <code>node_modules</code> livré à côté de votre outil."
     }
+  },
+  "architecture": {
+    "title": "Comment ça marche",
+    "subtitle": "Un pipeline multi-étapes, de la source à l'exécution",
+    "label": {
+      "source": "Source",
+      "lexer": "Lexer",
+      "parser": "Analyseur",
+      "typeChecker": "Vérificateur de types",
+      "interpreter": "Interpréteur",
+      "ilCompiler": "Compilateur IL"
+    },
+    "cta": {
+      "learnMore": "Découvrir le fonctionnement"
+    }
   }
 }

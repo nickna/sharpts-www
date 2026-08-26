@@ -47,7 +47,7 @@ describe('static site primitives', () => {
         };
         const english = loadLocale(paths.localeRoot, cultures[0]);
         const french = loadLocale(paths.localeRoot, cultures[2]);
-        for (const page of ['home', 'guide', 'conformance'] as const) {
+        for (const page of ['home', 'conformance'] as const) {
             const html = renderDocument(english, page, assets, conformance);
             expect(html).toContain(`<link rel="canonical" href="https://sharpts.dev${routePath(cultures[0], page)}">`);
             expect(html).toContain('hreflang="fr"');
@@ -60,11 +60,11 @@ describe('static site primitives', () => {
         expect(homeHtml).toContain('<div id="support">');
         expect(homeHtml.match(/<article class="card support-card">/g)).toHaveLength(4);
         expect(homeHtml).toContain('href="/conformance"');
+        expect(homeHtml).toContain('href="/docs/compiler-concepts/compilation-and-native-aot"');
         expect(homeHtml).toContain('href="https://github.com/nickna/SharpTS/blob/main/STATUS-NODE.md"');
         expect(homeHtml).not.toContain('comparison__table');
         expect(homeHtml).not.toContain('badge-green');
         expect(renderDocument(french, 'home', assets, conformance)).toContain('href="/fr/conformance"');
-        expect(renderDocument(french, 'guide', assets, conformance)).toContain('<html lang="fr">');
 
         const documentation = loadDocumentation(paths.repoRoot, paths.docsRoot);
         const article = documentation.published[1];
@@ -252,10 +252,8 @@ describe('static site primitives', () => {
 
     it('emits stable localized routes', () => {
         expect(routePath(cultures[0], 'home')).toBe('/');
-        expect(routePath(cultures[0], 'guide')).toBe('/how-it-works');
         expect(routePath(cultures[0], 'conformance')).toBe('/conformance');
         expect(routePath(cultures[2], 'home')).toBe('/fr');
-        expect(routePath(cultures[2], 'guide')).toBe('/fr/how-it-works');
         expect(routePath(cultures[2], 'conformance')).toBe('/fr/conformance');
         expect(docsRoutePath('index')).toBe('/docs');
         expect(docsRoutePath('getting-started/installation')).toBe('/docs/getting-started/installation');

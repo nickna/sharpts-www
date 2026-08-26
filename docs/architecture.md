@@ -75,8 +75,8 @@ runtime types. The browser and supervisor validate JSON again before use.
 
 The generator is separated into path/configuration, localization, safe HTML,
 filesystem, validation/build, and page-markup modules. Each of the five culture
-directories contains `common.json`, `home.json`, `how-it-works.json`, and
-`conformance.json`. English defines the recursive dotted-key shape; every leaf
+directories contains `common.json`, `home.json`, and `conformance.json`.
+English defines the recursive dotted-key shape; every leaf
 must be a string, and French, Spanish, German, and Simplified Chinese must have
 identical keys and named-placeholder sets. Catalogs are read with
 `readFileSync`/`JSON.parse` at build time and are not shipped to the browser.

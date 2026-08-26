@@ -99,32 +99,6 @@ function initializeInstallerSelectors(doc: Document): void {
     });
 }
 
-function initializeArchitecture(doc: Document): void {
-    doc.querySelectorAll<HTMLElement>('[data-architecture]').forEach(diagram => {
-        const buttons = Array.from(diagram.querySelectorAll<HTMLButtonElement>('[data-architecture-stage]'));
-        const details = Array.from(diagram.querySelectorAll<HTMLElement>('[data-architecture-detail]'));
-        const hint = diagram.querySelector<HTMLElement>('[data-architecture-hint]');
-        let selected: string | null = null;
-
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                const stage = button.dataset.architectureStage || null;
-                selected = selected === stage ? null : stage;
-                buttons.forEach(candidate => {
-                    const active = candidate.dataset.architectureStage === selected;
-                    candidate.classList.toggle('pipeline__box--selected', active);
-                    candidate.setAttribute('aria-pressed', String(active));
-                });
-                details.forEach(detail => {
-                    detail.hidden = detail.dataset.architectureDetail !== selected;
-                });
-                if (hint)
-                    hint.hidden = selected !== null;
-            });
-        });
-    });
-}
-
 function initializeHeroParticles(doc: Document, win: Window): void {
     const canvas = doc.querySelector<HTMLCanvasElement>('#hero-particles');
     if (!canvas)
@@ -242,7 +216,6 @@ export function initializeInteractions(doc: Document = document, win: Window = w
     initialize('copy buttons', () => initializeCopyButtons(doc, win));
     initialize('installer selectors', () => initializeInstallerSelectors(doc));
     initialize('examples', () => initializeExamples(doc));
-    initialize('architecture', () => initializeArchitecture(doc));
     initialize('hero particles', () => initializeHeroParticles(doc, win));
 
     const highlight = (): void => initialize(

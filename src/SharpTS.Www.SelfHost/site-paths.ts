@@ -4,7 +4,7 @@ import type { CultureInfo, DocumentationRoute, PageKind } from './site-model';
 export function routePath(culture: CultureInfo, page: PageKind): string {
     const prefix = culture.code === 'en' ? '' : '/' + culture.code;
     if (page === 'home') return prefix || '/';
-    return prefix + (page === 'guide' ? '/how-it-works' : '/conformance');
+    return prefix + '/conformance';
 }
 
 export function docsRoutePath(route: DocumentationRoute | string): string {
@@ -36,9 +36,7 @@ export function outputPath(outputRoot: string, culture: CultureInfo, page: PageK
     const segments: string[] = [];
     if (culture.code !== 'en')
         segments.push(culture.code);
-    if (page === 'guide')
-        segments.push('how-it-works');
-    else if (page === 'conformance')
+    if (page === 'conformance')
         segments.push('conformance');
     segments.push('index.html');
     return path.join(outputRoot, ...segments);

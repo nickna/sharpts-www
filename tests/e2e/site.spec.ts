@@ -36,6 +36,15 @@ test('malformed playground input is rejected without destabilizing the host', as
     await expect(health.json()).resolves.toMatchObject({ status: 'healthy' });
 });
 
+test('retired How It Works routes permanently redirect to the canonical documentation', async ({ request }) => {
+    for (const route of ['/how-it-works', '/zh-Hans/how-it-works', '/fr/how-it-works',
+        '/es/how-it-works', '/de/how-it-works']) {
+        const response = await request.get(route, { maxRedirects: 0 });
+        expect(response.status(), route).toBe(308);
+        expect(response.headers().location, route).toBe('/docs/compiler-concepts/compilation-and-native-aot');
+    }
+});
+
 test('static interactions work without Blazor or external browser assets', async ({ page }) => {
     const externalRequests: string[] = [];
     page.on('request', (request) => {
@@ -89,10 +98,11 @@ test('static interactions work without Blazor or external browser assets', async
     });
     expect(supportFitsViewport).toBe(true);
 
-    await page.goto('/how-it-works');
-    await page.locator('[data-architecture-stage="Lexer"]').click();
-    await expect(page.locator('[data-architecture-stage="Lexer"]')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('[data-architecture-detail="Lexer"]')).toBeVisible();
+    await page.goto('/');
+    await expect(page.locator('#architecture .arch-preview__cta')).toHaveAttribute(
+        'href',
+        '/docs/compiler-concepts/compilation-and-native-aot'
+    );
     expect(externalRequests).toEqual([]);
 });
 
@@ -294,14 +304,12 @@ test('representative localized pages meet automated WCAG checks', async ({ page 
 
     for (const route of [
         '/',
-        '/how-it-works',
         '/conformance',
         '/docs/getting-started/desktop-gui',
         '/docs/getting-started/scripting',
         '/docs/compiler-concepts/performance',
         '/docs/api/gui/button',
         '/fr',
-        '/fr/how-it-works',
         '/fr/conformance'
     ]) {
         await page.goto(route);

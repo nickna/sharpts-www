@@ -222,5 +222,20 @@
       "title": "Eigenständige Kommandozeilen-Tools",
       "desc": "Kompilieren Sie zu einer einzigen eigenständigen ausführbaren Datei, die ohne separate Laufzeitinstallation läuft — kein Node auf der Zielmaschine, kein <code>node_modules</code>-Ordner neben Ihrem Tool."
     }
+  },
+  "architecture": {
+    "title": "So funktioniert es",
+    "subtitle": "Eine mehrstufige Pipeline vom Quellcode bis zur Ausführung",
+    "label": {
+      "source": "Quellcode",
+      "lexer": "Lexer",
+      "parser": "Parser",
+      "typeChecker": "Typprüfer",
+      "interpreter": "Interpreter",
+      "ilCompiler": "IL-Compiler"
+    },
+    "cta": {
+      "learnMore": "So funktioniert es"
+    }
   }
 }

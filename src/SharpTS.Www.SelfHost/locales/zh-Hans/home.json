@@ -222,5 +222,20 @@
       "title": "自包含的命令行工具",
       "desc": "编译为单个自包含可执行文件，无需单独安装运行时——目标机器上不需要 Node，工具旁边也不用附带 <code>node_modules</code> 文件夹。"
     }
+  },
+  "architecture": {
+    "title": "工作原理",
+    "subtitle": "从源代码到执行的多阶段流水线",
+    "label": {
+      "source": "源代码",
+      "lexer": "词法分析器",
+      "parser": "解析器",
+      "typeChecker": "类型检查器",
+      "interpreter": "解释器",
+      "ilCompiler": "IL 编译器"
+    },
+    "cta": {
+      "learnMore": "了解工作原理"
+    }
   }
 }

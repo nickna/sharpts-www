@@ -65,4 +65,4 @@ sharpts --compile src/native/report.ts
 - Shared modules use APIs supported by both environments and should avoid environment-specific side effects.
 - npm and package compatibility must be checked for the package and APIs you use; do not assume that every browser or Node package is portable.
 
-For current language support, see [Conformance](/conformance). For the compiler pipeline and architecture, see [How It Works](/how-it-works).
+For current language support, see [Conformance](/conformance). For the compiler pipeline and architecture, see [Compilation and Native AOT](/docs/compiler-concepts/compilation-and-native-aot).

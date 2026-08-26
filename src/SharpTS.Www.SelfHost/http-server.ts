@@ -5,6 +5,7 @@ import { parseRunRequest } from './execution-contract';
 import type { ServerConfig } from './config';
 import {
     clientIdentity,
+    legacyGuideRedirect,
     normalizeRequestPath,
     originAllowed,
     staticFilePath
@@ -319,6 +320,15 @@ const server: HttpServer = createServer(((rawRequest: any, rawResponse: any): vo
     if (!normalizedPath) {
         sendJson(response, requestId, method, '<invalid>', startedAt, 400,
             { error: 'Invalid request path.' });
+        return;
+    }
+
+    const redirect = legacyGuideRedirect(normalizedPath);
+    if ((method === 'GET' || method === 'HEAD') && redirect) {
+        response.statusCode = 308;
+        response.setHeader('Location', redirect);
+        response.end();
+        logRequest(requestId, method, normalizedPath, 308, startedAt);
         return;
     }
 

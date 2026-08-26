@@ -150,20 +150,29 @@ try {
 
     $localizedRoutes = @{
         "/" = "en"
-        "/how-it-works" = "en"
         "/conformance" = "en"
         "/zh-Hans" = "zh-Hans"
-        "/zh-Hans/how-it-works" = "zh-Hans"
         "/zh-Hans/conformance" = "zh-Hans"
         "/fr" = "fr"
-        "/fr/how-it-works" = "fr"
         "/fr/conformance" = "fr"
         "/es" = "es"
-        "/es/how-it-works" = "es"
         "/es/conformance" = "es"
         "/de" = "de"
-        "/de/how-it-works" = "de"
         "/de/conformance" = "de"
+    }
+    foreach ($legacyGuideRoute in @(
+        "/how-it-works",
+        "/zh-Hans/how-it-works",
+        "/fr/how-it-works",
+        "/es/how-it-works",
+        "/de/how-it-works"
+    )) {
+        $redirect = Invoke-WebRequest -Method Get -Uri "$origin$legacyGuideRoute" `
+            -MaximumRedirection 0 -SkipHttpErrorCheck -TimeoutSec 25
+        Assert-True ([int]$redirect.StatusCode -eq 308) `
+            "Legacy guide route $legacyGuideRoute did not return HTTP 308."
+        Assert-True ([string]$redirect.Headers["Location"] -eq "/docs/compiler-concepts/compilation-and-native-aot") `
+            "Legacy guide route $legacyGuideRoute returned the wrong redirect target."
     }
     foreach ($route in $localizedRoutes.GetEnumerator()) {
         $page = Invoke-TestRequest -Method Get -Path $route.Key

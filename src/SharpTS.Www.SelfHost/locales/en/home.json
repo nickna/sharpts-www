@@ -222,5 +222,20 @@
       "title": "Self-contained command-line tools",
       "desc": "Compile to a single self-contained executable that runs without a separate runtime install — no Node on the target machine, no <code>node_modules</code> folder shipped next to your tool."
     }
+  },
+  "architecture": {
+    "title": "How It Works",
+    "subtitle": "A multi-stage pipeline from source to execution",
+    "label": {
+      "source": "Source",
+      "lexer": "Lexer",
+      "parser": "Parser",
+      "typeChecker": "TypeChecker",
+      "interpreter": "Interpreter",
+      "ilCompiler": "IL Compiler"
+    },
+    "cta": {
+      "learnMore": "Learn how it works"
+    }
   }
 }
