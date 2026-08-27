@@ -73,11 +73,11 @@ export function renderDocumentationFigure(name: string): string {
             box(600, 150, 'Result', 'output or .NET IL'),
         'Both execution paths share the front end; compilation persists a managed .NET assembly instead of running the tree walker.');
     if (name === 'tree-shaking')
-        return diagram('Tree-shaking flow', box(10, 150, 'Typed AST', 'program features') + arrow(160, 195) +
-            box(195, 165, 'Detect features', 'conservative scan', ' docs-figure__node--accent') + arrow(360, 395) +
-            box(395, 170, 'Close dependencies', 'required helpers') + arrow(565, 600) +
-            box(600, 150, 'Emit runtime', 'omit unused groups'),
-        'SharpTS retains every plausibly required feature and emits only the corresponding runtime groups plus the core runtime.');
+        return diagram('Compiled-output reduction', box(10, 150, 'Checked program', 'runtime module graph') + arrow(160, 195) +
+            box(195, 165, 'Analyze output', 'reachability + features', ' docs-figure__node--accent') + arrow(360, 395) +
+            box(395, 170, 'Retain required IL', 'statements + helpers') + arrow(565, 600) +
+            box(600, 150, 'Emit assembly', 'core runtime included'),
+        'Dead-code analysis removes unreachable user statements, while an independent conservative scan selects optional runtime groups.');
     if (name === 'performance-paths')
         return diagram('Compiler specialization', box(10, 150, 'Type information', 'number[] or any') + arrow(160, 195) +
             box(195, 165, 'Choose lowering', 'safe specialization', ' docs-figure__node--accent') + arrow(360, 395) +
