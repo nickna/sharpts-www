@@ -341,6 +341,25 @@ describe('static site primitives', () => {
         );
     });
 
+    it('renders the module graph as distinct checking, eager, and on-demand inputs', () => {
+        const repoRoot = path.resolve('.');
+        const docs = loadDocumentation(repoRoot, path.join(repoRoot, 'src', 'SharpTS.Www.SelfHost', 'docs'));
+        const modulesArticle = docs.all.find((article) =>
+            article.metadata.slug.endsWith('/modules-and-dependency-compilation')
+        );
+        expect(modulesArticle?.rendered.headings.map((heading) => heading.text)).toEqual([
+            'Discover the program from its entry point',
+            'Separate checking dependencies from runtime modules',
+            'Resolve files and packages',
+            'Initialize modules once, at the right time',
+            'Precompile dynamic imports'
+        ]);
+        expect(modulesArticle?.rendered.html).toContain('Checking inputs');
+        expect(modulesArticle?.rendered.html).toContain('Eager runtime');
+        expect(modulesArticle?.rendered.html).toContain('On-demand runtime');
+        expect(modulesArticle?.rendered.html).toContain('Hello, Ada!');
+    });
+
     it('parses the versioned baseline contract and preserves skip semantics', () => {
         const parsed = parseBaselineText(
             '# SharpTS baseline-format=1 suite=Test262 corpus=0123456789abcdef0123456789abcdef01234567 — fixture\n' +

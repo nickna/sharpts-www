@@ -481,6 +481,9 @@ test('documentation mobile menus are keyboard accessible and fit the viewport', 
     await outline.locator('summary').click();
     await expect(outline).toHaveAttribute('open', '');
     await expect(outline.locator('a').first()).toHaveText('Discover the program from its entry point');
+    await expect(page.locator('.docs-figure')).toHaveAttribute('aria-label', 'Module dependency compilation');
+    await expect(page.locator('.docs-figure')).toContainText('Checking inputs');
+    await expect(page.locator('.docs-figure')).toContainText('On-demand runtime');
     const feedback = page.locator('[data-docs-feedback]');
     await expect(feedback.locator('a')).toHaveText(['Edit this page', 'Report a docs issue']);
     await expect(feedback.locator('.docs-feedback__actions')).toHaveCSS('flex-wrap', 'wrap');

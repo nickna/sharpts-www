@@ -29,9 +29,23 @@ function diagram(label: string, body: string, caption: string): string {
 }
 
 function box(x: number, width: number, title: string, detail: string, accent: string = ''): string {
-    return '<g class="docs-figure__node' + accent + '"><rect x="' + x + '" y="45" width="' + width + '" height="82" rx="10"></rect><text x="' +
-        (x + width / 2) + '" y="78" text-anchor="middle">' + escapeHtml(title) + '</text><text class="docs-figure__detail" x="' +
-        (x + width / 2) + '" y="104" text-anchor="middle">' + escapeHtml(detail) + '</text></g>';
+    return boxAt(x, 45, width, 82, title, detail, accent);
+}
+
+function boxAt(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    title: string,
+    detail: string,
+    accent: string = ''
+): string {
+    const center = x + width / 2;
+    const titleY = y + height / 2 - 7;
+    return '<g class="docs-figure__node' + accent + '"><rect x="' + x + '" y="' + y + '" width="' + width + '" height="' + height + '" rx="10"></rect><text x="' +
+        center + '" y="' + titleY + '" text-anchor="middle">' + escapeHtml(title) + '</text><text class="docs-figure__detail" x="' +
+        center + '" y="' + (titleY + 24) + '" text-anchor="middle">' + escapeHtml(detail) + '</text></g>';
 }
 
 function arrow(x1: number, x2: number, label: string = ''): string {
@@ -67,11 +81,11 @@ export function renderDocumentationFigure(name: string): string {
             box(555, 180, 'SharpTS runs file', 'arguments in process.argv'),
         'The shell delegates to env, which finds SharpTS on PATH and passes the script path and arguments to it.');
     if (name === 'compilation-pipeline')
-        return diagram('SharpTS compilation pipeline', box(10, 150, 'TypeScript', 'source modules') + arrow(160, 195) +
-            box(195, 165, 'Front end', 'parse + type check', ' docs-figure__node--accent') + arrow(360, 395) +
-            box(395, 170, 'Execution path', 'interpret or compile') + arrow(565, 600) +
-            box(600, 150, 'Result', 'output or .NET IL'),
-        'Both execution paths share the front end; compilation persists a managed .NET assembly instead of running the tree walker.');
+        return diagram('SharpTS compiler host and output', box(5, 170, 'SharpTS host', 'managed or Native AOT') + arrow(175, 200) +
+            box(200, 170, 'TypeScript front end', 'resolve + parse + check', ' docs-figure__node--accent') + arrow(370, 395) +
+            box(395, 170, 'Compiler output', 'managed DLL or apphost') + arrow(565, 590) +
+            box(590, 165, 'Target execution', '.NET loads + JITs IL'),
+        'The compiler host and generated program are separate: managed and Native AOT SharpTS hosts both emit managed .NET IL.');
     if (name === 'tree-shaking')
         return diagram('Compiled-output reduction', box(10, 150, 'Checked program', 'runtime module graph') + arrow(160, 195) +
             box(195, 165, 'Analyze output', 'reachability + features', ' docs-figure__node--accent') + arrow(360, 395) +
@@ -97,11 +111,18 @@ export function renderDocumentationFigure(name: string): string {
             box(600, 150, 'Invocation', 'run or resume'),
         'Ordinary calls become methods and callable wrappers; captured or suspended state moves into generated objects that survive after the original frame.');
     if (name === 'module-graph')
-        return diagram('Module dependency compilation', box(10, 150, 'Entry module', 'app.ts') + arrow(160, 195) +
-            box(195, 165, 'ModuleResolver', 'load dependency graph', ' docs-figure__node--accent') + arrow(360, 395) +
-            box(395, 170, 'Type checking', 'imports + exports') + arrow(565, 600) +
-            box(600, 150, 'One assembly', 'module types + cache'),
-        'SharpTS starts from an entry point, resolves and checks its reachable modules, then emits their initialization and exports into one managed assembly.');
+        return diagram('Module dependency compilation', box(5, 120, 'Entry module', 'app.ts') + arrow(125, 155) +
+            box(155, 145, 'Resolve', 'discover inputs', ' docs-figure__node--accent') +
+            '<g class="docs-figure__arrow"><path d="M 300 86 H 320 V 28 H 345"></path><path d="m 336 20 9 8-9 8"></path>' +
+            '<path d="M 300 86 H 345"></path><path d="m 336 78 9 8-9 8"></path>' +
+            '<path d="M 300 86 H 320 V 144 H 345"></path><path d="m 336 136 9 8-9 8"></path></g>' +
+            boxAt(345, 3, 175, 50, 'Checking inputs', 'types + declarations') +
+            boxAt(345, 61, 175, 50, 'Eager runtime', 'static imports') +
+            boxAt(345, 119, 175, 50, 'On-demand runtime', 'literal loads') +
+            '<g class="docs-figure__arrow"><path d="M 520 28 H 545 V 86 H 575"></path><path d="M 520 86 H 575"></path>' +
+            '<path d="M 520 144 H 545 V 86 H 575"></path><path d="m 566 78 9 8-9 8"></path></g>' +
+            box(575, 180, 'Checked assembly', 'eager + registered modules'),
+        'SharpTS checks type-only and runtime inputs together, emits executable modules into one assembly, and initializes eager and on-demand modules at different times.');
     throw new Error('Unknown documentation figure: ' + name);
 }
 
