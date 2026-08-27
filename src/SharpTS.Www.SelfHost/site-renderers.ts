@@ -1011,7 +1011,7 @@ function apiPageDetails(locale: Locale, page: any, catalog: any): { title: strin
         title: 'API Reference',
         section: 'SharpTS APIs',
         description: 'Generated reference documentation for the public SharpTS TypeScript packages.',
-        content: `<h2 id="packages">Packages</h2><a class="api-package-card" href="/docs/api/gui"><strong><code>@sharpts/gui</code></strong><span>${catalog.symbols.length} public symbols</span><p>Native desktop GUI components, composition, state, lifecycle, services, testing, and devtools.</p></a>`
+        content: `<h2 id="packages">Packages</h2><a class="api-package-card" href="/docs/api/gui"><strong><code>@sharpts/gui</code></strong><span>${catalog.symbols.length} public symbols</span><p>Native desktop GUI components, composition, state, lifecycle, services, JSX runtimes, testing, and devtools.</p></a>`
     };
     if (page.kind === 'package') return {
         title: '@sharpts/gui',

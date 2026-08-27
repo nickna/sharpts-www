@@ -13,6 +13,8 @@
     "ambient.d.ts",
     "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/index.ts",
     "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/testing.ts",
-    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/devtools.ts"
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/devtools.ts",
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/jsx-runtime.ts",
+    "../../lib/SharpTS/src/SharpTS.Gui.Sdk/GuiPackage/jsx-dev-runtime.ts"
   ]
 }

@@ -87,14 +87,14 @@ describe('static site primitives', () => {
         const apiPages = apiReferencePages(apiCatalog);
         const buttonPage = apiPages.find((page) => page.kind === 'symbol' && page.symbol.name === 'Button')!;
         const apiHtml = renderApiReferenceDocument(english, buttonPage, apiCatalog, documentation, assets);
-        expect(apiCatalog.symbols).toHaveLength(198);
-        expect(apiPages).toHaveLength(208);
+        expect(apiCatalog.symbols).toHaveLength(208);
+        expect(apiPages).toHaveLength(219);
         expect(apiHtml).toContain('<link rel="canonical" href="https://sharpts.dev/docs/api/gui/button">');
         expect(apiHtml).toContain('data-api-search');
         expect(apiHtml).toContain('id="control-metadata"');
         expect(apiHtml).toContain('Default:');
         expect(apiHtml).toContain(apiCatalog.package.revision);
-        expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(198);
+        expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(208);
     });
 
     it('renders page-aware documentation contribution and issue links', () => {

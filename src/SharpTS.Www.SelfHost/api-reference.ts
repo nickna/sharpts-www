@@ -51,7 +51,7 @@ export interface ApiReferenceSource {
 
 export interface ApiReferenceSymbol {
     id: string;
-    entryPoint: 'index' | 'testing' | 'devtools';
+    entryPoint: 'index' | 'testing' | 'devtools' | 'jsx-runtime' | 'jsx-dev-runtime';
     name: string;
     slug: string;
     route: string;

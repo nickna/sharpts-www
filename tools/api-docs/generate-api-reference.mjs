@@ -10,6 +10,7 @@ export const CATEGORY_DEFINITIONS = [
     ['application-lifecycle', 'Application Lifecycle', 'Application and window creation, lifetime, and shutdown.'],
     ['desktop-services', 'Desktop Services', 'Dialogs, notifications, clipboard, display, platform, and shell integration.'],
     ['data-templates', 'Data and Templates', 'Virtualized collections, trees, data grids, item keys, and templates.'],
+    ['jsx-runtime', 'JSX Runtime', 'Automatic production and development JSX transform entry points.'],
     ['testing', 'Testing', 'Headless desktop test-driver APIs.'],
     ['devtools', 'Devtools', 'Inspector and headless snapshot APIs.']
 ];
@@ -229,7 +230,7 @@ function sourceFor(reflection, revision) {
     const source = reflection.sources?.[0];
     if (!source) return undefined;
     const file = source.fileName.replace(/\\/g, '/').replace(/^.*GuiPackage\//, '');
-    const pathName = `SharpTS.Gui.Sdk/GuiPackage/${file}`;
+    const pathName = `src/SharpTS.Gui.Sdk/GuiPackage/${file}`;
     return {
         file: pathName,
         line: source.line,
@@ -299,6 +300,7 @@ function kindFor(reflection, controlKinds) {
 function categoryFor(entryPoint, name, controlKinds, propsKinds, annotated) {
     if (entryPoint === 'testing') return 'testing';
     if (entryPoint === 'devtools') return 'devtools';
+    if (entryPoint === 'jsx-runtime' || entryPoint === 'jsx-dev-runtime') return 'jsx-runtime';
     const annotation = CATEGORY_DEFINITIONS.find((definition) => definition[1] === annotated || definition[0] === annotated);
     if (annotation) return annotation[0];
     if (controlKinds.has(name) || propsKinds.has(name)) return 'components';
@@ -338,11 +340,27 @@ function validateDescriptorIdentity(repoRoot, manifest, docs) {
 
 function publicReflections(typedoc) {
     const result = [];
+    const reflectionById = new Map();
+    const collect = (reflection) => {
+        if (!reflection || typeof reflection !== 'object') return;
+        if (typeof reflection.id === 'number') reflectionById.set(reflection.id, reflection);
+        for (const child of reflection.children || []) collect(child);
+    };
+    collect(typedoc);
     for (const entryPoint of typedoc.children || []) {
-        if (!['index', 'testing', 'devtools'].includes(entryPoint.name)) continue;
+        if (!['index', 'testing', 'devtools', 'jsx-runtime', 'jsx-dev-runtime'].includes(entryPoint.name)) continue;
         for (const reflection of entryPoint.children || []) {
             if (reflection.flags?.isPrivate || reflection.flags?.isProtected) continue;
-            result.push({ entryPoint: entryPoint.name, reflection });
+            const target = reflection.variant === 'reference' && typeof reflection.target === 'number'
+                ? reflectionById.get(reflection.target)
+                : undefined;
+            const resolved = target ? {
+                ...target,
+                id: reflection.id,
+                name: reflection.name,
+                sources: reflection.sources || target.sources
+            } : reflection;
+            result.push({ entryPoint: entryPoint.name, reflection: resolved });
         }
     }
     return result;
@@ -519,7 +537,7 @@ export function normalizeCatalog({ typedoc, manifest, controlDocs, packageJson, 
             name: packageJson.name,
             version: packageJson.version,
             revision,
-            sourceUrl: `https://github.com/nickna/SharpTS/tree/${revision}/SharpTS.Gui.Sdk/GuiPackage`
+            sourceUrl: `https://github.com/nickna/SharpTS/tree/${revision}/src/SharpTS.Gui.Sdk/GuiPackage`
         },
         descriptor: {
             schemaVersion: controlDocs.schemaVersion,
@@ -527,8 +545,8 @@ export function normalizeCatalog({ typedoc, manifest, controlDocs, packageJson, 
         },
         metadata: {
             generatedAt: 'reproducible',
-            entryPoints: ['index', 'testing', 'devtools'],
-            excludedEntryPoints: ['jsx-runtime', 'jsx-dev-runtime'],
+            entryPoints: ['index', 'testing', 'devtools', 'jsx-runtime', 'jsx-dev-runtime'],
+            excludedEntryPoints: [],
             publicExportCount: entries.length
         },
         categories,
@@ -570,7 +588,9 @@ export function runTypeDoc(repoRoot, outputFile) {
         '--json', path.relative(repoRoot, outputFile).replaceAll(path.sep, '/'),
         `${entryRoot}/index.ts`,
         `${entryRoot}/testing.ts`,
-        `${entryRoot}/devtools.ts`
+        `${entryRoot}/devtools.ts`,
+        `${entryRoot}/jsx-runtime.ts`,
+        `${entryRoot}/jsx-dev-runtime.ts`
     ], { cwd: repoRoot, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);

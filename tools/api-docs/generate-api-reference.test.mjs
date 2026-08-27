@@ -81,7 +81,38 @@ function fixture() {
                     ]
                 },
                 { name: 'testing', children: [{ id: 8, name: 'Helper', kind: 256, flags: {}, comment: summary('Testing helper.'), children: [] }] },
-                { name: 'devtools', children: [{ id: 9, name: 'Helper', kind: 256, flags: {}, comment: summary('Devtools helper.'), children: [] }] }
+                { name: 'devtools', children: [{ id: 9, name: 'Helper', kind: 256, flags: {}, comment: summary('Devtools helper.'), children: [] }] },
+                {
+                    name: 'jsx-runtime',
+                    children: [{
+                        id: 10,
+                        name: 'jsx',
+                        kind: 64,
+                        flags: {},
+                        sources: [{ fileName: 'jsx-runtime.ts', line: 6 }],
+                        signatures: [{
+                            id: 11,
+                            name: 'jsx',
+                            kind: 4096,
+                            comment: signatureComment('Creates a GUI element.', {}, 'The GUI element.'),
+                            parameters: [],
+                            type: { type: 'reference', name: 'GuiElement' },
+                            sources: [{ fileName: 'jsx-runtime.ts', line: 6 }]
+                        }]
+                    }]
+                },
+                {
+                    name: 'jsx-dev-runtime',
+                    children: [{
+                        id: 12,
+                        name: 'jsxDEV',
+                        variant: 'reference',
+                        kind: 4194304,
+                        flags: {},
+                        sources: [{ fileName: 'jsx-runtime.ts', line: 12 }],
+                        target: 10
+                    }]
+                }
             ]
         },
         manifest: {
@@ -119,11 +150,11 @@ function fixture() {
 test('normalizes controls, generics, overloads, unions, source links, and duplicate names', () => {
     const { catalog, errors } = normalizeCatalog(fixture());
     assert.deepEqual(errors, []);
-    assert.equal(catalog.symbols.length, 6);
+    assert.equal(catalog.symbols.length, 8);
     const button = catalog.symbols.find(symbol => symbol.name === 'Button');
     assert.equal(button.kind, 'Component');
     assert.equal(button.control.props[0].default, 'Run');
-    assert.equal(button.source.url, `https://github.com/nickna/SharpTS/blob/${'b'.repeat(40)}/SharpTS.Gui.Sdk/GuiPackage/control-surface.generated.ts#L20`);
+    assert.equal(button.source.url, `https://github.com/nickna/SharpTS/blob/${'b'.repeat(40)}/src/SharpTS.Gui.Sdk/GuiPackage/control-surface.generated.ts#L20`);
     const props = catalog.symbols.find(symbol => symbol.name === 'ButtonProps');
     assert.equal(props.members[0].default, 'Run');
     assert.equal(props.members[0].required, true);
@@ -134,6 +165,11 @@ test('normalizes controls, generics, overloads, unions, source links, and duplic
     assert.deepEqual(mode.enumValues, ['fast', 'safe']);
     assert.deepEqual(catalog.symbols.filter(symbol => symbol.name === 'Helper').map(symbol => symbol.slug).sort(),
         ['devtools-helper', 'testing-helper']);
+    assert.equal(catalog.symbols.find(symbol => symbol.name === 'jsx').category, 'jsx-runtime');
+    assert.equal(catalog.symbols.find(symbol => symbol.name === 'jsxDEV').category, 'jsx-runtime');
+    assert.deepEqual(catalog.metadata.entryPoints,
+        ['index', 'testing', 'devtools', 'jsx-runtime', 'jsx-dev-runtime']);
+    assert.deepEqual(catalog.metadata.excludedEntryPoints, []);
 });
 
 test('rejects missing documentation, invalid links, and category route collisions', () => {
