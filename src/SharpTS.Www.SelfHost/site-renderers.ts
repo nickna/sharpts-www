@@ -162,18 +162,20 @@ function renderHero(locale: Locale): string {
     const bundle = 'home';
     const heroCode = composeCode(t(locale, bundle, 'Hero_CodeComment'), heroCodeBody);
     return `<section class="hero" id="hero">
-  <div class="hero__orb hero__orb--1"></div><div class="hero__orb hero__orb--2"></div><div class="hero__orb hero__orb--3"></div>
-  <canvas id="hero-particles" class="hero__particles" aria-hidden="true"></canvas><div class="hero__grid"></div>
+  <div class="hero__shard hero__shard--blue" aria-hidden="true"></div><div class="hero__shard hero__shard--violet" aria-hidden="true"></div><div class="hero__shard hero__shard--amber" aria-hidden="true"></div>
+  <canvas id="hero-particles" class="hero__particles" aria-hidden="true"></canvas>
   <div class="container hero__inner">
-    <div class="hero__badge hero-enter hero-enter--1"><span class="hero__badge-dot"></span>${escapeHtml(t(locale, bundle, 'Hero_Badge'))}</div>
-    <h1 class="hero__title hero-enter hero-enter--2"><span class="gradient-text">SharpTS</span></h1>
-    <p class="hero__tagline hero-enter hero-enter--3">${escapeHtml(t(locale, bundle, 'Hero_Tagline'))}</p>
-    <p class="hero__subtagline hero-enter hero-enter--4">${escapeHtml(t(locale, bundle, 'Hero_Subtagline'))}</p>
-    <div class="hero__ctas hero-enter hero-enter--5">
-      ${installerSelector(locale, 'hero-installer', ' installer-selector--hero')}
-      <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary btn--glow">${githubIcon}${escapeHtml(t(locale, bundle, 'Hero_StarOnGitHub'))}</a>
+    <div class="hero__copy">
+      <div class="hero__badge hero-enter hero-enter--1"><span class="hero__badge-dot"></span>${escapeHtml(t(locale, bundle, 'Hero_Badge'))}</div>
+      <h1 class="hero__title hero-enter hero-enter--2"><span class="hero__title-word">Sharp</span><span class="hero__title-token">TS</span></h1>
+      <p class="hero__tagline hero-enter hero-enter--3">${escapeHtml(t(locale, bundle, 'Hero_Tagline'))}</p>
+      <p class="hero__subtagline hero-enter hero-enter--4">${escapeHtml(t(locale, bundle, 'Hero_Subtagline'))}</p>
+      <div class="hero__ctas hero-enter hero-enter--5">
+        ${installerSelector(locale, 'hero-installer', ' installer-selector--hero')}
+        <a href="https://github.com/nickna/SharpTS" target="_blank" rel="noopener" class="btn btn-secondary btn--glow">${githubIcon}${escapeHtml(t(locale, bundle, 'Hero_StarOnGitHub'))}</a>
+      </div>
     </div>
-    <div class="hero__code hero-enter hero-enter--6"><div class="code-block hero__code-block"><div class="code-block__header"><div class="hero__code-dots"><span class="hero__code-dot hero__code-dot--red"></span><span class="hero__code-dot hero__code-dot--yellow"></span><span class="hero__code-dot hero__code-dot--green"></span></div><span>example.ts</span>${copyButton(locale)}</div><div class="code-block__content"><pre><code id="hero-typed-code" class="language-typescript">${escapeHtml(heroCode)}</code></pre></div></div></div>
+    <div class="hero__workbench hero-enter hero-enter--6"><div class="hero__workbench-header" aria-hidden="true"><span>Compiler workbench / 01</span><span>TypeScript → .NET</span></div><div class="hero__code"><div class="code-block hero__code-block"><div class="code-block__header"><span class="hero__code-file">example.ts</span>${copyButton(locale)}</div><div class="code-block__content"><pre><code id="hero-typed-code" class="language-typescript">${escapeHtml(heroCode)}</code></pre></div></div></div><div class="hero__compile-strip" aria-hidden="true"><b>TypeScript</b><i>→</i><span>Lexer</span><i>→</i><span>TypeCheck</span><i>→</i><strong>.NET</strong></div></div>
   </div>
 </section>`;
 }
@@ -767,13 +769,17 @@ export function renderDocument(locale: Locale, page: PageKind, browserAssets: Br
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(description)}">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#f2efe7">
   <meta property="og:title" content="${escapeHtml(ogTitle)}">
   <meta property="og:description" content="${escapeHtml(ogDescription)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
+  <meta property="og:image" content="${siteOrigin}/img/sharpts-og.png">
   <meta property="og:locale" content="${locale.culture.openGraphLocale}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
+  <meta name="twitter:description" content="${escapeHtml(ogDescription)}">
+  <meta name="twitter:image" content="${siteOrigin}/img/sharpts-og.png">
   <link rel="canonical" href="${canonical}">
   ${alternateLinks(page)}
   <title>${escapeHtml(title)}</title>
@@ -838,13 +844,17 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(article.metadata.description)}">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#f2efe7">
   <meta property="og:title" content="${escapeHtml(article.metadata.title)} · SharpTS Documentation">
   <meta property="og:description" content="${escapeHtml(article.metadata.description)}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
+  <meta property="og:image" content="${siteOrigin}/img/sharpts-og.png">
   <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(article.metadata.title)} · SharpTS Documentation">
+  <meta name="twitter:description" content="${escapeHtml(article.metadata.description)}">
+  <meta name="twitter:image" content="${siteOrigin}/img/sharpts-og.png">
   <link rel="canonical" href="${canonical}">
   <title>${escapeHtml(article.metadata.title)} · SharpTS Documentation</title>
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
@@ -1070,13 +1080,17 @@ export function renderApiReferenceDocument(locale: Locale, page: any,
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(details.description)}">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#f2efe7">
   <meta property="og:title" content="${escapeHtml(details.title)} · SharpTS API Reference">
   <meta property="og:description" content="${escapeHtml(details.description)}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${siteOrigin}/img/sharpts-logo.png">
+  <meta property="og:image" content="${siteOrigin}/img/sharpts-og.png">
   <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(details.title)} · SharpTS API Reference">
+  <meta name="twitter:description" content="${escapeHtml(details.description)}">
+  <meta name="twitter:image" content="${siteOrigin}/img/sharpts-og.png">
   <link rel="canonical" href="${canonical}">
   <title>${escapeHtml(details.title)} · SharpTS API Reference</title>
   <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
