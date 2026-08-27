@@ -333,7 +333,8 @@ describe('static site primitives', () => {
             expect.objectContaining({ key: 'quick-start', modes: ['interpret', 'compile'] }),
             expect.objectContaining({ key: 'shebang-script', modes: ['interpret', 'compile'] }),
             expect.objectContaining({ key: 'semantic-parity', modes: ['interpret', 'compile'] }),
-            expect.objectContaining({ key: 'closure-parity', modes: ['interpret', 'compile'] })
+            expect.objectContaining({ key: 'closure-parity', modes: ['interpret', 'compile'] }),
+            expect.objectContaining({ key: 'generator-state-parity', modes: ['interpret', 'compile'] })
         ]);
         expect(docs.all.find((article) => article.metadata.slug.endsWith('/scripting'))?.rendered.html).toContain(
             '#!/usr/bin/env sharpts'
