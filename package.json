@@ -43,13 +43,13 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
-    "@biomejs/biome": "2.5.8",
+    "@biomejs/biome": "2.5.10",
     "@playwright/test": "1.62.1",
     "@types/node": "26.2.0",
     "@types/prismjs": "1.26.6",
     "esbuild": "0.28.2",
     "jsdom": "30.0.1",
     "typescript": "7.0.2",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   }
 }
