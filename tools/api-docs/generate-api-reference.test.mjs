@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { normalizeCatalog, validateCatalog } from './generate-api-reference.mjs';
+import { createDocumentationQualityReport, normalizeCatalog, validateCatalog } from './generate-api-reference.mjs';
 
 const summary = (text) => ({ summary: [{ kind: 'text', text }] });
-const signatureComment = (text, parameters, returns) => ({
+const signatureComment = (text, parameters, returns, extraTags = []) => ({
     summary: [{ kind: 'text', text }],
     blockTags: [
         ...Object.entries(parameters).map(([name, value]) => ({
@@ -11,7 +11,8 @@ const signatureComment = (text, parameters, returns) => ({
             name,
             content: [{ kind: 'text', text: value }]
         })),
-        { tag: '@returns', content: [{ kind: 'text', text: returns }] }
+        { tag: '@returns', content: [{ kind: 'text', text: returns }] },
+        ...extraTags
     ]
 });
 
@@ -20,7 +21,11 @@ function fixture() {
         id,
         name: 'mapValue',
         kind: 4096,
-        comment: signatureComment('Maps one value.', { value: 'Value to map.' }, 'The mapped value.'),
+        comment: signatureComment('Maps one value.', { value: 'Value to map.' }, 'The mapped value.', id === 5 ? [
+            { tag: '@remarks', content: [{ kind: 'text', text: 'Preserves the selected mapping mode.\n\nUse the safe mode for external input.' }] },
+            { tag: '@throws', content: [{ kind: 'text', text: 'When the value cannot be mapped.' }] },
+            { tag: '@example', content: [{ kind: 'code', text: 'const mapped = mapValue("one");\nconsole.log(mapped);' }] }
+        ] : []),
         typeParameter: [{ name: 'T', type: { type: 'intrinsic', name: 'unknown' } }],
         parameters: [{ name: 'value', flags: {}, type: parameterType }],
         type: returnType,
@@ -71,7 +76,13 @@ function fixture() {
                             name: 'Mode',
                             kind: 2097152,
                             flags: {},
-                            comment: summary('Supported operating modes.'),
+                            comment: {
+                                ...summary('Supported operating modes.'),
+                                blockTags: [{
+                                    tag: '@defaultValue',
+                                    content: [{ kind: 'code', text: '```ts\n"safe"\n```' }]
+                                }]
+                            },
                             sources: [{ fileName: 'runtime-types.ts', line: 5 }],
                             type: { type: 'union', types: [
                                 { type: 'literal', value: 'fast' },
@@ -161,8 +172,20 @@ test('normalizes controls, generics, overloads, unions, source links, and duplic
     const generic = catalog.symbols.find(symbol => symbol.name === 'mapValue');
     assert.equal(generic.signatures.length, 2);
     assert.equal(generic.signatures[0].typeParameters[0].name, 'T');
+    assert.equal(generic.remarks, 'Preserves the selected mapping mode.\n\nUse the safe mode for external input.');
+    assert.deepEqual(generic.throws, ['When the value cannot be mapped.']);
+    assert.deepEqual(generic.examples, ['const mapped = mapValue("one");\nconsole.log(mapped);']);
+    const quality = createDocumentationQualityReport(catalog);
+    assert.equal(quality.summary.callableSurfaces, 3);
+    assert.equal(quality.summary.withExamples, 1);
+    assert.equal(quality.summary.excludedComponentFactories, 1);
+    assert.equal(quality.surfaces.find(surface => surface.id === 'index:mapValue').hasThrows, true);
+    assert.deepEqual(quality.surfaces.find(surface => surface.id === 'index:mapValue').missing, []);
+    assert.deepEqual(quality.surfaces.find(surface => surface.id === 'jsx-runtime:jsx').missing,
+        ['remarks', 'example']);
     const mode = catalog.symbols.find(symbol => symbol.name === 'Mode');
     assert.deepEqual(mode.enumValues, ['fast', 'safe']);
+    assert.equal(mode.defaultValue, 'safe');
     assert.deepEqual(catalog.symbols.filter(symbol => symbol.name === 'Helper').map(symbol => symbol.slug).sort(),
         ['devtools-helper', 'testing-helper']);
     assert.equal(catalog.symbols.find(symbol => symbol.name === 'jsx').category, 'jsx-runtime');

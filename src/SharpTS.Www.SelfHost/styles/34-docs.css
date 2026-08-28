@@ -576,8 +576,13 @@
 }
 
 .api-related li + li,
-.api-values-list li + li {
+.api-values-list li + li,
+.api-throws li + li {
     margin-top: 0.4rem;
+}
+
+.api-examples .docs-code + .docs-code {
+    margin-top: 1rem;
 }
 
 .api-related span {

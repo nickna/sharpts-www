@@ -31,6 +31,7 @@ export interface ApiReferenceSignature {
 export interface ApiReferenceMember {
     name: string;
     kind: 'property' | 'method';
+    isMethodDeclaration: boolean;
     optional: boolean;
     isReadonly: boolean;
     inherited: boolean;
@@ -38,6 +39,9 @@ export interface ApiReferenceMember {
     type?: ApiReferenceTypePart[];
     signatures: ApiReferenceSignature[];
     default?: unknown;
+    remarks: string;
+    examples: string[];
+    throws: string[];
     required: boolean;
     enumValues?: unknown[];
     source?: ApiReferenceSource;
@@ -59,6 +63,9 @@ export interface ApiReferenceSymbol {
     category: string;
     summary: string;
     remarks: string;
+    examples: string[];
+    throws: string[];
+    defaultValue?: unknown;
     aliases: string[];
     type?: ApiReferenceTypePart[];
     enumValues?: unknown[];

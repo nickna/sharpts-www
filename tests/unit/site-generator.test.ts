@@ -94,6 +94,15 @@ describe('static site primitives', () => {
         expect(apiHtml).toContain('id="control-metadata"');
         expect(apiHtml).toContain('Default:');
         expect(apiHtml).toContain(apiCatalog.package.revision);
+        const applicationPage = apiPages.find((page) =>
+            page.kind === 'symbol' && page.symbol.name === 'createDesktopApplication')!;
+        const applicationHtml = renderApiReferenceDocument(
+            english, applicationPage, apiCatalog, documentation, assets
+        );
+        expect(applicationHtml).toContain('<h2 id="remarks">Remarks</h2>');
+        expect(applicationHtml).toContain('<h2 id="throws">Throws</h2>');
+        expect(applicationHtml).toContain('<h2 id="examples">Examples</h2>');
+        expect(applicationHtml).toContain('const app = createDesktopApplication();');
         expect(createApiSearchIndex(apiCatalog).symbols).toHaveLength(208);
     });
 

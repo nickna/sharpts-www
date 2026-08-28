@@ -54,18 +54,53 @@ function commentPartsText(parts = []) {
     }).join('').replace(/\s+/g, ' ').trim();
 }
 
+function commentPartsRichText(parts = []) {
+    return parts.map((part) => {
+        if (typeof part.text === 'string') return part.text;
+        if (typeof part.name === 'string') return part.name;
+        return '';
+    }).join('').trim();
+}
+
 function commentSummary(reflection) {
     const direct = commentPartsText(reflection?.comment?.summary);
     if (direct) return direct;
     return commentPartsText(reflection?.signatures?.[0]?.comment?.summary);
 }
 
+function commentBlockTags(reflection) {
+    return [
+        ...(reflection?.comment?.blockTags || []),
+        ...(reflection?.signatures?.[0]?.comment?.blockTags || [])
+    ];
+}
+
 function commentTag(reflection, tagName, parameterName) {
-    let tags = reflection?.comment?.blockTags || [];
-    if (!tags.length) tags = reflection?.signatures?.[0]?.comment?.blockTags || [];
-    const tag = tags.find((candidate) => candidate.tag === tagName &&
+    const tag = commentBlockTags(reflection).find((candidate) => candidate.tag === tagName &&
         (parameterName === undefined || candidate.name === parameterName));
     return commentPartsText(tag?.content);
+}
+
+function commentRichTag(reflection, tagName) {
+    const tag = commentBlockTags(reflection).find((candidate) => candidate.tag === tagName);
+    return commentPartsRichText(tag?.content);
+}
+
+function commentRichTags(reflection, tagName) {
+    return commentBlockTags(reflection)
+        .filter((candidate) => candidate.tag === tagName)
+        .map((tag) => commentPartsRichText(tag.content))
+        .filter(Boolean);
+}
+
+function documentedDefault(reflection) {
+    const value = commentRichTag(reflection, '@defaultValue');
+    if (value === undefined || value === '') return undefined;
+    if (typeof value !== 'string') return value;
+    const fenced = /^```(?:typescript|ts)?\s*\r?\n([\s\S]*?)\r?\n```$/.exec(value.trim());
+    const text = (fenced ? fenced[1] : value).trim();
+    try { return JSON.parse(text); }
+    catch { return text; }
 }
 
 function commentCategory(reflection) {
@@ -270,13 +305,17 @@ function memberModel(member, context, controlProp) {
     return {
         name: member.name,
         kind: member.kind === KIND.Method || signatures.length ? 'method' : 'property',
+        isMethodDeclaration: member.kind === KIND.Method,
         optional: Boolean(member.flags?.isOptional),
         isReadonly: Boolean(member.flags?.isReadonly),
         inherited: Boolean(member.flags?.isInherited),
         description,
         type: signatures.length ? undefined : typeParts(member.type, context),
         signatures: signatures.map((signature) => signatureModel(signature, context, description, true)),
-        default: controlProp?.default,
+        default: controlProp?.default ?? documentedDefault(member),
+        remarks: commentRichTag(member, '@remarks'),
+        examples: commentRichTags(member, '@example'),
+        throws: commentRichTags(member, '@throws'),
         required: controlProp ? Boolean(controlProp.required) : !member.flags?.isOptional,
         enumValues: controlProp?.enumValues || literalUnionValues(member.type),
         source: sourceFor(member, context.revision)
@@ -492,7 +531,10 @@ export function normalizeCatalog({ typedoc, manifest, controlDocs, packageJson, 
             kind: kindFor(reflection, controlKinds),
             category: categoryFor(entryPoint, reflection.name, controlKinds, propsKinds, commentCategory(reflection)),
             summary,
-            remarks: commentTag(reflection, '@remarks'),
+            remarks: commentRichTag(reflection, '@remarks'),
+            examples: commentRichTags(reflection, '@example'),
+            throws: commentRichTags(reflection, '@throws'),
+            defaultValue: documentedDefault(reflection),
             aliases: control ? [control.adapter, isProps ? `${control.kind} props` : control.propsType] : [],
             type,
             enumValues: literalUnionValues(reflection.type),
@@ -573,6 +615,78 @@ export function createSearchIndex(catalog) {
     };
 }
 
+export function createDocumentationQualityReport(catalog) {
+    const surfaces = [];
+    let excludedComponentFactories = 0;
+    let excludedFunctionProperties = 0;
+    const missingFor = (remarks, examples, throws, signatures) => {
+        const missing = [];
+        if (!remarks) missing.push('remarks');
+        if (!examples?.length) missing.push('example');
+        const returnsPromise = signatures.some((signature) => partsText(signature.returns.type).startsWith('Promise<'));
+        if (returnsPromise && !throws?.length) missing.push('throws-review');
+        return missing;
+    };
+    for (const symbol of catalog.symbols) {
+        if (symbol.signatures.length && symbol.kind === 'Function') {
+            surfaces.push({
+                id: symbol.id,
+                route: symbol.route,
+                category: symbol.category,
+                kind: symbol.kind,
+                hasRemarks: Boolean(symbol.remarks),
+                hasExamples: Boolean(symbol.examples?.length),
+                hasThrows: Boolean(symbol.throws?.length),
+                missing: missingFor(symbol.remarks, symbol.examples, symbol.throws, symbol.signatures),
+                parameterDefaults: symbol.signatures.flatMap((signature) => signature.parameters)
+                    .filter((parameter) => parameter.default !== undefined).map((parameter) => parameter.name)
+            });
+        }
+        else if (symbol.signatures.length && symbol.kind === 'Component') excludedComponentFactories++;
+        for (const member of symbol.members) {
+            if (!member.signatures.length) continue;
+            if (!member.isMethodDeclaration) {
+                excludedFunctionProperties++;
+                continue;
+            }
+            surfaces.push({
+                id: `${symbol.id}.${member.name}`,
+                route: `${symbol.route}#member-${slugify(member.name)}`,
+                category: symbol.category,
+                kind: 'Method',
+                hasRemarks: Boolean(member.remarks),
+                hasExamples: Boolean(member.examples?.length),
+                hasThrows: Boolean(member.throws?.length),
+                missing: missingFor(member.remarks, member.examples, member.throws, member.signatures),
+                parameterDefaults: member.signatures.flatMap((signature) => signature.parameters)
+                    .filter((parameter) => parameter.default !== undefined).map((parameter) => parameter.name)
+            });
+        }
+    }
+    return {
+        schemaVersion: 1,
+        generatedAt: 'reproducible',
+        policy: {
+            symbolKinds: ['Function'],
+            memberKinds: ['method declaration'],
+            exclusions: ['component factories', 'function-valued properties and callbacks']
+        },
+        summary: {
+            callableSurfaces: surfaces.length,
+            withRemarks: surfaces.filter((surface) => surface.hasRemarks).length,
+            withExamples: surfaces.filter((surface) => surface.hasExamples).length,
+            withThrows: surfaces.filter((surface) => surface.hasThrows).length,
+            withParameterDefaults: surfaces.filter((surface) => surface.parameterDefaults.length).length,
+            missingRemarks: surfaces.filter((surface) => surface.missing.includes('remarks')).length,
+            missingExamples: surfaces.filter((surface) => surface.missing.includes('example')).length,
+            throwsReview: surfaces.filter((surface) => surface.missing.includes('throws-review')).length,
+            excludedComponentFactories,
+            excludedFunctionProperties
+        },
+        surfaces
+    };
+}
+
 export function runTypeDoc(repoRoot, outputFile) {
     const cli = path.join(toolRoot, 'node_modules', 'typedoc', 'bin', 'typedoc');
     if (!fs.existsSync(cli)) throw new Error('API documentation dependencies are missing; run npm ci in tools/api-docs.');
@@ -604,6 +718,7 @@ export function generateApiReference(options = {}) {
         path.join(repoRoot, 'artifacts', 'api-reference'));
     const rawFile = path.join(artifactRoot, 'typedoc.raw.json');
     const catalogFile = path.join(artifactRoot, 'catalog.json');
+    const qualityFile = path.join(artifactRoot, 'documentation-quality.json');
     if (!options.skipTypeDoc) runTypeDoc(repoRoot, rawFile);
     const sourceRoot = path.join(repoRoot, 'lib', 'SharpTS', 'src');
     const manifest = readJson(path.join(sourceRoot, 'SharpTS.Gui', 'Controls', 'controls.v1.json'));
@@ -639,9 +754,12 @@ export function generateApiReference(options = {}) {
         }
     }
     writeJson(catalogFile, catalog);
+    const quality = createDocumentationQualityReport(catalog);
+    writeJson(qualityFile, quality);
     console.log(`Generated ${catalog.symbols.length} @sharpts/gui API symbols in ${catalogFile}.`);
+    console.log(`Reported rich documentation coverage for ${quality.summary.callableSurfaces} callable surfaces in ${qualityFile}.`);
     if (errors.length) console.warn(`API documentation coverage has ${errors.length} acknowledged issue(s):\n- ${errors.join('\n- ')}`);
-    return { catalogFile, catalog, errors };
+    return { catalogFile, qualityFile, catalog, quality, errors };
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : '';

@@ -910,6 +910,17 @@ function apiValue(value: unknown): string {
     return JSON.stringify(value);
 }
 
+function renderApiProse(value: string): string {
+    return value.split(/\r?\n\s*\r?\n/)
+        .map(paragraph => `<p>${escapeHtml(paragraph).replace(/\r?\n/g, '<br>')}</p>`)
+        .join('');
+}
+
+function apiExampleSource(value: string): string {
+    const match = /^```(?:typescript|ts)?\s*\r?\n([\s\S]*?)\r?\n```$/.exec(value.trim());
+    return match ? match[1] : value.trim();
+}
+
 function apiSignatureText(symbol: any, signature: any): string {
     const generics = signature.typeParameters.length ? '<' + signature.typeParameters.map((parameter: any) => {
         let text = parameter.name;
@@ -955,7 +966,7 @@ function renderApiSignature(locale: Locale, symbol: any, signature: any,
     return `<section class="api-signature"><h2 id="signature${index || ''}">Signature${suffix}</h2><div class="docs-code">${codeBlock(locale, 'TypeScript', 'typescript', apiSignatureText(symbol, signature))}</div>${parameters}${returns}</section>`;
 }
 
-function renderApiMember(member: any, catalog: any): string {
+function renderApiMember(locale: Locale, member: any, catalog: any): string {
     const modifiers = `${member.isReadonly ? 'readonly ' : ''}${member.name}${member.optional ? '?' : ''}`;
     const signature = member.signatures.length
         ? member.signatures.map((value: any) => `${modifiers}(${value.parameters.map((parameter: any) => `${parameter.name}${parameter.optional ? '?' : ''}: ${apiTypeText(parameter.type)}`).join(', ')}): ${apiTypeText(value.returns.type)}`).join('\n')
@@ -964,7 +975,10 @@ function renderApiMember(member: any, catalog: any): string {
     if (member.default !== undefined) details.push(`Default: <code>${escapeHtml(apiValue(member.default))}</code>`);
     if (member.enumValues?.length) details.push(`Values: ${member.enumValues.map((value: any) => `<code>${escapeHtml(apiValue(value))}</code>`).join(', ')}`);
     if (member.inherited) details.push('Inherited');
-    return `<section class="api-member" id="member-${apiSlug(member.name)}"><h3><code>${escapeHtml(member.name)}</code></h3><pre><code class="language-typescript">${escapeHtml(signature)}</code></pre><p>${escapeHtml(member.description)}</p>${details.length ? `<p class="api-member__details">${details.join(' · ')}</p>` : ''}${member.type ? `<p class="api-member__type">Type: <code>${renderApiType(member.type, catalog)}</code></p>` : ''}</section>`;
+    const remarks = member.remarks ? `<h4>Remarks</h4>${renderApiProse(member.remarks)}` : '';
+    const throws = member.throws?.length ? `<h4>Throws</h4><ul>${member.throws.map((value: string) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : '';
+    const examples = member.examples?.length ? `<h4>Examples</h4>${member.examples.map((value: string) => `<div class="docs-code">${codeBlock(locale, 'TypeScript', 'typescript', apiExampleSource(value))}</div>`).join('')}` : '';
+    return `<section class="api-member" id="member-${apiSlug(member.name)}"><h3><code>${escapeHtml(member.name)}</code></h3><pre><code class="language-typescript">${escapeHtml(signature)}</code></pre><p>${escapeHtml(member.description)}</p>${details.length ? `<p class="api-member__details">${details.join(' · ')}</p>` : ''}${member.type ? `<p class="api-member__type">Type: <code>${renderApiType(member.type, catalog)}</code></p>` : ''}${remarks}${throws}${examples}</section>`;
 }
 
 function renderApiControl(symbol: any): string {
@@ -983,11 +997,14 @@ function renderApiSymbol(locale: Locale, symbol: any, catalog: any): string {
     }
     const signatures = symbol.signatures.map((signature: any, index: number) => renderApiSignature(locale, symbol, signature, index, catalog)).join('');
     const enumValues = symbol.enumValues?.length ? `<h2 id="values">Values</h2><ul class="api-values-list">${symbol.enumValues.map((value: any) => `<li><code>${escapeHtml(apiValue(value))}</code></li>`).join('')}</ul>` : '';
-    const members = symbol.members.length ? `<h2 id="members">Members</h2><div class="api-members">${symbol.members.map((member: any) => renderApiMember(member, catalog)).join('')}</div>` : '';
+    const members = symbol.members.length ? `<h2 id="members">Members</h2><div class="api-members">${symbol.members.map((member: any) => renderApiMember(locale, member, catalog)).join('')}</div>` : '';
     const related = symbol.related.length ? `<h2 id="related">Related symbols</h2><ul class="api-related">${symbol.related.map((id: string) => catalog.symbols.find((candidate: any) => candidate.id === id)).filter((candidate: any) => candidate !== undefined).map((candidate: any) => `<li><a href="${candidate!.route}"><code>${escapeHtml(candidate!.name)}</code></a> <span>${escapeHtml(candidate!.kind)}</span></li>`).join('')}</ul>` : '';
     const source = symbol.source ? `<h2 id="source">Source</h2><p><a href="${symbol.source.url}" target="_blank" rel="noopener"><code>${escapeHtml(symbol.source.file)}:${symbol.source.line}</code></a> at SharpTS revision <code>${escapeHtml(catalog.package.revision)}</code>.</p>` : '';
-    const remarks = symbol.remarks ? `<h2 id="remarks">Remarks</h2><p>${escapeHtml(symbol.remarks)}</p>` : '';
-    return `${declaration}${signatures}${enumValues}${renderApiControl(symbol)}${members}${remarks}${related}${source}`;
+    const defaultValue = symbol.defaultValue !== undefined ? `<h2 id="default-value">Default value</h2><p><code>${escapeHtml(String(symbol.defaultValue))}</code></p>` : '';
+    const remarks = symbol.remarks ? `<h2 id="remarks">Remarks</h2>${renderApiProse(symbol.remarks)}` : '';
+    const throws = symbol.throws?.length ? `<h2 id="throws">Throws</h2><ul class="api-throws">${symbol.throws.map((value: string) => `<li>${escapeHtml(value)}</li>`).join('')}</ul>` : '';
+    const examples = symbol.examples?.length ? `<h2 id="examples">Examples</h2><div class="api-examples">${symbol.examples.map((value: string) => `<div class="docs-code">${codeBlock(locale, 'TypeScript', 'typescript', apiExampleSource(value))}</div>`).join('')}</div>` : '';
+    return `${declaration}${defaultValue}${signatures}${enumValues}${renderApiControl(symbol)}${members}${remarks}${throws}${examples}${related}${source}`;
 }
 
 function renderApiSidebar(page: any, documentation: LoadedDocumentation,
@@ -1041,11 +1058,14 @@ function renderApiOutline(page: any, mobile: boolean): string {
     else if (page.kind === 'category') items.push({ id: 'symbols', text: 'Symbols' });
     else {
         if (page.symbol.type && !page.symbol.signatures.length) items.push({ id: 'definition', text: 'Definition' });
+        if (page.symbol.defaultValue !== undefined) items.push({ id: 'default-value', text: 'Default value' });
         if (page.symbol.signatures.length) items.push({ id: 'signature', text: 'Signature' });
         if (page.symbol.enumValues?.length) items.push({ id: 'values', text: 'Values' });
         if (page.symbol.control) items.push({ id: 'control-metadata', text: 'Control metadata' }, { id: 'props', text: 'Props' });
         if (page.symbol.members.length) items.push({ id: 'members', text: 'Members' });
         if (page.symbol.remarks) items.push({ id: 'remarks', text: 'Remarks' });
+        if (page.symbol.throws?.length) items.push({ id: 'throws', text: 'Throws' });
+        if (page.symbol.examples?.length) items.push({ id: 'examples', text: 'Examples' });
         if (page.symbol.related.length) items.push({ id: 'related', text: 'Related symbols' });
         if (page.symbol.source) items.push({ id: 'source', text: 'Source' });
     }
