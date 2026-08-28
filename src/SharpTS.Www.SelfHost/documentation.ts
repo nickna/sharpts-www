@@ -10,6 +10,8 @@ import { renderDocumentationMarkdown } from './docs-markdown';
 import type { DocumentationExample, RenderedMarkdown } from './docs-markdown';
 import { escapeHtml } from './site-html';
 import { docsRoutePath } from './site-paths';
+import { loadSharpTsSource } from './sharp-ts-source';
+import type { SharpTsSourceIdentity } from './sharp-ts-source';
 
 export interface LoadedDocumentationArticle {
     metadata: DocumentationArticle;
@@ -20,7 +22,7 @@ export interface LoadedDocumentation {
     all: LoadedDocumentationArticle[];
     published: LoadedDocumentationArticle[];
     examples: DocumentationExample[];
-    testedVersion: string;
+    sharpTsSource: SharpTsSourceIdentity;
 }
 
 function diagram(label: string, body: string, caption: string): string {
@@ -126,13 +128,6 @@ export function renderDocumentationFigure(name: string): string {
     throw new Error('Unknown documentation figure: ' + name);
 }
 
-function loadTestedVersion(repoRoot: string): string {
-    const source = String(fs.readFileSync(path.join(repoRoot, 'sharpts-source.env'), 'utf8')).trim();
-    const match = /^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})$/.exec(source);
-    if (!match) throw new Error('Pinned SharpTS source revision is missing or malformed');
-    return '0.0.0-local+' + match[1].slice(0, 8);
-}
-
 export function validateDocumentationLinks(articles: LoadedDocumentationArticle[], extraRoutes: string[] = []): void {
     const publishedRoutes: { [route: string]: LoadedDocumentationArticle } = {};
     const validExtraRoutes: { [route: string]: boolean } = {};
@@ -177,5 +172,5 @@ export function loadDocumentation(repoRoot: string, docsRoot: string, extraRoute
             examples.push(example);
         }
     }
-    return { all, published, examples, testedVersion: loadTestedVersion(repoRoot) };
+    return { all, published, examples, sharpTsSource: loadSharpTsSource(repoRoot) };
 }

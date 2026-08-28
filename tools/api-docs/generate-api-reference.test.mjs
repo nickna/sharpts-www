@@ -145,7 +145,7 @@ function fixture() {
         controlDocs: { schemaVersion: 1, schemaHash: 'a'.repeat(64), controls: [] },
         packageJson: {
             name: '@sharpts/gui',
-            version: '1.2.3',
+            version: '0.0.0-local',
             exports: {
                 '.': './index.ts',
                 './devtools': './devtools.ts',
@@ -193,6 +193,15 @@ test('normalizes controls, generics, overloads, unions, source links, and duplic
     assert.deepEqual(catalog.metadata.entryPoints,
         ['index', 'testing', 'devtools', 'jsx-runtime', 'jsx-dev-runtime']);
     assert.deepEqual(catalog.metadata.excludedEntryPoints, []);
+});
+
+test('uses the exact release version or pinned revision instead of the source package placeholder', () => {
+    const unreleased = normalizeCatalog(fixture()).catalog.package;
+    assert.equal(unreleased.version, 'b'.repeat(40));
+    assert.equal(unreleased.releaseVersion, null);
+    const released = normalizeCatalog({ ...fixture(), releaseVersion: '1.2.3' }).catalog.package;
+    assert.equal(released.version, '1.2.3');
+    assert.equal(released.releaseVersion, '1.2.3');
 });
 
 test('rejects missing documentation, invalid links, and category route collisions', () => {

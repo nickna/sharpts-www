@@ -422,6 +422,10 @@ test('API reference renders structured symbols and keyboard-searches the generat
     await expect(page.locator('#control-metadata + .api-metadata')).toContainText('Avalonia.Controls.Button');
     await expect(page.locator('#props + .api-table-wrap')).toContainText('onClick');
     await expect(page.locator('.docs-tested')).toContainText('@sharpts/gui');
+    await expect(page.locator('.docs-tested')).not.toContainText('0.0.0-local');
+    await expect(page.locator('.docs-tested')).toContainText(
+        /SharpTS (?:\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?|[0-9a-f]{12})/
+    );
     await expect(page.locator('.docs-tested a')).toHaveAttribute(
         'href',
         /github\.com\/nickna\/SharpTS\/tree\/[0-9a-f]{40}/

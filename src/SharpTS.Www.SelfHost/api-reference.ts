@@ -103,6 +103,7 @@ export interface ApiReferenceCatalog {
     package: {
         name: string;
         version: string;
+        releaseVersion: string | null;
         revision: string;
         sourceUrl: string;
     };
@@ -152,6 +153,11 @@ export function loadApiReferenceCatalog(file: string): ApiReferenceCatalog {
     if (catalog.schemaVersion !== 1) fail('unsupported schema version');
     if (catalog.package?.name !== '@sharpts/gui') fail('unexpected package metadata');
     if (!/^[0-9a-f]{40}$/.test(catalog.package.revision)) fail('malformed SharpTS revision');
+    if (catalog.package.releaseVersion !== null &&
+        !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(catalog.package.releaseVersion))
+        fail('malformed SharpTS release version');
+    if (catalog.package.version !== (catalog.package.releaseVersion || catalog.package.revision))
+        fail('SharpTS version identity does not match its release version or revision');
     if (!/^[0-9a-f]{64}$/.test(catalog.descriptor.schemaHash)) fail('malformed descriptor hash');
     if (catalog.symbols.length !== catalog.metadata.publicExportCount) fail('public export count does not match');
     const ids: { [id: string]: boolean } = {};

@@ -32,6 +32,7 @@ import {
     editorialDocumentationSourceUrl,
     renderDocumentationFeedback
 } from '../../src/SharpTS.Www.SelfHost/site-components';
+import { parseSharpTsSourceSettings, sharpTsSourceReference } from '../../src/SharpTS.Www.SelfHost/sharp-ts-source';
 import path from 'node:path';
 
 describe('static site primitives', () => {
@@ -82,6 +83,8 @@ describe('static site primitives', () => {
         expect(docsHtml).toContain(`href="${docsRoutePath(documentation.published[0].metadata.slug)}"`);
         expect(docsHtml).toContain('/assets/browser/docs.js');
         expect(docsHtml).not.toContain('rel="alternate" hreflang=');
+        expect(docsHtml).toContain(`>${documentation.sharpTsSource.displayVersion}</a>`);
+        expect(docsHtml).not.toContain('0.0.0-local');
 
         const apiCatalog = loadApiReferenceCatalog(paths.apiCatalog);
         const apiPages = apiReferencePages(apiCatalog);
@@ -94,11 +97,19 @@ describe('static site primitives', () => {
         expect(apiHtml).toContain('id="control-metadata"');
         expect(apiHtml).toContain('Default:');
         expect(apiHtml).toContain(apiCatalog.package.revision);
-        const applicationPage = apiPages.find((page) =>
-            page.kind === 'symbol' && page.symbol.name === 'createDesktopApplication')!;
-        const applicationHtml = renderApiReferenceDocument(
-            english, applicationPage, apiCatalog, documentation, assets
-        );
+        expect(apiHtml).toContain(`SharpTS <a href="${apiCatalog.package.sourceUrl}"`);
+        expect(apiHtml).not.toContain('0.0.0-local');
+        const releasedCatalog = structuredClone(apiCatalog);
+        releasedCatalog.package.version = '1.2.3';
+        releasedCatalog.package.releaseVersion = '1.2.3';
+        const releasedApiHtml = renderApiReferenceDocument(english, buttonPage, releasedCatalog, documentation, assets);
+        expect(releasedApiHtml).toContain('SharpTS <a');
+        expect(releasedApiHtml).toContain('>1.2.3</a>');
+        expect(releasedApiHtml).not.toContain(`>${releasedCatalog.package.revision.slice(0, 12)}</a></span>`);
+        const applicationPage = apiPages.find(
+            (page) => page.kind === 'symbol' && page.symbol.name === 'createDesktopApplication'
+        )!;
+        const applicationHtml = renderApiReferenceDocument(english, applicationPage, apiCatalog, documentation, assets);
         expect(applicationHtml).toContain('<h2 id="remarks">Remarks</h2>');
         expect(applicationHtml).toContain('<h2 id="throws">Throws</h2>');
         expect(applicationHtml).toContain('<h2 id="examples">Examples</h2>');
@@ -128,7 +139,7 @@ describe('static site primitives', () => {
             '&amp;title=%5BDocs%5D%3A%20Start%20using%20SharpTS' +
             '&amp;page=https%3A%2F%2Fsharpts.dev%2Fdocs' +
             '&amp;source=https%3A%2F%2Fgithub.com%2Fnickna%2Fsharpts-www%2Fblob%2Fmain%2Fsrc%2FSharpTS.Www.SelfHost%2Fdocs%2Findex.md' +
-            `&amp;version=${encodeURIComponent(documentation.testedVersion)}`;
+            `&amp;version=${encodeURIComponent(sharpTsSourceReference(documentation.sharpTsSource))}`;
 
         expect(editorialDocumentationSourceUrl('index')).toBe(sourceUrl);
         expect(editorialDocumentationEditUrl('index')).toBe(editUrl);
@@ -184,6 +195,30 @@ describe('static site primitives', () => {
         });
         expect(html).toContain(escapeHtml(issueUrl));
         expect(html).not.toContain('&title=');
+    });
+
+    it('uses a release version only for released SharpTS source identities', () => {
+        const revision = '0123456789abcdef0123456789abcdef01234567';
+        const unreleased = parseSharpTsSourceSettings(
+            `SHARPTS_SOURCE_REVISION=${revision}\nSHARPTS_RELEASE_VERSION=\n`
+        );
+        expect(unreleased).toEqual({
+            revision,
+            releaseVersion: null,
+            displayVersion: revision.slice(0, 12),
+            sourceUrl: `https://github.com/nickna/SharpTS/commit/${revision}`
+        });
+        const released = parseSharpTsSourceSettings(
+            `SHARPTS_SOURCE_REVISION=${revision}\nSHARPTS_RELEASE_VERSION=1.2.3-rc.1\n`
+        );
+        expect(released.displayVersion).toBe('1.2.3-rc.1');
+        expect(sharpTsSourceReference(released)).toBe('1.2.3-rc.1');
+        expect(() => parseSharpTsSourceSettings(`SHARPTS_SOURCE_REVISION=${revision}\n`)).toThrow(
+            /SHARPTS_RELEASE_VERSION must be present/
+        );
+        expect(() =>
+            parseSharpTsSourceSettings(`SHARPTS_SOURCE_REVISION=${revision}\nSHARPTS_RELEASE_VERSION=local\n`)
+        ).toThrow(/semantic version/);
     });
 
     it('renders synchronized setup-script selectors and installation guidance', () => {

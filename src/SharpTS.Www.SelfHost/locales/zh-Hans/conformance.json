@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "规范一致性 — SharpTS",
-    "description": "查看 SharpTS 在固定版本 Test262 和 TypeScript 一致性语料库中的结果。"
+    "description": "查看 SharpTS 在固定修订版本的 Test262 和 TypeScript 一致性语料库中的结果。"
   },
   "eyebrow": "实证兼容性",
   "title": "规范一致性",

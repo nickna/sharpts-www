@@ -1,7 +1,7 @@
 {
   "metadata": { "title": "Leistung — SharpTS", "description": "Vergleichen Sie kompiliertes SharpTS mit Node.js und prüfen Sie Compiler- und Desktop-Messdaten." },
   "eyebrow": "Gemessene Leistung", "title": "TypeScript mit .NET-Geschwindigkeit",
-  "subtitle": "Reproduzierbare Messdaten der festgelegten SharpTS-Version mit dem wichtigsten Ziel: Node.js erreichen oder übertreffen.",
+  "subtitle": "Reproduzierbare Messdaten der festgelegten SharpTS-Revision mit dem wichtigsten Ziel: Node.js erreichen oder übertreffen.",
   "suiteNavigation": "Leistungsdaten",
   "navigation": { "node": "SharpTS gegen Node", "compiler": "Compiler-Spielraum", "desktop": "Desktop-Budgets", "methodology": "Methodik" },
   "summary": { "overall": "Geometrisches Mittel gegen Node", "faster": "Schneller als Node", "parity": "Innerhalb 5 % von Node", "behind": "Noch langsamer", "cases": "vergleichbare Fälle", "notAvailable": "Kein vergleichbarer Lauf" },
@@ -10,5 +10,5 @@
   "status": { "faster": "Schneller", "nearParity": "Nahezu gleich", "behind": "Langsamer" },
   "compiler": { "eyebrow": "Technische Obergrenze", "title": "Compiler-Spielraum", "description": "Von SharpTS kompiliertes TypeScript im Vergleich zu entsprechendem dynamischem und idiomatischem C# innerhalb jedes BenchmarkDotNet-Laufs.", "empty": "Für diese Version ist noch kein geprüfter compiler-micro-Snapshot eingecheckt. Das Dashboard ist für den nächsten veröffentlichten schema-v2-Lauf bereit.", "metric": "Messwert", "timing": "Zeit", "throughput": "Durchsatz", "allocation": "Allokation" },
   "desktop": { "eyebrow": "Release-Grenzwerte", "title": "Desktop-Leistungsbudgets", "description": "GUI-Latenz, Allokation, Startzeit, Speicher und Größe bleiben vom Node-Vergleich getrennt.", "empty": "Noch ist kein geprüfter GUI-Snapshot eingecheckt. Fehlende Daten werden nie als Null oder bestanden dargestellt.", "actual": "Ist", "budget": "Budget", "headroom": "Spielraum", "pass": "Bestanden", "fail": "Über Budget", "baseline": "Referenz" },
-  "methodology": { "eyebrow": "Daten verstehen", "title": "Methodik und Herkunft", "description": "Absolute Messwerte werden nur innerhalb eines maschinengebundenen Laufs verglichen. Verschiedene Suites und Umgebungen werden nie kombiniert.", "runDate": "Laufdatum", "environment": "Umgebung", "toolchain": "Werkzeuge", "timingScope": "Messumfang", "includes": "Enthält", "excludes": "Ohne", "sourceRevision": "SharpTS-Version", "rawJson": "Normalisiertes Roh-JSON", "source": "Benchmark-Quelle" }
+  "methodology": { "eyebrow": "Daten verstehen", "title": "Methodik und Herkunft", "description": "Absolute Messwerte werden nur innerhalb eines maschinengebundenen Laufs verglichen. Verschiedene Suites und Umgebungen werden nie kombiniert.", "runDate": "Laufdatum", "environment": "Umgebung", "toolchain": "Werkzeuge", "timingScope": "Messumfang", "includes": "Enthält", "excludes": "Ohne", "sourceRevision": "SharpTS-Revision", "rawJson": "Normalisiertes Roh-JSON", "source": "Benchmark-Quelle" }
 }

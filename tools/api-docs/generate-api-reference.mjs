@@ -477,7 +477,15 @@ export function validateCatalog(catalog, strictDocumentation = true) {
     return errors;
 }
 
-export function normalizeCatalog({ typedoc, manifest, controlDocs, packageJson, revision, strictDocumentation = true }) {
+export function normalizeCatalog({
+    typedoc,
+    manifest,
+    controlDocs,
+    packageJson,
+    revision,
+    releaseVersion = null,
+    strictDocumentation = true
+}) {
     const expectedPackageExports = ['.', './devtools', './jsx-dev-runtime', './jsx-runtime', './testing'];
     const packageExports = Object.keys(packageJson.exports || {}).sort();
     if (JSON.stringify(packageExports) !== JSON.stringify(expectedPackageExports))
@@ -577,7 +585,8 @@ export function normalizeCatalog({ typedoc, manifest, controlDocs, packageJson, 
         schemaVersion: 1,
         package: {
             name: packageJson.name,
-            version: packageJson.version,
+            version: releaseVersion || revision,
+            releaseVersion,
             revision,
             sourceUrl: `https://github.com/nickna/SharpTS/tree/${revision}/src/SharpTS.Gui.Sdk/GuiPackage`
         },
@@ -728,12 +737,19 @@ export function generateApiReference(options = {}) {
     const sourceSettings = fs.readFileSync(path.join(repoRoot, 'sharpts-source.env'), 'utf8');
     const revision = /^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})$/m.exec(sourceSettings)?.[1];
     if (!revision) throw new Error('Pinned SharpTS source revision is missing or malformed.');
+    const releaseSetting = /^SHARPTS_RELEASE_VERSION=(.*)$/m.exec(sourceSettings);
+    if (!releaseSetting)
+        throw new Error('SHARPTS_RELEASE_VERSION must be present (and empty for an unreleased revision).');
+    const releaseVersion = releaseSetting[1].trim() || null;
+    if (releaseVersion && !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/.test(releaseVersion))
+        throw new Error('SHARPTS_RELEASE_VERSION must be empty or a semantic version without a v prefix.');
     const { catalog, errors } = normalizeCatalog({
         typedoc: readJson(rawFile),
         manifest,
         controlDocs,
         packageJson,
         revision,
+        releaseVersion,
         strictDocumentation: false
     });
     const inspectionMode = options.strictDocumentation === false || process.argv.includes('--allow-undocumented');

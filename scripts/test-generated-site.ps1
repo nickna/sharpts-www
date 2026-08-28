@@ -115,6 +115,10 @@ foreach ($route in $manifest.routes) {
         Assert-True (-not $html.Contains('>Report an API docs issue</a>')) `
             "API feedback action leaked into $($route.route)."
         Assert-True ($html.Contains('Tested with SharpTS')) "Tested version is missing."
+        Assert-True (-not $html.Contains('0.0.0-local')) `
+            "Placeholder SharpTS version leaked into $($route.route)."
+        Assert-True ($html -match 'Tested with SharpTS <a [^>]+>(?:[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?|[0-9a-f]{12})</a>') `
+            "Documentation route $($route.route) has no release-aware SharpTS identity."
         Assert-True ($html.Contains("src=`"/$($manifest.browserEntry.docsScript)`"")) `
             "Documentation route $($route.route) is missing its lightweight bundle."
         Assert-True (-not $html.Contains('<arrow fn>') -and -not $html.Contains('&lt;arrow fn&gt;')) `
@@ -134,6 +138,10 @@ foreach ($route in $manifest.routes) {
             "Editorial contribution action leaked into $($route.route)."
         Assert-True ($html.Contains('data-api-search')) "API search is missing."
         Assert-True ($html.Contains('@sharpts/gui')) "API package identity is missing."
+        Assert-True (-not $html.Contains('0.0.0-local')) `
+            "Placeholder API package version leaked into $($route.route)."
+        Assert-True ($html -match '<code>@sharpts/gui</code> · SharpTS <a [^>]+>(?:[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?|[0-9a-f]{12})</a>') `
+            "API route $($route.route) has no release-aware SharpTS identity."
         Assert-True ($html.Contains("src=`"/$($manifest.browserEntry.docsScript)`"")) `
             "API reference route $($route.route) is missing its lightweight bundle."
         Assert-True (-not $html.Contains('<arrow fn>') -and -not $html.Contains('&lt;arrow fn&gt;')) `
@@ -196,6 +204,20 @@ Assert-True (Test-Path -LiteralPath $docsExamplesPath -PathType Leaf) "Documenta
 $docsManifest = Get-Content -Raw -LiteralPath $docsManifestPath | ConvertFrom-Json
 $docsExamples = Get-Content -Raw -LiteralPath $docsExamplesPath | ConvertFrom-Json
 Assert-True ($docsManifest.language -eq "en") "Documentation manifest language must be English."
+Assert-True ($docsManifest.sharpTsRevision -match '^[0-9a-f]{40}$') `
+    "Documentation manifest has an invalid SharpTS revision."
+$expectedSharpTsDisplay = if ($docsManifest.sharpTsReleaseVersion) {
+    [string]$docsManifest.sharpTsReleaseVersion
+} else {
+    ([string]$docsManifest.sharpTsRevision).Substring(0, 12)
+}
+$expectedSharpTsReference = if ($docsManifest.sharpTsReleaseVersion) {
+    [string]$docsManifest.sharpTsReleaseVersion
+} else {
+    [string]$docsManifest.sharpTsRevision
+}
+Assert-True ($docsManifest.testedVersion -eq $expectedSharpTsDisplay) `
+    "Documentation manifest does not use the release-aware SharpTS display identity."
 Assert-True (@($docsManifest.articles).Count -eq 11) "Expected eleven published documentation articles."
 Assert-True (@($docsManifest.articles).slug -contains "getting-started/desktop-gui") `
     "The desktop GUI guide must be published."
@@ -209,6 +231,8 @@ Assert-True (Test-Path -LiteralPath $apiSearchPath -PathType Leaf) "API search i
 $apiSearch = Get-Content -Raw -LiteralPath $apiSearchPath | ConvertFrom-Json
 Assert-True ($apiSearch.schemaVersion -eq 1) "Unsupported API search index version."
 Assert-True ($apiSearch.package -eq '@sharpts/gui') "Unexpected API search package."
+Assert-True ($apiSearch.version -eq $expectedSharpTsReference) `
+    "API search index does not use the release-aware SharpTS identity."
 Assert-True (@($apiSearch.symbols).Count -eq 208) "Expected 208 searchable API symbols."
 Assert-True (@($apiSearch.symbols | Where-Object { $_.name -eq 'Button' }).Count -eq 1) `
     "Button is missing from the API search index."

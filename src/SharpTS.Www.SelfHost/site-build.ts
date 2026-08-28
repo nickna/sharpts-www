@@ -273,7 +273,9 @@ export function buildSite(renderDocument: (locale: Locale, page: PageKind,
         JSON.stringify(performance, null, 2) + '\n');
     writeText(path.join(paths.outputRoot, 'docs-manifest.json'), JSON.stringify({
         language: 'en',
-        testedVersion: documentation.testedVersion,
+        testedVersion: documentation.sharpTsSource.displayVersion,
+        sharpTsRevision: documentation.sharpTsSource.revision,
+        sharpTsReleaseVersion: documentation.sharpTsSource.releaseVersion,
         articles: documentation.published.map(article => ({
             ...article.metadata,
             route: docsRoutePath(article.metadata.slug),

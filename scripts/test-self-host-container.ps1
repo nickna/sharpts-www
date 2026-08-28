@@ -81,9 +81,11 @@ if (-not $SkipBuild) {
     }
 }
 
-$imageSharpTsSource = @(& docker run --rm --entrypoint cat $Image /app/sharpts-source.env)[0].Trim()
-Assert-True ($imageSharpTsSource -match '^SHARPTS_SOURCE_REVISION=[0-9a-f]{40}$') `
+$imageSharpTsSource = (& docker run --rm --entrypoint cat $Image /app/sharpts-source.env) -join "`n"
+Assert-True ($imageSharpTsSource -match '(?m)^SHARPTS_SOURCE_REVISION=[0-9a-f]{40}$') `
     "Image does not record the resolved SharpTS main commit: '$imageSharpTsSource'."
+Assert-True ($imageSharpTsSource -match '(?m)^SHARPTS_RELEASE_VERSION=(?:[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)?$') `
+    "Image does not record the SharpTS release identity: '$imageSharpTsSource'."
 
 $containerStarted = $false
 try {

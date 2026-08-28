@@ -9,6 +9,7 @@ import { showcaseExamples } from './showcase-data';
 import { presets } from './presets';
 import type { LoadedDocumentation, LoadedDocumentationArticle } from './documentation';
 import { documentationSections } from './docs-manifest';
+import { sharpTsSourceReference } from './sharp-ts-source';
 import {
     editorialDocumentationEditUrl,
     editorialDocumentationSourceUrl,
@@ -523,7 +524,7 @@ export function renderConformance(locale: Locale, data: ConformanceData): string
     return `<main class="landing conformance-page" data-conformance-explorer><section class="section conformance-hero"><div class="container"><p class="conformance-hero__eyebrow">${escapeHtml(t(locale, bundle, 'Eyebrow'))}</p><h1 class="section-title">${escapeHtml(t(locale, bundle, 'Title'))}</h1><p class="section-subtitle">${escapeHtml(t(locale, bundle, 'Subtitle'))}</p><nav class="conformance-hero__links" aria-label="${escapeHtml(t(locale, bundle, 'SuiteNavigation'))}"><a href="#test262">Test262</a><a href="#typescript">TypeScript</a></nav></div></section>
   <section class="section section--alt conformance-content"><div class="container"><div class="conformance-summary" aria-label="${escapeHtml(t(locale, bundle, 'Overview'))}">${renderSummaryCard(locale, 'Summary_Test262Interpreted', 'Summary_Runtime', test262Interpreted, 'interpreted')}${renderSummaryCard(locale, 'Summary_Test262Compiled', 'Summary_Runtime', test262Compiled, 'compiled')}${renderSummaryCard(locale, 'Summary_TypeScript', 'Summary_Diagnostics', typeScriptCounts, 'typescript')}</div><div class="conformance-explorer__controls" data-conformance-controls hidden><label class="conformance-search"><span>${escapeHtml(t(locale, bundle, 'Search_Label'))}</span><input type="search" data-conformance-search placeholder="${escapeHtml(t(locale, bundle, 'Search_Placeholder'))}"></label><div class="conformance-explorer__actions"><button type="button" class="btn btn-secondary btn-sm" data-conformance-expand>${escapeHtml(t(locale, bundle, 'ExpandAll'))}</button><button type="button" class="btn btn-secondary btn-sm" data-conformance-collapse>${escapeHtml(t(locale, bundle, 'CollapseAll'))}</button><button type="button" class="btn btn-secondary btn-sm" data-conformance-reset>${escapeHtml(t(locale, bundle, 'Reset'))}</button></div></div>${renderConformanceSuite(locale, 'test262', test262Roots)}${renderConformanceSuite(locale, 'typescript', typeScriptRoots)}
   <div class="conformance__notes"><p>${escapeHtml(t(locale, bundle, 'PercentageFootnote'))}</p><p>${escapeHtml(t(locale, bundle, 'HonestyFootnote'))}</p></div>
-  <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 8)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScriptRevision}">${typeScriptRevision.slice(0, 8)}</a>) · <a href="/conformance.json">JSON</a></p></div></section>${renderFooter(locale)}</main>`;
+  <p class="conformance__provenance">${escapeHtml(t(locale, bundle, 'Provenance'))}: <a href="https://github.com/nickna/SharpTS/commit/${sharpTs}">SharpTS ${sharpTs.slice(0, 12)}</a> · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.Test262">${escapeHtml(t(locale, bundle, 'Test262Suite'))}</a> (<a href="https://github.com/tc39/test262/commit/${test262}">${test262.slice(0, 8)}</a>) · <a href="https://github.com/nickna/SharpTS/tree/${sharpTs}/tests/conformance/SharpTS.TypeScriptConformance">${escapeHtml(t(locale, bundle, 'TypeScriptSuite'))}</a> (<a href="https://github.com/microsoft/TypeScript/commit/${typeScriptRevision}">${typeScriptRevision.slice(0, 8)}</a>) · <a href="/conformance.json">JSON</a></p></div></section>${renderFooter(locale)}</main>`;
 }
 
 function comparisonClassLabel(locale: Locale, value: ComparisonClass): string {
@@ -680,7 +681,7 @@ function renderCompilerRun(locale: Locale, run: NormalizedRun, index: number): s
         };
         return `<tr data-performance-micro-case data-family="${escapeHtml(benchmark.family)}"><th scope="row"><strong>${escapeHtml(humanizeBenchmarkId(benchmark.family))}</strong><small>${escapeHtml(benchmark.displayInfo)}</small></th><td>${escapeHtml(implementationName(benchmark.implementation))}</td><td data-metric="mean">${cell(mean)}</td><td data-metric="throughput">${cell(throughput)}</td><td data-metric="allocated">${cell(allocated)}</td></tr>`;
     }).join('');
-    return `<article class="performance-run"><header><span>Run ${index + 1}</span><code>${escapeHtml(run.run.revision.commit.slice(0, 8))}</code></header><div class="performance-table-wrap"><table class="performance-table performance-table--compiler"><thead><tr><th>${escapeHtml(t(locale, 'performance', 'Comparison_Workload'))}</th><th>Implementation</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Timing'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Throughput'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Allocation'))}</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
+    return `<article class="performance-run"><header><span>Run ${index + 1}</span><code>${escapeHtml(run.run.revision.commit.slice(0, 12))}</code></header><div class="performance-table-wrap"><table class="performance-table performance-table--compiler"><thead><tr><th>${escapeHtml(t(locale, 'performance', 'Comparison_Workload'))}</th><th>Implementation</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Timing'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Throughput'))}</th><th>${escapeHtml(t(locale, 'performance', 'Compiler_Allocation'))}</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
 }
 
 function renderCompilerEvidence(locale: Locale, runs: NormalizedRun[]): string {
@@ -723,11 +724,11 @@ function renderMethodology(locale: Locale, data: PerformanceData, snapshot: Cros
         const run = snapshot.run;
         const runtimeVersions = run.tools.runtimes.filter(runtime => runtime.version !== null)
             .map(runtime => runtime.id + ' ' + (runtime.version || '')).join(' · ');
-        cards.push(`<article class="performance-method"><header><strong>Cross-runtime</strong><time datetime="${escapeHtml(run.timestampUtc)}">${escapeHtml(run.timestampUtc.slice(0, 10))}</time></header><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Environment'))}</dt><dd>${escapeHtml(run.environment.operatingSystem + ' · ' + run.environment.architecture + ' · ' + run.environment.cpu)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Toolchain'))}</dt><dd>.NET ${escapeHtml(run.tools.dotnet)} · ${escapeHtml(runtimeVersions)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_TimingScope'))}</dt><dd>${escapeHtml(snapshot.methodology.timingScope)} · ${escapeHtml(snapshot.methodology.clock)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Includes'))}</dt><dd>${escapeHtml(snapshot.methodology.includes.join('; '))}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Excludes'))}</dt><dd>${escapeHtml(snapshot.methodology.excludes.join('; '))}</dd></div></dl><footer><a href="https://github.com/nickna/SharpTS/tree/${run.revision.commit}/benchmarks/cross-runtime">${escapeHtml(t(locale, 'performance', 'Methodology_Source'))}</a><a href="https://github.com/nickna/SharpTS/commit/${run.revision.commit}">${escapeHtml(t(locale, 'performance', 'Methodology_SourceRevision'))} ${run.revision.commit.slice(0, 8)}</a></footer></article>`);
+        cards.push(`<article class="performance-method"><header><strong>Cross-runtime</strong><time datetime="${escapeHtml(run.timestampUtc)}">${escapeHtml(run.timestampUtc.slice(0, 10))}</time></header><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Environment'))}</dt><dd>${escapeHtml(run.environment.operatingSystem + ' · ' + run.environment.architecture + ' · ' + run.environment.cpu)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Toolchain'))}</dt><dd>.NET ${escapeHtml(run.tools.dotnet)} · ${escapeHtml(runtimeVersions)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_TimingScope'))}</dt><dd>${escapeHtml(snapshot.methodology.timingScope)} · ${escapeHtml(snapshot.methodology.clock)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Includes'))}</dt><dd>${escapeHtml(snapshot.methodology.includes.join('; '))}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Excludes'))}</dt><dd>${escapeHtml(snapshot.methodology.excludes.join('; '))}</dd></div></dl><footer><a href="https://github.com/nickna/SharpTS/tree/${run.revision.commit}/benchmarks/cross-runtime">${escapeHtml(t(locale, 'performance', 'Methodology_Source'))}</a><a href="https://github.com/nickna/SharpTS/commit/${run.revision.commit}">${escapeHtml(t(locale, 'performance', 'Methodology_SourceRevision'))} ${run.revision.commit.slice(0, 12)}</a></footer></article>`);
     }
     for (const run of [...data.compilerMicroRuns, ...data.guiRuns])
         cards.push(`<article class="performance-method"><header><strong>${escapeHtml(run.suite)}</strong><time datetime="${escapeHtml(run.run.timestampUtc)}">${escapeHtml(run.run.timestampUtc.slice(0, 10))}</time></header><dl><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_Environment'))}</dt><dd>${escapeHtml(run.run.environment.operatingSystem + ' · ' + run.run.environment.architecture + ' · ' + run.run.environment.processor)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_TimingScope'))}</dt><dd>${escapeHtml(run.methodology.timingScope)}</dd></div><div><dt>${escapeHtml(t(locale, 'performance', 'Methodology_SourceRevision'))}</dt><dd><code>${run.run.revision.commit}</code></dd></div></dl></article>`);
-    return `<section class="section section--alt performance-section performance-section--methodology" id="methodology"><div class="container"><div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Methodology_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Methodology_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Methodology_Description'))}</p></div><div class="performance-methods">${cards.join('')}</div><p class="performance-provenance"><a href="/performance.json">${escapeHtml(t(locale, 'performance', 'Methodology_RawJson'))}</a> · <a href="https://github.com/nickna/SharpTS/commit/${data.sourceRevision}">Pinned SharpTS ${data.sourceRevision.slice(0, 8)}</a></p></div></section>`;
+    return `<section class="section section--alt performance-section performance-section--methodology" id="methodology"><div class="container"><div class="performance-section__heading"><p class="performance-eyebrow">${escapeHtml(t(locale, 'performance', 'Methodology_Eyebrow'))}</p><h2>${escapeHtml(t(locale, 'performance', 'Methodology_Title'))}</h2><p>${escapeHtml(t(locale, 'performance', 'Methodology_Description'))}</p></div><div class="performance-methods">${cards.join('')}</div><p class="performance-provenance"><a href="/performance.json">${escapeHtml(t(locale, 'performance', 'Methodology_RawJson'))}</a> · <a href="https://github.com/nickna/SharpTS/commit/${data.sourceRevision}">Pinned SharpTS ${data.sourceRevision.slice(0, 12)}</a></p></div></section>`;
 }
 
 export function renderPerformance(locale: Locale, data: PerformanceData): string {
@@ -833,7 +834,7 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
         title: article.metadata.title,
         pageUrl: canonical,
         sourceUrl,
-        version: documentation.testedVersion,
+        version: sharpTsSourceReference(documentation.sharpTsSource),
         editUrl: editorialDocumentationEditUrl(article.metadata.slug)
     });
     const sidebar = renderDocsSidebar(article, documentation);
@@ -872,7 +873,7 @@ export function renderDocumentationDocument(locale: Locale, article: LoadedDocum
         <nav class="docs-breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Documentation</a></li>${crumb}</ol></nav>
         <p class="docs-language-notice">Documentation is currently available in English.</p>
         <article class="docs-article">
-          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(article.metadata.section)}</p><h1>${escapeHtml(article.metadata.title)}</h1><p>${escapeHtml(article.metadata.description)}</p><span class="docs-tested">Tested with SharpTS ${escapeHtml(documentation.testedVersion)}</span></header>
+          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(article.metadata.section)}</p><h1>${escapeHtml(article.metadata.title)}</h1><p>${escapeHtml(article.metadata.description)}</p><span class="docs-tested">Tested with SharpTS <a href="${documentation.sharpTsSource.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(documentation.sharpTsSource.displayVersion)}</a></span></header>
           ${article.rendered.html}
         </article>
         ${feedback}
@@ -1081,12 +1082,18 @@ export function renderApiReferenceDocument(locale: Locale, page: any,
     const sourceUrl = page.kind === 'symbol' && page.symbol.source
         ? page.symbol.source.url
         : catalog.package.sourceUrl;
+    const sourceReference = catalog.package.releaseVersion === null
+        ? catalog.package.revision
+        : catalog.package.releaseVersion;
+    const sourceDisplay = catalog.package.releaseVersion === null
+        ? catalog.package.revision.slice(0, 12)
+        : catalog.package.releaseVersion;
     const feedback = renderDocumentationFeedback({
         kind: 'api',
         title: details.title,
         pageUrl: canonical,
         sourceUrl,
-        version: catalog.package.revision
+        version: sourceReference
     });
     const sidebar = renderApiSidebar(page, documentation, catalog);
     const crumbs = page.kind === 'landing' ? '' : page.kind === 'package'
@@ -1128,7 +1135,7 @@ export function renderApiReferenceDocument(locale: Locale, page: any,
         <nav class="docs-breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Documentation</a></li><li><span aria-hidden="true">/</span><a href="/docs/api">API Reference</a></li>${crumbs}</ol></nav>
         ${renderApiSearch(catalog)}
         <article class="docs-article api-article">
-          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(details.section)}</p><h1>${escapeHtml(details.title)}</h1><p>${escapeHtml(details.description)}</p><span class="docs-tested"><code>${escapeHtml(catalog.package.name)}</code> ${escapeHtml(catalog.package.version)} · SharpTS <a href="${catalog.package.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(catalog.package.revision.slice(0, 12))}</a></span></header>
+          <header class="docs-article__header"><p class="docs-article__section">${escapeHtml(details.section)}</p><h1>${escapeHtml(details.title)}</h1><p>${escapeHtml(details.description)}</p><span class="docs-tested"><code>${escapeHtml(catalog.package.name)}</code> · SharpTS <a href="${catalog.package.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(sourceDisplay)}</a></span></header>
           ${details.content}
         </article>
         ${feedback}
