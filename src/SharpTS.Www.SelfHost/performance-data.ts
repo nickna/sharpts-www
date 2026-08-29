@@ -172,9 +172,12 @@ function record(value: unknown, description: string): Record<string, unknown> {
 }
 
 function array(value: unknown, description: string): unknown[] {
-    if (!Array.isArray(value) || value.length === 0)
+    if (!Array.isArray(value))
         fail(description + ' must be a non-empty array');
-    return value as unknown[];
+    const result = value as unknown[];
+    if (result.length === 0)
+        fail(description + ' must be a non-empty array');
+    return result;
 }
 
 function string(value: unknown, description: string): string {
@@ -222,7 +225,7 @@ function direction(value: unknown, description: string): PerformanceDirection {
 
 function uniqueStrings(values: unknown, description: string): string[] {
     if (!Array.isArray(values)) fail(description + ' must be an array');
-    const result = values.map((value, index) => string(value, description + '[' + index + ']'));
+    const result = (values as unknown[]).map((value, index) => string(value, description + '[' + index + ']'));
     if (new Set(result).size !== result.length) fail(description + ' contains duplicates');
     return result;
 }
