@@ -94,6 +94,26 @@ Generated output is protected by reviewed SHA-256 hashes. After inspecting an
 intentional site or asset change, run `npm run snapshot:update`; the command
 requires the explicit acceptance flag embedded in the npm script.
 
+## Refresh performance benchmarks
+
+From the website repository root, refresh the pinned cross-runtime benchmark
+evidence, regenerate the site, and run every required check with one command:
+
+```powershell
+.\scripts\refresh-performance-benchmarks.ps1
+```
+
+Pass `-Latest` to fetch SharpTS `main`, or `-Tag v1.0.12` to select a release.
+After all checks pass, the script offers to create a branch, commit only the
+workflow-owned files, push it, and open a GitHub pull request. `-Publish` accepts
+that offer non-interactively; `-NoPublish` keeps the results as local changes.
+
+The canonical evidence belongs to this repository at
+`benchmarks/cross-runtime/snapshots/latest.json`, so publication requires one
+website pull request rather than a second SharpTS snapshot commit. Failed runs
+restore the original source pin, submodule checkout, and published snapshots.
+Diagnostic files remain under `artifacts/benchmark-refresh/`.
+
 ## Contribute documentation
 
 Editorial documentation lives under `src/SharpTS.Www.SelfHost/docs/`. Edit the

@@ -50,7 +50,7 @@ function failure(message: string): WorkerResponsePayload {
 }
 
 function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
+    return error instanceof Error ? (error as Error).message : String(error);
 }
 
 // The host serializes requests as ASCII-only JSON, so Console's inherited text

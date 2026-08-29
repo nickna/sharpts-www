@@ -172,9 +172,12 @@ function record(value: unknown, description: string): Record<string, unknown> {
 }
 
 function array(value: unknown, description: string): unknown[] {
-    if (!Array.isArray(value) || value.length === 0)
+    if (!Array.isArray(value))
         fail(description + ' must be a non-empty array');
-    return value as unknown[];
+    const result = value as unknown[];
+    if (result.length === 0)
+        fail(description + ' must be a non-empty array');
+    return result;
 }
 
 function string(value: unknown, description: string): string {
@@ -222,7 +225,7 @@ function direction(value: unknown, description: string): PerformanceDirection {
 
 function uniqueStrings(values: unknown, description: string): string[] {
     if (!Array.isArray(values)) fail(description + ' must be an array');
-    const result = values.map((value, index) => string(value, description + '[' + index + ']'));
+    const result = (values as unknown[]).map((value, index) => string(value, description + '[' + index + ']'));
     if (new Set(result).size !== result.length) fail(description + ' contains duplicates');
     return result;
 }
@@ -259,7 +262,10 @@ function validateCrossRuntimeSnapshot(value: unknown, expectedRevision: string,
     });
     if (new Set(toolIds).size !== toolIds.length) fail('cross-runtime tools contain duplicate runtime IDs');
     const methodology = record(snapshot.methodology, 'cross-runtime methodology');
-    if (methodology.harnessVersion !== 1 || methodology.id !== 'performance-now-auto-batched-v1' ||
+    const supportedHarness =
+        (methodology.harnessVersion === 1 && methodology.id === 'performance-now-auto-batched-v1') ||
+        (methodology.harnessVersion === 2 && methodology.id === 'performance-now-confirmed-probe-auto-batched-v2');
+    if (!supportedHarness ||
         methodology.timingScope !== 'inProcessWorkload' || methodology.clock !== 'performance.now')
         fail('cross-runtime methodology uses an unsupported timing contract');
     uniqueStrings(methodology.includes, 'cross-runtime methodology.includes');
@@ -494,11 +500,8 @@ function isPinnedHistory(repoRoot: string, candidate: string, expected: string):
 }
 
 export function loadPerformanceData(repoRoot: string): PerformanceData {
-    const sharpTsRoot = path.join(repoRoot, 'lib', 'SharpTS');
-    const publicPath = path.join(sharpTsRoot, 'benchmarks', 'snapshots', 'public-snapshot.json');
-    const crossRuntimePath = path.join(sharpTsRoot, 'benchmarks', 'cross-runtime', 'snapshots', 'latest.json');
-    const snapshotPath = fs.existsSync(publicPath) ? publicPath : crossRuntimePath;
-    if (!fs.existsSync(snapshotPath)) fail('no checked-in benchmark snapshot found at ' + snapshotPath);
+    const snapshotPath = path.join(repoRoot, 'benchmarks', 'cross-runtime', 'snapshots', 'latest.json');
+    if (!fs.existsSync(snapshotPath)) fail('no website-owned benchmark snapshot found at ' + snapshotPath);
     let value: unknown;
     try {
         value = JSON.parse(String(fs.readFileSync(snapshotPath, 'utf8')));

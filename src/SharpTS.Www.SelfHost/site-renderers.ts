@@ -589,7 +589,7 @@ function renderCrossRuntimeRow(locale: Locale, benchmark: CrossRuntimeCase): str
     const ratio = relativeSpeed(benchmark, 'compiled', 'node');
     const classification = ratio === null ? null : classifyRelativeSpeed(ratio);
     const title = humanizeBenchmarkId(benchmark.name);
-    const parameter = Object.entries(benchmark.parameters).map(([key, value]) => key + '=' + value).join(', ');
+    const parameter = 'n=' + benchmark.parameters.n;
     return `<details class="performance-case performance-case--${classification || 'unavailable'}" data-performance-case data-family="${escapeHtml(benchmark.family)}" data-size="${benchmark.parameters.n}" data-search="${escapeHtml((benchmark.family + ' ' + benchmark.name + ' ' + parameter).toLowerCase())}" data-unit="${benchmark.unit}" data-direction="${benchmark.direction}" data-runtimes="${performanceRuntimePayload(benchmark)}">
   <summary><span class="performance-case__identity"><strong>${escapeHtml(title)}</strong><code>${escapeHtml(parameter)}</code></span><span class="performance-case__visual" data-performance-ratio>${renderRatioVisual(locale, ratio, classification)}</span></summary>
   <div class="performance-case__details"><p><code>${escapeHtml(benchmark.id)}</code></p><h3>${escapeHtml(t(locale, 'performance', 'Comparison_RawMeasurements'))}</h3>${renderRawRuntimeTable(locale, benchmark)}</div>
