@@ -11,7 +11,7 @@
     },
     {
       "path": "performance/index.html",
-      "sha256": "8da115e66ee80dd675d6111fac9a026385dc3266f995110eef9e81bae10f0b8a"
+      "sha256": "353e15210a74e6450c29c25ec5801b33ce98464b957deec82954e08d3877a470"
     },
     {
       "path": "zh-Hans/index.html",
@@ -23,7 +23,7 @@
     },
     {
       "path": "zh-Hans/performance/index.html",
-      "sha256": "f1011a2a3e256b5120a9445ae5575dc81c9f117374dd10468d7ad059c9db77ac"
+      "sha256": "e64b4221476214bb85175109fe6564d98f7eee2ac4c132810744236d81ac99e7"
     },
     {
       "path": "fr/index.html",
@@ -35,7 +35,7 @@
     },
     {
       "path": "fr/performance/index.html",
-      "sha256": "1a0d221a142ad84ff410196acfb5dc2bca5f4eff697cf647eae3a595d717474c"
+      "sha256": "55568edccc1d7b502bc057da0ad519b08b14c00ced296490a0ea9d66692790a0"
     },
     {
       "path": "es/index.html",
@@ -47,7 +47,7 @@
     },
     {
       "path": "es/performance/index.html",
-      "sha256": "f8b14fe9f48fce5ab90f939aede0eae639fedcb4f15b22714dd6665f5312919d"
+      "sha256": "8974370a9611ddbb407c19b6915a8bccb819cd93e45af235b45bcd2007300fd8"
     },
     {
       "path": "de/index.html",
@@ -59,7 +59,7 @@
     },
     {
       "path": "de/performance/index.html",
-      "sha256": "9bcb0475dce2d82d2f1c536c186cb145662eb40e202f5d644de69630aa2fb452"
+      "sha256": "879a31564aac891effd3f057a0ed9db1b13aa67b51df81be6110a0db07fc2d0c"
     },
     {
       "path": "docs/index.html",
