@@ -497,11 +497,8 @@ function isPinnedHistory(repoRoot: string, candidate: string, expected: string):
 }
 
 export function loadPerformanceData(repoRoot: string): PerformanceData {
-    const sharpTsRoot = path.join(repoRoot, 'lib', 'SharpTS');
-    const publicPath = path.join(sharpTsRoot, 'benchmarks', 'snapshots', 'public-snapshot.json');
-    const crossRuntimePath = path.join(sharpTsRoot, 'benchmarks', 'cross-runtime', 'snapshots', 'latest.json');
-    const snapshotPath = fs.existsSync(publicPath) ? publicPath : crossRuntimePath;
-    if (!fs.existsSync(snapshotPath)) fail('no checked-in benchmark snapshot found at ' + snapshotPath);
+    const snapshotPath = path.join(repoRoot, 'benchmarks', 'cross-runtime', 'snapshots', 'latest.json');
+    if (!fs.existsSync(snapshotPath)) fail('no website-owned benchmark snapshot found at ' + snapshotPath);
     let value: unknown;
     try {
         value = JSON.parse(String(fs.readFileSync(snapshotPath, 'utf8')));

@@ -97,17 +97,22 @@ requires the explicit acceptance flag embedded in the npm script.
 ## Refresh performance benchmarks
 
 From the website repository root, refresh the pinned cross-runtime benchmark
-evidence with one command:
+evidence, regenerate the site, and run every required check with one command:
 
 ```powershell
 .\scripts\refresh-performance-benchmarks.ps1
 ```
 
-The script runs the complete suite three times, validates the generated evidence,
-and updates `lib/SharpTS/benchmarks/cross-runtime/snapshots/latest.json` only after
-the run succeeds. Diagnostic files are retained under
-`artifacts/benchmark-refresh/`. A failed or interrupted run leaves the canonical
-snapshot unchanged.
+Pass `-Latest` to fetch SharpTS `main`, or `-Tag v1.0.12` to select a release.
+After all checks pass, the script offers to create a branch, commit only the
+workflow-owned files, push it, and open a GitHub pull request. `-Publish` accepts
+that offer non-interactively; `-NoPublish` keeps the results as local changes.
+
+The canonical evidence belongs to this repository at
+`benchmarks/cross-runtime/snapshots/latest.json`, so publication requires one
+website pull request rather than a second SharpTS snapshot commit. Failed runs
+restore the original source pin, submodule checkout, and published snapshots.
+Diagnostic files remain under `artifacts/benchmark-refresh/`.
 
 ## Contribute documentation
 

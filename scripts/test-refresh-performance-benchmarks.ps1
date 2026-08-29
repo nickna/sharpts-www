@@ -12,7 +12,7 @@ $scratch = Join-Path ([IO.Path]::GetTempPath()) ("sharpts benchmark refresh test
 $fixtureRoot = Join-Path $scratch 'website fixture with spaces'
 $sharpTsRoot = Join-Path $fixtureRoot 'lib/SharpTS'
 $canonicalRelative = 'benchmarks/cross-runtime/snapshots/latest.json'
-$canonicalSnapshot = Join-Path $sharpTsRoot $canonicalRelative
+$canonicalSnapshot = Join-Path $fixtureRoot $canonicalRelative
 $utf8 = [Text.UTF8Encoding]::new($false)
 
 function Assert-True {
@@ -35,11 +35,14 @@ function Invoke-Git {
 }
 
 function Reset-CanonicalSnapshot {
-    [void](Invoke-Git @('-C', $sharpTsRoot, 'restore', '--source=HEAD', '--worktree', '--', $canonicalRelative))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'restore', '--source=HEAD', '--worktree', '--', $canonicalRelative))
 }
 
 function Invoke-Refresh {
-    param([Parameter(Mandatory)] [string]$Mode)
+    param(
+        [Parameter(Mandatory)] [string]$Mode,
+        [string[]]$Arguments = @()
+    )
 
     $savedMode = $env:BENCHMARK_REFRESH_TEST_MODE
     $savedLocation = Get-Location
@@ -48,7 +51,19 @@ function Invoke-Refresh {
     try {
         $env:BENCHMARK_REFRESH_TEST_MODE = $Mode
         Set-Location $scratch
-        try { $messages = @(& $refreshScript -RepositoryRoot $fixtureRoot *>&1 | ForEach-Object { $_.ToString() }) }
+        try {
+            $invocationParameters = @{
+                RepositoryRoot = $fixtureRoot
+                SkipVerification = $true
+            }
+            if ('-Latest' -in $Arguments) { $invocationParameters.Latest = $true }
+            $tagIndex = [Array]::IndexOf($Arguments, '-Tag')
+            if ($tagIndex -ge 0) { $invocationParameters.Tag = $Arguments[$tagIndex + 1] }
+            if ('-Publish' -in $Arguments) { $invocationParameters.Publish = $true }
+            else { $invocationParameters.NoPublish = $true }
+            $messages = @(& $refreshScript @invocationParameters *>&1 |
+                ForEach-Object { $_.ToString() })
+        }
         catch {
             $succeeded = $false
             $messages += $_.Exception.Message
@@ -62,10 +77,12 @@ function Invoke-Refresh {
 
 try {
     [IO.Directory]::CreateDirectory((Split-Path -Parent $canonicalSnapshot)) | Out-Null
+    [IO.Directory]::CreateDirectory($sharpTsRoot) | Out-Null
     [IO.File]::WriteAllText((Join-Path $sharpTsRoot 'fixture-source.txt'), "fixture`n", $utf8)
     [IO.File]::WriteAllText($canonicalSnapshot, "old canonical snapshot`n", $utf8)
 
     $runnerPath = Join-Path $sharpTsRoot 'benchmarks/cross-runtime/run-benchmarks.ps1'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $runnerPath)) | Out-Null
     $runnerSource = @'
 [CmdletBinding()]
 param([int]$Launches, [string]$OutputDirectory, [string]$RepositoryRoot)
@@ -135,7 +152,32 @@ foreach ($item in $Path) {
     [void](Invoke-Git @('-C', $sharpTsRoot, 'commit', '-m', 'fixture'))
     $fixtureRevisionOutput = @(Invoke-Git @('-C', $sharpTsRoot, 'rev-parse', 'HEAD'))
     $fixtureRevision = ([string]$fixtureRevisionOutput[-1]).Trim()
-    [IO.File]::WriteAllText((Join-Path $fixtureRoot 'sharpts-source.env'), "SHARPTS_SOURCE_REVISION=$fixtureRevision`n", $utf8)
+    [IO.File]::WriteAllText((Join-Path $fixtureRoot 'sharpts-source.env'),
+        "SHARPTS_SOURCE_REVISION=$fixtureRevision`nSHARPTS_RELEASE_VERSION=`n", $utf8)
+    $siteSnapshot = Join-Path $fixtureRoot 'src/SharpTS.Www.SelfHost/site.snapshot.json'
+    [IO.Directory]::CreateDirectory((Split-Path -Parent $siteSnapshot)) | Out-Null
+    [IO.File]::WriteAllText($siteSnapshot, "{`"version`":2,`"files`":[]}`n", $utf8)
+    [IO.File]::WriteAllText((Join-Path $fixtureRoot 'unrelated.txt'), "clean unrelated file`n", $utf8)
+
+    [void](Invoke-Git @('init', $fixtureRoot))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'config', 'core.autocrlf', 'false'))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'config', 'user.name', 'Benchmark Refresh Tests'))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'config', 'user.email', 'benchmark-refresh@example.invalid'))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'add', '.'))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'commit', '-m', 'website fixture'))
+
+    $sharpRemote = Join-Path $scratch 'sharp-remote.git'
+    [void](Invoke-Git @('init', '--bare', $sharpRemote))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'branch', '-M', 'main'))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'remote', 'add', 'origin', $sharpRemote))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'tag', 'v1.2.3', $fixtureRevision))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'push', '-u', 'origin', 'main', '--tags'))
+
+    $websiteRemote = Join-Path $scratch 'website-remote.git'
+    [void](Invoke-Git @('init', '--bare', $websiteRemote))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'branch', '-M', 'main'))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'remote', 'add', 'origin', $websiteRemote))
+    [void](Invoke-Git @('-C', $fixtureRoot, 'push', '-u', 'origin', 'main'))
 
     $tokens = $null
     $parseErrors = $null
@@ -144,7 +186,8 @@ foreach ($item in $Path) {
 
     $success = Invoke-Refresh 'success'
     Assert-True $success.Succeeded "Successful fixture refresh failed:`n$($success.Output)"
-    Assert-Contains $success.Output 'Benchmark refresh completed' 'Successful refresh did not report completion.'
+    Assert-Contains $success.Output 'All performance benchmarks and verification checks passed' `
+        'Successful refresh did not report completion.'
     Assert-True ((Get-Content -LiteralPath $canonicalSnapshot -Raw).Contains('fixture/case?n=1')) `
         'Successful refresh did not publish the candidate.'
 
@@ -160,31 +203,70 @@ foreach ($item in $Path) {
 
     Reset-CanonicalSnapshot
     $pinnedPath = Join-Path $fixtureRoot 'sharpts-source.env'
-    [IO.File]::WriteAllText($pinnedPath, "SHARPTS_SOURCE_REVISION=$('f' * 40)`n", $utf8)
+    [IO.File]::WriteAllText($pinnedPath,
+        "SHARPTS_SOURCE_REVISION=$('f' * 40)`nSHARPTS_RELEASE_VERSION=`n", $utf8)
     $pinnedBefore = [IO.File]::ReadAllBytes($canonicalSnapshot)
     $pinnedFailure = Invoke-Refresh 'success'
-    Assert-True (-not $pinnedFailure.Succeeded) 'Mismatched pinned submodule revision was accepted.'
-    Assert-Contains $pinnedFailure.Output 'sharpts-source.env pins' 'Pinned-revision error was not actionable.'
+    Assert-True (-not $pinnedFailure.Succeeded) 'A pre-existing source-pin edit was accepted.'
+    Assert-Contains $pinnedFailure.Output 'managed website files already contain changes' `
+        'Managed-file preflight error was not actionable.'
     Assert-True ([Convert]::ToBase64String([IO.File]::ReadAllBytes($canonicalSnapshot)) -ceq [Convert]::ToBase64String($pinnedBefore)) `
-        'Pinned-revision rejection changed the canonical snapshot.'
-    [IO.File]::WriteAllText($pinnedPath, "SHARPTS_SOURCE_REVISION=$fixtureRevision`n", $utf8)
+        'Managed-file rejection changed the canonical snapshot.'
+    [void](Invoke-Git @('-C', $fixtureRoot, 'restore', '--source=HEAD', '--worktree', '--', 'sharpts-source.env'))
 
     Reset-CanonicalSnapshot
     [IO.File]::WriteAllText((Join-Path $sharpTsRoot 'fixture-source.txt'), "dirty source`n", $utf8)
     $dirtyBefore = [IO.File]::ReadAllBytes($canonicalSnapshot)
     $dirtyFailure = Invoke-Refresh 'success'
     Assert-True (-not $dirtyFailure.Succeeded) 'Unrelated dirty SharpTS source was accepted.'
-    Assert-Contains $dirtyFailure.Output 'tracked changes unrelated' 'Dirty-source error was not actionable.'
+    Assert-Contains $dirtyFailure.Output 'SharpTS checkout contains changes' 'Dirty-source error was not actionable.'
     Assert-True ([Convert]::ToBase64String([IO.File]::ReadAllBytes($canonicalSnapshot)) -ceq [Convert]::ToBase64String($dirtyBefore)) `
         'Dirty-source rejection changed the canonical snapshot.'
     [void](Invoke-Git @('-C', $sharpTsRoot, 'restore', '--source=HEAD', '--worktree', '--', 'fixture-source.txt'))
 
     Reset-CanonicalSnapshot
-    $firstRefresh = Invoke-Refresh 'success'
-    Assert-True $firstRefresh.Succeeded "Initial refresh for canonical-only rerun failed:`n$($firstRefresh.Output)"
-    $secondRefresh = Invoke-Refresh 'success'
-    Assert-True $secondRefresh.Succeeded "Canonical-only rerun failed:`n$($secondRefresh.Output)"
-    Assert-Contains $secondRefresh.Output 'temporary clean worktree' 'Canonical-only rerun did not isolate clean provenance.'
+    $unrelatedPath = Join-Path $fixtureRoot 'unrelated.txt'
+    [IO.File]::WriteAllText($unrelatedPath, "preserve this unrelated edit`n", $utf8)
+    $unrelatedRefresh = Invoke-Refresh 'success'
+    Assert-True $unrelatedRefresh.Succeeded "Unrelated website edit blocked the refresh:`n$($unrelatedRefresh.Output)"
+    Assert-True ([IO.File]::ReadAllText($unrelatedPath).Contains('preserve this unrelated edit')) `
+        'The refresh overwrote an unrelated website edit.'
+    Reset-CanonicalSnapshot
+    [void](Invoke-Git @('-C', $fixtureRoot, 'restore', '--source=HEAD', '--worktree', '--', 'unrelated.txt'))
+
+    [IO.File]::WriteAllText((Join-Path $sharpTsRoot 'latest-source.txt'), "latest source`n", $utf8)
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'add', 'latest-source.txt'))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'commit', '-m', 'latest source fixture'))
+    $latestRevision = ([string]@(Invoke-Git @('-C', $sharpTsRoot, 'rev-parse', 'HEAD'))[-1]).Trim()
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'push', 'origin', 'HEAD:main'))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'checkout', '--detach', $fixtureRevision))
+
+    $latestRefresh = Invoke-Refresh 'success' @('-Latest')
+    Assert-True $latestRefresh.Succeeded "Latest-source refresh failed:`n$($latestRefresh.Output)"
+    Assert-Contains ([IO.File]::ReadAllText($pinnedPath)) "SHARPTS_SOURCE_REVISION=$latestRevision" `
+        'Latest-source refresh did not update the exact source pin.'
+    Assert-True (([string]@(Invoke-Git @('-C', $sharpTsRoot, 'rev-parse', 'HEAD'))[-1]).Trim() -ceq $latestRevision) `
+        'Latest-source refresh did not check out the fetched main revision.'
+    [void](Invoke-Git @('-C', $fixtureRoot, 'restore', '--source=HEAD', '--worktree', '--',
+        $canonicalRelative, 'sharpts-source.env'))
+    [void](Invoke-Git @('-C', $sharpTsRoot, 'checkout', '--detach', $fixtureRevision))
+
+    $tagRefresh = Invoke-Refresh 'success' @('-Tag', 'v1.2.3')
+    Assert-True $tagRefresh.Succeeded "Tagged-source refresh failed:`n$($tagRefresh.Output)"
+    Assert-Contains ([IO.File]::ReadAllText($pinnedPath)) 'SHARPTS_RELEASE_VERSION=1.2.3' `
+        'Tagged-source refresh did not set the release version.'
+    Assert-True (([string]@(Invoke-Git @('-C', $sharpTsRoot, 'rev-parse', 'HEAD'))[-1]).Trim() -ceq $fixtureRevision) `
+        'Tagged-source refresh did not check out the tagged commit.'
+    [void](Invoke-Git @('-C', $fixtureRoot, 'restore', '--source=HEAD', '--worktree', '--',
+        $canonicalRelative, 'sharpts-source.env'))
+
+    $missingTagBefore = [IO.File]::ReadAllBytes($canonicalSnapshot)
+    $missingTag = Invoke-Refresh 'success' @('-Tag', 'v9.9.9')
+    Assert-True (-not $missingTag.Succeeded) 'A nonexistent SharpTS release tag was accepted.'
+    Assert-True ([Convert]::ToBase64String([IO.File]::ReadAllBytes($canonicalSnapshot)) -ceq
+        [Convert]::ToBase64String($missingTagBefore)) 'A missing-tag failure changed the canonical snapshot.'
+    Assert-True (([string]@(Invoke-Git @('-C', $sharpTsRoot, 'rev-parse', 'HEAD'))[-1]).Trim() -ceq $fixtureRevision) `
+        'A missing-tag failure did not restore the original SharpTS checkout.'
 
     Reset-CanonicalSnapshot
     $artifactRoot = Join-Path $fixtureRoot 'artifacts/benchmark-refresh'
@@ -207,6 +289,50 @@ foreach ($item in $Path) {
     } finally {
         $heldLock.Dispose()
     }
+
+    $fakeBin = Join-Path $scratch 'fake-bin'
+    [IO.Directory]::CreateDirectory($fakeBin) | Out-Null
+    $fakeGh = Join-Path $fakeBin 'gh.cmd'
+    $fakeGhSource = @'
+@echo off
+if /I "%BENCHMARK_REFRESH_FAKE_GH_MODE%"=="auth-failure" if /I "%1"=="auth" exit /b 3
+if /I "%1"=="auth" exit /b 0
+if /I "%1"=="pr" (
+  echo https://github.example/fixture/pull/1
+  exit /b 0
+)
+exit /b 2
+'@
+    [IO.File]::WriteAllText($fakeGh, $fakeGhSource, $utf8)
+    $savedPath = $env:PATH
+    $savedFakeGhMode = $env:BENCHMARK_REFRESH_FAKE_GH_MODE
+    try {
+        $env:PATH = "$fakeBin$([IO.Path]::PathSeparator)$savedPath"
+        $env:BENCHMARK_REFRESH_FAKE_GH_MODE = 'auth-failure'
+        $authFailure = Invoke-Refresh 'success' @('-Publish')
+        Assert-True (-not $authFailure.Succeeded) 'Failed GitHub authentication was accepted.'
+        Assert-Contains $authFailure.Output 'auth status' 'GitHub authentication failure was not reported.'
+        Assert-True ((Get-Content -LiteralPath $canonicalSnapshot -Raw).Contains('fixture/case?n=1')) `
+            'GitHub authentication failure discarded valid benchmark results.'
+        Assert-True (([string]@(Invoke-Git @('-C', $fixtureRoot, 'branch', '--show-current'))[-1]).Trim() -ceq 'main') `
+            'GitHub authentication failure created a publication branch.'
+        Reset-CanonicalSnapshot
+
+        $env:BENCHMARK_REFRESH_FAKE_GH_MODE = ''
+        $published = Invoke-Refresh 'success' @('-Publish')
+    } finally {
+        $env:PATH = $savedPath
+        $env:BENCHMARK_REFRESH_FAKE_GH_MODE = $savedFakeGhMode
+    }
+    Assert-True $published.Succeeded "Fixture PR publication failed:`n$($published.Output)"
+    Assert-Contains $published.Output 'https://github.example/fixture/pull/1' `
+        'Successful publication did not report the pull-request URL.'
+    $publishedBranch = ([string]@(Invoke-Git @('-C', $fixtureRoot, 'branch', '--show-current'))[-1]).Trim()
+    Assert-True $publishedBranch.StartsWith('codex/benchmark-refresh-', [StringComparison]::Ordinal) `
+        'Publication did not create a dedicated benchmark branch.'
+    $remoteBranch = Invoke-Git @('--git-dir', $websiteRemote, 'rev-parse', "refs/heads/$publishedBranch")
+    $remoteRevision = ([string]@($remoteBranch)[-1]).Trim()
+    Assert-True ($remoteRevision -match '^[0-9a-f]{40}$') 'Publication did not push the benchmark branch.'
 
     Write-Host 'Performance benchmark refresh tests passed.'
 } finally {

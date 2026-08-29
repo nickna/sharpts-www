@@ -103,16 +103,23 @@ See the [configuration reference](docs/configuration.md) for every setting. To
 accept an intentional generated-output change after review, run
 `npm run snapshot:update` and commit the updated snapshot.
 
-To refresh the performance benchmark evidence, run exactly one command from the
-repository root:
+The performance workflow is one command. With no source option it uses the
+currently pinned SharpTS revision:
 
 ```powershell
 .\scripts\refresh-performance-benchmarks.ps1
 ```
 
-The canonical benchmark snapshot is replaced only after the complete three-launch
-run and validation succeed. Failed runs retain their diagnostics under
-`artifacts/benchmark-refresh/` without changing the published evidence.
+Use `-Latest` to fetch SharpTS `main`, or `-Tag v1.0.12` to benchmark a release.
+The script runs the benchmarks, rebuilds and verifies the site, then offers to
+create, push, and open a pull request. Use `-Publish` to accept that offer up
+front or `-NoPublish` to leave the verified changes locally.
+
+The website owns the canonical snapshot at
+`benchmarks/cross-runtime/snapshots/latest.json`; the SharpTS repository never
+needs a benchmark-only commit or second pull request. A failed run restores the
+source pin and published evidence while retaining diagnostics under
+`artifacts/benchmark-refresh/`.
 
 ## Repository map
 
