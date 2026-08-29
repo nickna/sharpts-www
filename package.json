@@ -24,11 +24,12 @@
     "test:generated": "pwsh -File scripts/test-generated-site.ps1",
     "test:apphost-manifest": "pwsh -File scripts/test-apphost-manifest.ps1",
     "test:setup:powershell": "pwsh -File scripts/test-setup.ps1",
+    "test:benchmark-refresh": "pwsh -NoProfile -File scripts/test-refresh-performance-benchmarks.ps1",
     "test:isolation": "pwsh -File scripts/test-self-host-container.ps1",
     "snapshot:update": "node scripts/update-site-snapshot.mjs --accept",
     "typecheck:browser": "tsc --noEmit -p src/SharpTS.Www.SelfHost/browser/tsconfig.json",
     "verify:browser": "npm run generate:api && npm run typecheck:browser && npm run test:browser && npm run build:browser && npm run check:browser-budget && npm run test:browser-bundle",
-    "verify": "npm run verify:source && npm run check:secrets && npm run check:i18n && npm run check && npm run verify:browser"
+    "verify": "npm run verify:source && npm run check:secrets && npm run test:benchmark-refresh && npm run check:i18n && npm run check && npm run verify:browser"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "6.2.5",

@@ -259,7 +259,10 @@ function validateCrossRuntimeSnapshot(value: unknown, expectedRevision: string,
     });
     if (new Set(toolIds).size !== toolIds.length) fail('cross-runtime tools contain duplicate runtime IDs');
     const methodology = record(snapshot.methodology, 'cross-runtime methodology');
-    if (methodology.harnessVersion !== 1 || methodology.id !== 'performance-now-auto-batched-v1' ||
+    const supportedHarness =
+        (methodology.harnessVersion === 1 && methodology.id === 'performance-now-auto-batched-v1') ||
+        (methodology.harnessVersion === 2 && methodology.id === 'performance-now-confirmed-probe-auto-batched-v2');
+    if (!supportedHarness ||
         methodology.timingScope !== 'inProcessWorkload' || methodology.clock !== 'performance.now')
         fail('cross-runtime methodology uses an unsupported timing contract');
     uniqueStrings(methodology.includes, 'cross-runtime methodology.includes');

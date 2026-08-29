@@ -94,6 +94,21 @@ Generated output is protected by reviewed SHA-256 hashes. After inspecting an
 intentional site or asset change, run `npm run snapshot:update`; the command
 requires the explicit acceptance flag embedded in the npm script.
 
+## Refresh performance benchmarks
+
+From the website repository root, refresh the pinned cross-runtime benchmark
+evidence with one command:
+
+```powershell
+.\scripts\refresh-performance-benchmarks.ps1
+```
+
+The script runs the complete suite three times, validates the generated evidence,
+and updates `lib/SharpTS/benchmarks/cross-runtime/snapshots/latest.json` only after
+the run succeeds. Diagnostic files are retained under
+`artifacts/benchmark-refresh/`. A failed or interrupted run leaves the canonical
+snapshot unchanged.
+
 ## Contribute documentation
 
 Editorial documentation lives under `src/SharpTS.Www.SelfHost/docs/`. Edit the

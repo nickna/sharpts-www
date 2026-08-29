@@ -106,6 +106,17 @@ describe('performance snapshot data', () => {
         });
     });
 
+    it('accepts paired v1 and v2 timing contracts and rejects mixed contract identifiers', () => {
+        const confirmedProbe = structuredClone(snapshot());
+        const methodology = confirmedProbe.methodology as Record<string, unknown>;
+        methodology.harnessVersion = 2;
+        methodology.id = 'performance-now-confirmed-probe-auto-batched-v2';
+        expect(() => parsePerformanceSnapshot(confirmedProbe, revision)).not.toThrow();
+
+        methodology.id = 'performance-now-auto-batched-v1';
+        expect(() => parsePerformanceSnapshot(confirmedProbe, revision)).toThrow(/unsupported timing contract/);
+    });
+
     it('normalizes schema-v2 compiler and GUI runs without combining their environments', () => {
         const run = (suite: 'compiler-micro' | 'gui', implementation: string, budget: boolean) => ({
             suite,
