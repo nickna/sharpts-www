@@ -85,7 +85,7 @@ function Read-SourceSettings {
 
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Pinned source file is missing: $Path" }
     $text = [IO.File]::ReadAllText($Path)
-    $revisionMatch = [regex]::Match($text, '(?m)^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})$')
+    $revisionMatch = [regex]::Match($text, '(?m)^SHARPTS_SOURCE_REVISION=([0-9a-f]{40})\r?$')
     $releaseMatch = [regex]::Match($text, '(?m)^SHARPTS_RELEASE_VERSION=(.*)$')
     if (-not $revisionMatch.Success) { throw "SHARPTS_SOURCE_REVISION is missing or invalid in $Path" }
     if (-not $releaseMatch.Success) { throw "SHARPTS_RELEASE_VERSION is missing in $Path" }

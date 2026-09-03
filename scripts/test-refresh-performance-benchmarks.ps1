@@ -241,7 +241,14 @@ foreach ($item in $Path) {
     [void](Invoke-Git @('-C', $sharpTsRoot, 'push', 'origin', 'HEAD:main'))
     [void](Invoke-Git @('-C', $sharpTsRoot, 'checkout', '--detach', $fixtureRevision))
 
-    $latestRefresh = Invoke-Refresh 'success' @('-Latest')
+    [IO.File]::WriteAllText($pinnedPath,
+        "SHARPTS_SOURCE_REVISION=$fixtureRevision`r`nSHARPTS_RELEASE_VERSION=`r`n", $utf8)
+    [void](Invoke-Git @('-C', $fixtureRoot, 'update-index', '--assume-unchanged', '--', 'sharpts-source.env'))
+    try {
+        $latestRefresh = Invoke-Refresh 'success' @('-Latest')
+    } finally {
+        [void](Invoke-Git @('-C', $fixtureRoot, 'update-index', '--no-assume-unchanged', '--', 'sharpts-source.env'))
+    }
     Assert-True $latestRefresh.Succeeded "Latest-source refresh failed:`n$($latestRefresh.Output)"
     Assert-Contains ([IO.File]::ReadAllText($pinnedPath)) "SHARPTS_SOURCE_REVISION=$latestRevision" `
         'Latest-source refresh did not update the exact source pin.'
