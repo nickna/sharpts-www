@@ -304,6 +304,22 @@ if /I "%1"=="pr" (
 exit /b 2
 '@
     [IO.File]::WriteAllText($fakeGh, $fakeGhSource, $utf8)
+    if (-not $IsWindows) {
+        $fakeGh = Join-Path $fakeBin 'gh'
+        $fakeGhSource = @'
+#!/bin/sh
+if [ "$BENCHMARK_REFRESH_FAKE_GH_MODE" = "auth-failure" ] && [ "$1" = "auth" ]; then exit 3; fi
+if [ "$1" = "auth" ]; then exit 0; fi
+if [ "$1" = "pr" ]; then
+  echo https://github.example/fixture/pull/1
+  exit 0
+fi
+exit 2
+'@
+        [IO.File]::WriteAllText($fakeGh, $fakeGhSource, $utf8)
+        [IO.File]::SetUnixFileMode($fakeGh,
+            [IO.UnixFileMode]::UserRead -bor [IO.UnixFileMode]::UserWrite -bor [IO.UnixFileMode]::UserExecute)
+    }
     $savedPath = $env:PATH
     $savedFakeGhMode = $env:BENCHMARK_REFRESH_FAKE_GH_MODE
     try {
