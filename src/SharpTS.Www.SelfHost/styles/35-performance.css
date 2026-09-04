@@ -7,7 +7,7 @@
     --perf-green: #267a55;
     --perf-blue: #236bc4;
     --perf-purple: #6b3b8f;
-    --perf-amber: #b86a00;
+    --perf-amber: #a05a00;
     overflow: clip;
 }
 
@@ -295,7 +295,7 @@
 .performance-ratio--behind { color: var(--perf-amber); }
 .performance-ratio strong { color: var(--text-primary); font-family: var(--font-mono); text-align: right; }
 .performance-ratio__status { font-size: 0.72rem; font-weight: 700; }
-.performance-ratio__unavailable { color: var(--text-tertiary); font-size: 0.8rem; }
+.performance-ratio__unavailable { color: var(--text-secondary); font-size: 0.8rem; }
 
 .performance-case__details { padding: 0 1.25rem 1.5rem; }
 .performance-case__details > p { margin: 0 0 1rem; color: var(--text-tertiary); font-size: 0.72rem; }
