@@ -88,7 +88,7 @@
 }
 
 #architecture .section-subtitle {
-    color: rgba(255, 255, 255, 0.78);
+    color: #eef3f6;
 }
 
 /* Capability briefs */
@@ -214,6 +214,10 @@
 
 .examples__output {
     background: #16212b;
+}
+
+.examples__output-text {
+    color: #6fca9d;
 }
 
 .examples__cta {
