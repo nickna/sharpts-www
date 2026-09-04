@@ -524,7 +524,7 @@
 }
 
 .api-type-link {
-    color: var(--accent-ts);
+    color: var(--accent-neon);
     text-decoration: underline;
     text-underline-offset: 0.15em;
 }
