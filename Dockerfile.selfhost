@@ -97,7 +97,7 @@ RUN set -eu; \
     test -f /app/public/setup.ps1; \
     cp sharpts-source.env /app/sharpts-source.env
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime:11.0 AS runtime
 WORKDIR /app
 
 LABEL org.opencontainers.image.source="https://github.com/nickna/sharpts-www" \
